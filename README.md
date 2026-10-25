@@ -1,130 +1,178 @@
 # AI SDLC Visualizer
 
-Tim agent AI untuk mengerjakan task di proyek .NET (6, 8, nanti 10) di GitHub. Berjalan di lingkungan **Antigravity**: sesi utama bertindak sebagai **Office Manager**, enam agent spesialis mengerjakan tugas sesuai keahliannya, dan kamu memegang **tiga gerbang persetujuan (Gate)**.
+An **AI Software Development Life Cycle (SDLC) & 2D Office Visualizer** platform designed to orchestrate a team of specialized AI agents working on software engineering tasks (primarily **.NET 6 / 8 / 10** projects as well as **Node.js / TypeScript** services) on GitHub. Running within **Antigravity** (or Claude Code): the primary session operates as the **Office Manager**, six specialized agents execute tasks according to their domain expertise, and you maintain complete oversight through **three approval gates (Gates)**.
 
-Semua konfigurasi, agent, command, dan skill telah dikonsolidasikan secara terpusat ke dalam folder [`.agents/`](file:///D:/Project/Local/ai-engineering-office/.agents) dan panduan utama [`AGENTS.md`](file:///D:/Project/Local/ai-engineering-office/AGENTS.md) sebagai *Single Source of Truth*.
+All configurations, agent definitions, slash commands, system rules, and skills are centrally consolidated within the [`.agents/`](file:///D:/Project/Local/ai-engineering-office/.agents) directory and the primary operational guide [`AGENTS.md`](file:///D:/Project/Local/ai-engineering-office/AGENTS.md) as the *Single Source of Truth*.
 
 ---
 
-## 📁 Struktur Project
+## 📁 Project Structure
 
-| Direktori / File | Fungsi & Keterangan |
+| Directory / File | Description & Purpose |
 |---|---|
-| [`AGENTS.md`](file:///D:/Project/Local/ai-engineering-office/AGENTS.md) | Aturan operasional kantor AI, definisi 3 Gate, alur kerja, dan komando utama. |
-| [`office.config.yml`](file:///D:/Project/Local/ai-engineering-office/office.config.yml) | Konfigurasi kantor: daftar repo proyek, aturan git, kredensial/ID Docmost, dan aturan test. |
-| [`.agents/agents/`](file:///D:/Project/Local/ai-engineering-office/.agents/agents) | Definisi 6 spesialis agent: `scout`, `architect`, `developer`, `qa`, `scribe`, dan `release`. |
-| [`.agents/commands/`](file:///D:/Project/Local/ai-engineering-office/.agents/commands) | Custom slash command: `/scan-project`, `/new-task`, `/resume-task`, dan `/office-status`. |
-| [`.agents/skills/`](file:///D:/Project/Local/ai-engineering-office/.agents/skills) | 10 Skill standar (seluruh panduan ditulis dalam **Bahasa Inggris**):<br>• `docs-sync`<br>• `dotnet-standards`<br>• `git-workflow`<br>• `implementation-plan`<br>• `project-scanner`<br>• `xunit-testing`<br>• `tech-doc-generator`<br>• `docmost-rfc-generator`<br>• `jira-task-generator`<br>• `pr-description-generator` |
-| [`.agents/rules/`](file:///D:/Project/Local/ai-engineering-office/.agents/rules) | Aturan sistem, termasuk integrasi visualizer otomatis (`office-visualizer.md`). |
-| [`.agents/settings.json`](file:///D:/Project/Local/ai-engineering-office/.agents/settings.json) & [`.agents/hooks.json`](file:///D:/Project/Local/ai-engineering-office/.agents/hooks.json) | Konfigurasi tool permissions dan lifecycle hook Antigravity. |
-| [`project-profiles/`](file:///D:/Project/Local/ai-engineering-office/project-profiles) | Profil `SKILLS.md` per proyek hasil scan dan template standarnya. |
-| [`templates/`](file:///D:/Project/Local/ai-engineering-office/templates) | Template standar `task-brief.md` dan `implementation-plan.md`. |
-| [`tools/`](file:///D:/Project/Local/ai-engineering-office/tools) | Tooling visualizer & sinkronisasi:<br>• `office-state.mjs`: CLI pengubah state visualizer (`.office/state.json`).<br>• `office-hook.mjs`: Hook otomatis lifecycle event Antigravity.<br>• `mirror-transcript.mjs`: Parser transcript ke aktivitas visualizer secara real-time.<br>• `serve-visualizer.mjs`: Web server lokal untuk visualizer (port 4177).<br>• `setup-antigravity.mjs`: Setup hook ke direktori konfigurasi global Antigravity. |
-| [`visualizer/index.html`](file:///D:/Project/Local/ai-engineering-office/visualizer/index.html) | Antarmuka web visualizer kantor 2D beranimasi pixel art. |
-| [`workspace/`](file:///D:/Project/Local/ai-engineering-office/workspace) | Direktori tempat repository proyek git di-clone dan dikerjakan. |
+| [`AGENTS.md`](file:///D:/Project/Local/ai-engineering-office/AGENTS.md) | Core AI office operating rules, 9 golden rules, 3 Gate definitions, 9-phase workflow, and CLI state reference. |
+| [`office.config.yml`](file:///D:/Project/Local/ai-engineering-office/office.config.yml) | Office configuration: project repository list (with TFMs, base branches, and `docmost_service_page_id`), Git policies, Strand/Docmost MCP credentials, Jira settings, and testing rules. |
+| [`office-config/platform-notes.md`](file:///D:/Project/Local/ai-engineering-office/office-config/platform-notes.md) | Reference parent page IDs and template UUIDs for Strand / Docmost MCP documentation. |
+| [`.agents/agents/`](file:///D:/Project/Local/ai-engineering-office/.agents/agents) | Definitions for 6 specialized agents: [`scout.md`](file:///D:/Project/Local/ai-engineering-office/.agents/agents/scout.md), [`architect.md`](file:///D:/Project/Local/ai-engineering-office/.agents/agents/architect.md), [`developer.md`](file:///D:/Project/Local/ai-engineering-office/.agents/agents/developer.md), [`qa.md`](file:///D:/Project/Local/ai-engineering-office/.agents/agents/qa.md), [`scribe.md`](file:///D:/Project/Local/ai-engineering-office/.agents/agents/scribe.md), and [`release.md`](file:///D:/Project/Local/ai-engineering-office/.agents/agents/release.md). |
+| [`.agents/commands/`](file:///D:/Project/Local/ai-engineering-office/.agents/commands) | Custom slash commands: [`/scan-project`](file:///D:/Project/Local/ai-engineering-office/.agents/commands/scan-project.md), [`/new-task`](file:///D:/Project/Local/ai-engineering-office/.agents/commands/new-task.md), [`/resume-task`](file:///D:/Project/Local/ai-engineering-office/.agents/commands/resume-task.md), and [`/office-status`](file:///D:/Project/Local/ai-engineering-office/.agents/commands/office-status.md). |
+| [`.agents/skills/`](file:///D:/Project/Local/ai-engineering-office/.agents/skills) | 10 Standard skills (all authored in **English**):<br>• `project-scanner`<br>• `implementation-plan`<br>• `dotnet-standards`<br>• `xunit-testing`<br>• `git-workflow`<br>• `docs-sync`<br>• `tech-doc-generator`<br>• `docmost-rfc-generator`<br>• `jira-task-generator`<br>• `pr-description-generator` |
+| [`.agents/rules/`](file:///D:/Project/Local/ai-engineering-office/.agents/rules) | Always-active system rules, including mandatory visualizer state synchronization ([`office-visualizer.md`](file:///D:/Project/Local/ai-engineering-office/.agents/rules/office-visualizer.md)). |
+| [`.agents/settings.json`](file:///D:/Project/Local/ai-engineering-office/.agents/settings.json) & [`.agents/hooks.json`](file:///D:/Project/Local/ai-engineering-office/.agents/hooks.json) | Command execution permissions (`allow` / `ask` / `deny`) and lifecycle hook configurations for Antigravity and Claude Code. |
+| [`project-profiles/`](file:///D:/Project/Local/ai-engineering-office/project-profiles) | Per-project architectural profiles & conventions (`SKILLS.md`) generated by `scout`, along with standard templates ([`_template/SKILLS.md`](file:///D:/Project/Local/ai-engineering-office/project-profiles/_template/SKILLS.md)). |
+| [`templates/`](file:///D:/Project/Local/ai-engineering-office/templates) | Standard templates for [`task-brief.md`](file:///D:/Project/Local/ai-engineering-office/templates/task-brief.md) and [`implementation-plan.md`](file:///D:/Project/Local/ai-engineering-office/templates/implementation-plan.md). |
+| [`tools/`](file:///D:/Project/Local/ai-engineering-office/tools) | Synchronization engine & visualizer server (Node.js 18+, zero external dependencies):<br>• [`serve-visualizer.mjs`](file:///D:/Project/Local/ai-engineering-office/tools/serve-visualizer.mjs): Local web server (`http://localhost:4177`) & background transcript poller.<br>• [`mirror-transcript.mjs`](file:///D:/Project/Local/ai-engineering-office/tools/mirror-transcript.mjs): Live Antigravity transcript parser (main agent & subagents), role/phase/project/conversation title detector, and active AI model tracker.<br>• [`office-hook.mjs`](file:///D:/Project/Local/ai-engineering-office/tools/office-hook.mjs): Automatic lifecycle hook handler (`PreInvocation`, `PostToolUse`, `PostInvocation`, `Stop`, etc.).<br>• [`office-state.mjs`](file:///D:/Project/Local/ai-engineering-office/tools/office-state.mjs): Manual state management CLI (`.office/state.json` & `.office/chat.json`).<br>• [`setup-antigravity.mjs`](file:///D:/Project/Local/ai-engineering-office/tools/setup-antigravity.mjs): Hook installer for `.agents/hooks.json` and `~/.gemini/config/hooks.json`. |
+| [`visualizer/index.html`](file:///D:/Project/Local/ai-engineering-office/visualizer/index.html) | Interactive 2D pixel-art web visualizer interface rendered on an HTML5 Canvas. |
+| [`workspace/`](file:///D:/Project/Local/ai-engineering-office/workspace) | Working directory where target Git repositories are cloned and modified. |
+| `.office/` | Runtime directory storing `state.json`, `chat.json`, `config.json`, `usage.json`, and per-task artifacts under `.office/tasks/<task-id>/`. |
 
 ---
 
-## 👥 Tim Agent Spesialis
+## 👥 Agent Team & Visualizer Role Mapping
 
-| Agent | Peran di Visualizer | Tanggung Jawab Utama |
+[`AGENTS.md`](file:///D:/Project/Local/ai-engineering-office/AGENTS.md) defines an **Office Manager** and **6 specialized agents**, mapped across **5 character desks** and **3 external service props** on the visualizer canvas:
+
+| Agent / Entity | Visualizer Desk | Primary Responsibility |
 |---|---|---|
-| `scout` | **Architect (Scan Project)** | Membaca struktur repository dan menyusun profil proyek di `project-profiles/<project>/SKILLS.md`. |
-| `architect` | **Architect** | Mempelajari issue/flow, menyusun Implementation Plan komprehensif (opsi, pros/cons, dampak unit test & docs). Read-only. |
-| `developer` | **Engineer** | Menulis kode implementasi (.NET 6/8/10) sesuai plan yang disetujui, melakukan commit lokal bertahap. |
-| `qa` | **SDET** | Menulis test xUnit (mocking hanya untuk client eksternal, DB nyata dengan seeder/cleanup), menjalankan test terfilter (`--filter`). |
-| `scribe` | **Doc Scribing** | Menyusun draft Tech Doc dan RFC, lalu menuliskan ke Strand/Docmost lewat MCP. **Wajib dalam Bahasa Inggris.** |
-| `release` | **Engineer (Release)** | Menyiapkan branch fitur, menyusun draft tiket Jira, deskripsi PR HTML + query migrasi DB PostgreSQL, serta push & PR setelah Gate 3. |
+| **User** (`you`) | **User Role** (default: **Rama**, white shirt) | Submits tasks/prompts, clarifies intake questions, and retains final authority on **Gate 1, Gate 2, and Gate 3**. Name is customizable directly from the visualizer header. |
+| `manager` | **Architect** *(alias)* | Primary orchestration session: coordinates workflow, produces `brief.md`, delegates subtasks to specialist agents, and guards the 3 Gates. |
+| `scout` | **Architect** *(alias)* | Scans repository structure and drafts project profiles in `project-profiles/<project>/SKILLS.md`. Read-only against the codebase. |
+| `architect` | **Architect** | Explores codebase/issues (Mode A: known files, Mode B: trace flows/issues), authors `plan.md` (solution options, pros/cons, manday estimates, Unit Test & Tech Doc impact), and exclusively handles all Markdown (`.md`/`.mdx`) files. |
+| `developer` | **Engineer** | Implements code changes based on the approved plan option following Gate 1 and performs local commits incrementally. **Never modifies `.md` files.** |
+| `release` | **Engineer** *(alias)* | Prepares feature branches (after Gate 1), drafts Jira issues (`jira.md`) and PR descriptions (`pr.html` + PostgreSQL DB migration queries), and executes `git push` & `gh pr create` upon Gate 3 approval. |
+| `qa` | **SDET** | Writes and executes affected unit tests (`dotnet test --filter`, `jest`, `vitest`, etc.) under strict constraints (mock only external clients, never mock Repositories/Databases, enforce seeders & cleanups). |
+| `scribe` | **Doc Scribing** | Discovers/authors RFCs and drafts Technical Documentation (`docs-draft.md`), then publishes updates to **Strand / Docmost MCP** after Gate 2. **Must be written in English.** |
+
+**3 External Service Props on Canvas:**
+- **Jira** (Kanban Board): Receives handoff animations when drafting or writing Jira issues (`Write Jira`).
+- **Docmost** (Bookshelf): Receives handoff animations when `scribe` publishes documentation via the Strand/Docmost MCP (`Push Doc`).
+- **GitHub** (Mailbox): Receives handoff animations and raises a flag during branch creation (`Branch`), commits (`Commit`), pushes (`Push Branch`), and PR creation (`Create PR`).
 
 ---
 
-## 🔄 Alur Kerja & 3 Gerbang Persetujuan (Gate)
+## 🔄 9-Phase Workflow & 3 Approval Gates
 
 ```mermaid
 flowchart LR
-    U["User (Rama): task"] --> M["Manager: intake & brief"]
-    M --> P{"Profil proyek ada?"}
-    P -->|"Belum"| S["scout: scan project"]
-    P -->|"Ada"| A["architect: buat plan.md"]
+    U["User: Input Task"] --> M["Phase 1 (intake): Manager creates brief.md"]
+    M --> P{"Project profile exists?"}
+    P -->|"No"| S["Phase 2 (profile): Scout scans repository"]
+    P -->|"Yes"| A["Phase 3 (plan): Architect prepares plan.md"]
     S --> A
-    A --> G1{"Gate 1: Setujui Plan?"}
-    G1 -->|"Revisi"| A
-    G1 -->|"Approve"| R["release: siapkan branch"]
-    R --> D["developer: coding & commit lokal"]
-    D --> Q["qa: xUnit test terdampak"]
-    Q --> W["scribe: draft Tech Doc / RFC"]
-    W --> G2{"Gate 2: Review Hasil?"}
-    G2 -->|"Approve"| DM["scribe: tulis ke Strand (Docmost)"]
-    DM --> J["release: draft Jira & PR HTML"]
-    J --> G3{"Gate 3: Izin Push & PR?"}
-    G3 -->|"Ya"| Z["Push branch, Buat PR, Selesai"]
+    A --> G1{"Gate 1: Approve Plan?"}
+    G1 -->|"Reject / Revise"| A
+    G1 -->|"Approve"| R["Phase 4 (branch): Release prepares branch"]
+    R --> D["Phase 5 (code): Developer writes code & commits locally"]
+    D --> Q["Phase 6 (test): QA runs affected unit tests"]
+    Q -->|"Tests Fail (Blocked)"| D
+    Q -->|"Tests Pass (Green)"| W["Phase 7 (docs): Scribe drafts docs-draft.md"]
+    W --> G2{"Gate 2: Review Results?"}
+    G2 -->|"Approve"| DM["Scribe: Push to Strand / Docmost MCP"]
+    DM --> J["Phase 8 (release): Release drafts jira.md & pr.html"]
+    J --> G3{"Gate 3: Approve Push & PR?"}
+    G3 -->|"Approve"| Z["Phase 9 (done): Push branch & create GitHub PR"]
 ```
 
-1. **Gate 1 (Plan Approval):** User mereview `plan.md`. Tidak boleh ada baris kode yang ditulis sebelum Gate 1 disetujui.
-2. **Gate 2 (Result Review):** User mereview diff kode, hasil test `qa`, dan draft dokumentasi `scribe`. Setelah disetujui, barulah `scribe` mempublikasikan Tech Doc/RFC ke Strand Docmost.
-3. **Gate 3 (Release Approval):** User mereview draft Jira dan deskripsi PR. Tidak ada push ke remote atau pembuatan PR tanpa persetujuan eksplisit.
+1. **Gate 1 (Plan Approval):** The user reviews `plan.md`. Not a single line of code may be written before Gate 1 is approved. If rejected or revision is requested, the visualizer displays an animated discussion loop between the User and the Architect.
+2. **Gate 2 (Result Review):** The user reviews code diffs, QA test execution reports (`test-report.md`), and draft documentation (`docs-draft.md`). Once approved, `scribe` publishes the changes to Strand/Docmost via MCP.
+3. **Gate 3 (Release Approval):** The user reviews the draft Jira issue (`jira.md`) and Pull Request description (`pr.html`). No remote `git push` or PR creation may occur without explicit user consent.
 
 ---
 
-## 🎨 Fitur Visualizer 2D
+## 🎨 Key Features of AI SDLC Visualizer
 
-Visualizer kantor 2D (`visualizer/index.html`) memberikan representasi visual interaktif real-time mengenai aktivitas kantor:
-- **Identitas User yang Fleksibel & Baju Putih:** Menampilkan avatar berkaus putih dengan nama user (default: **Rama**), yang dapat diedit langsung lewat tombol badge di header visualizer dan tersimpan secara otomatis.
-- **Judul Task dari Judul Percakapan & Deteksi Proyek Presisi:**
-  - Label **Judul Task** aktif otomatis mengambil **Judul Percakapan** resmi dari Antigravity (bukan teks chat atau prompt terbaru).
-  - Label **Proyek** menampilkan nama folder/repositori yang sedang dikerjakan secara akurat (bukan sekadar `"workspace"` atau folder internal).
-- **Animasi Role & Handoff Spesifik:**
-  - Penulisan dokumentasi ke Strand Docmost MCP secara konsisten mengaktifkan role **Doc Scribing** (`scribe`) dengan animasi handoff ke prop `docmost`.
-  - File Markdown lokal di-handle oleh **Architect (`architect`)**, sehingga **Engineer (`developer`)** murni fokus pada source code, git, dan Jira tanpa menyentuh file `.md`.
-  - Animasi handoff otomatis untuk commit dan push ke prop `github`, pembuatan PR ke prop `github`, serta penulisan tiket ke prop `jira`.
-- **Panel Aktivitas & Percakapan yang Rapi:** Section Tim pada panel kanan ditiadakan agar lebih ringkas karena sudah terwakili di canvas. Tab Aktivitas (`#log`) dan Percakapan (`.chat`) dapat di-scroll dengan nyaman, menampilkan hingga 20 log pada layar sekaligus dan menampung riwayat hingga 100 aktivitas terbaru.
-- **Rich Text di Tab Percakapan:** Pesan chat dirender penuh (bold, italic, `inline code`, code block, list, tabel, blockquote, link, serta tag HTML aman seperti `<b>`/`<br>`) tanpa library eksternal. Seluruh HTML di-escape terlebih dahulu sehingga aman dari XSS. Setiap pesan dibatasi maksimal **5 baris** dan diakhiri `…` bila lebih panjang; teks lengkap tetap dibaca di chat Antigravity.
-- **Mode Demo Otomatis:** Apabila dibuka tanpa task aktif atau dibuka langsung dari file lokal, visualizer secara otomatis mendemonstrasikan siklus kerja kantor lengkap.
+The web interface [`visualizer/index.html`](file:///D:/Project/Local/ai-engineering-office/visualizer/index.html) operates autonomously through the combination of **Live Transcript Mirroring** ([`mirror-transcript.mjs`](file:///D:/Project/Local/ai-engineering-office/tools/mirror-transcript.mjs)) and **Lifecycle Hooks** ([`office-hook.mjs`](file:///D:/Project/Local/ai-engineering-office/tools/office-hook.mjs)):
+
+- **Automatic Live Transcript Mirroring (Main Agent & Subagents):**
+  - Reads the active transcript file at `~/.gemini/antigravity/brain/<convId>/.system_generated/logs/transcript.jsonl` every second, automatically recursing into subagent transcripts launched via `invoke_subagent`.
+  - Every incoming user prompt consistently routes from **User → Architect** first before being delegated to specialist roles (`developer`, `qa`, or `scribe`).
+- **Dynamic Task Titles & Precise Project Detection:**
+  - **Task Title** automatically adopts the official conversation title from `~/.gemini/antigravity/annotations/<convId>.pbtxt` (with graceful fallback to headings in `implementation_plan.md` / `task.md`).
+  - **Project Name** is extracted with high fidelity from active file paths, `workspace/<repo>` subdirectories, known projects in `office.config.yml`, or active document metadata.
+- **Strict Role Separation for Documentation vs Code:**
+  - All read/write operations on local Markdown files (`.md`, `.mdx`, `implementation_plan.md`, `README.md`, `SKILLS.md`) are routed exclusively to the **Architect**.
+  - The **Engineer** (`developer`) is strictly confined to source code, non-markdown configs, Git operations, and Jira.
+  - **Doc Scribing** (`scribe`) is triggered exclusively during interactions with the **Strand / Docmost MCP** tools or `docs-draft.md`.
+- **Real-Time Active AI Model Indicator:**
+  - The **Agent** card in the right-hand panel reflects model availability (`Gemini 4 Argon`, `Gemini 3.8 Flash`, `Claude Opus 5.5`, `Claude Sonnet 5.5`) with a live green indicator for **Active** vs **Standby** based on current session usage.
+- **Unit Test Error Visualization (Non-Green Flow):**
+  - If a test execution fails, the **SDET** (`qa`) role automatically switches to `blocked`, rendering a distinct red error bubble listing failed test cases on canvas and in the Chat panel, followed by a `test error` handoff back to the **Engineer**.
+- **Interactive User Identity & One-Click Reset:**
+  - The user avatar sports a white shirt with an editable name badge (**`Role: <Name> ✏️`**) in the header (persisted across sessions via `localStorage` and `.office/config.json`).
+  - Includes a dedicated **Reset Visualizer** header button to wipe state and chat history on demand.
+- **Rich-Text Conversation & Chronological Activity Log:**
+  - **Conversation:** Renders safe Markdown & HTML (bold, italic, `inline code`, code blocks, tables, lists, blockquotes, links) without third-party dependencies, capped at **5 lines** per message (`line-clamp: 5`) to preserve layout cleanliness.
+  - **Activity:** Displays up to 100 recent activity entries in reverse-chronological order with precise timestamps (`DD MMM YYYY HH:mm:ss`).
+- **Autonomous Demo Mode:**
+  - When opened independently or enabled via the **Demo mode** toggle, the visualizer simulates a complete SDLC lifecycle (including Gate 1 plan revision loops and failed unit test recovery).
 
 ---
 
-## 📝 Standar Dokumentasi & Bahasa
+## 🛠️ CLI & Slash Command Reference
 
-- **Dokumentasi Strand / Docmost:** Seluruh Technical Documentation (Tech Doc) dan RFC yang dibuat atau diperbarui ke Strand/Docmost MCP **wajib ditulis dalam Bahasa Inggris**.
-- **Dokumen Skill (`.agents/skills/`):** Seluruh 10 file panduan skill ditulis dalam Bahasa Inggris teknis baku.
-- **Komunikasi Sesi:** Komunikasi sehari-hari dengan user tetap fleksibel menggunakan Bahasa Indonesia dengan istilah teknis dalam Bahasa Inggris.
+### Custom Slash Commands (`.agents/commands/`)
+- `/scan-project <project-name or owner/repo>` — Scans a repository and creates or updates its architectural profile in `project-profiles/<project>/SKILLS.md`.
+- `/new-task [short description]` — Initiates a new task from Phase 1 (Intake), generates `brief.md`, drafts `plan.md`, and halts at Gate 1.
+- `/resume-task <task-id> [decision]` — Resumes a task paused at a Gate (e.g. `approve option A`, `revise`, or `cancel`).
+- `/office-status` — Displays a summary of the active task, current phase, agent statuses, and pending Gates.
+
+### State Controller CLI (`tools/office-state.mjs`)
+In addition to automated transcript syncing, the visualizer state can be updated manually via CLI:
+
+```bash
+node tools/office-state.mjs task <id> "<title>" <project> <branch> <mode A|B>
+node tools/office-state.mjs phase <intake|profile|plan|gate1|branch|code|test|docs|gate2|release|done>
+node tools/office-state.mjs agent <manager|scout|architect|developer|qa|scribe|release> <idle|working|waiting|done|blocked> "<short message>"
+node tools/office-state.mjs handoff <from> <to> "<label>"      # target: agent, you, docmost, github, jira
+node tools/office-state.mjs gate <1|2|3|none> "<question for user>"
+node tools/office-state.mjs log "<activity entry>"
+node tools/office-state.mjs say <user|assistant> "<message summary>" [agent]
+node tools/office-state.mjs reset                              # clears state.json & chat.json
+node tools/office-state.mjs dispose [all|<task-id>]            # reset + deletes .office/tasks/<id|all>
+```
 
 ---
 
-## 🚀 Cara Memulai
+## 📝 Documentation & Language Standards
 
-### Prasyarat
-- **Antigravity** (atau Claude Code CLI)
+- **Strand / Docmost Documentation:** All Technical Documentation (Tech Docs), RFCs, and Changelogs created or updated in Strand/Docmost MCP **must be written in English**.
+- **Skill Documents (`.agents/skills/`):** All 10 skill guides are authored in formal technical English.
+- **Day-to-day Working Communication:** Session communications with the user can be conducted flexibly in Indonesian or English, retaining standard technical terms in English.
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- **Antigravity** (IDE / CLI) or **Claude Code CLI**
+- **Node.js 18+** (to run the visualizer web server, transcript mirror parser, and lifecycle hooks)
 - **Git** & **GitHub CLI** (`gh auth login`)
-- **.NET SDK** (sesuai target TFM proyek: .NET 6 / 8 / 10)
-- **Node.js 18+** (untuk menjalankan server visualizer dan tooling hook)
-- **Strand / Docmost MCP** yang sudah terhubung
+- **.NET SDK** (.NET 6 / 8 / 10) and/or **Node.js** depending on target project
+- **Strand / Docmost MCP** configured and connected
 
-### Langkah Setup
+### Setup Instructions
 
-1. **Clone & Masuk ke Folder:**
+1. **Navigate to the Project Directory:**
    ```bash
    cd ai-engineering-office
    ```
 
-2. **Konfigurasi MCP:**
-   Salin `.mcp.json.example` menjadi `.mcp.json` dan sesuaikan dengan tool Strand/Docmost MCP di komputermu:
+2. **Configure MCP:**
+   Copy [`.mcp.json.example`](file:///D:/Project/Local/ai-engineering-office/.mcp.json.example) to `.mcp.json` and adjust the Strand/Docmost MCP credentials:
    ```bash
    cp .mcp.json.example .mcp.json
    ```
 
-3. **Konfigurasi Kantor & Proyek:**
-   Sesuaikan target proyek dan ID dokumentasi pada [`office.config.yml`](file:///D:/Project/Local/ai-engineering-office/office.config.yml) dan [`office-config/platform-notes.md`](file:///D:/Project/Local/ai-engineering-office/office-config/platform-notes.md).
+3. **Configure Office & Target Projects:**
+   Verify and update target projects, Git branch rules, and Docmost parent IDs in [`office.config.yml`](file:///D:/Project/Local/ai-engineering-office/office.config.yml) and [`office-config/platform-notes.md`](file:///D:/Project/Local/ai-engineering-office/office-config/platform-notes.md).
 
-4. **Setup Lifecycle Hook Antigravity:**
-   Jalankan script konfigurasi hook:
+4. **Install Antigravity Lifecycle Hooks:**
+   Run the hook setup script (re-run whenever the project folder is moved):
    ```bash
    node tools/setup-antigravity.mjs
    ```
 
-5. **Jalankan Visualizer Web Server:**
-   Di terminal terpisah, jalankan:
+5. **Start the AI SDLC Visualizer Server:**
    ```bash
    node tools/serve-visualizer.mjs
    ```
-   Buka browser di **http://localhost:4177**.
+   Open your browser at **http://localhost:4177** (port can be customized via the `PORT` environment variable).
