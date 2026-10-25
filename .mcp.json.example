@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "strand": {
+      "_comment": "Ganti dengan konfigurasi Strand/Docmost MCP yang sudah kamu setup, lalu salin file ini menjadi .mcp.json",
+      "command": "npx",
+      "args": ["-y", "<paket-strand-docmost-mcp>"],
+      "env": {
+        "DOCMOST_URL": "https://docmost.perusahaanmu.com",
+        "DOCMOST_TOKEN": "<isi-token-jangan-di-commit>"
+      }
+    }
+  }
+}

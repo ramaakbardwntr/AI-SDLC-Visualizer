@@ -1,0 +1,850 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI SDLC Team</title>
+<style>
+  :root {
+    color-scheme: light;
+    --ink: #17314d;
+    --ink-soft: #4d6379;
+    --paper: #eef2f6;
+    --panel: #ffffff;
+    --line: #cdd7e0;
+    --work: #1b998b;
+    --wait: #d98e04;
+    --block: #c73e2a;
+    --done: #3f6fa3;
+    --idle: #8695a3;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    min-height: 100vh; min-height: 100dvh;
+    background: var(--paper);
+    color: var(--ink);
+    font: 14px/1.45 "Segoe UI", system-ui, -apple-system, sans-serif;
+    display: flex; flex-direction: column;
+  }
+  header {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    padding: 10px 20px; background: var(--ink); color: #fff; flex: none;
+  }
+  header h1 { margin: 0; font-size: 17px; font-weight: 650; letter-spacing: .2px; }
+  header .spacer { flex: 1; }
+  #conn { font-size: 13px; opacity: .9; display: flex; align-items: center; gap: 8px; }
+  #conn i { width: 9px; height: 9px; border-radius: 50%; background: var(--idle); display: inline-block; }
+  #conn.live i { background: #5fe0c9; }
+  #conn.demo i { background: #f2b84b; }
+  header label { font-size: 13px; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+  header input:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  
+  .user-badge {
+    display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,.12);
+    padding: 4px 10px; border-radius: 6px; font-size: 12.5px; border: 1px solid rgba(255,255,255,.25);
+    cursor: pointer; transition: background .15s;
+  }
+  .user-badge:hover { background: rgba(255,255,255,.2); }
+  .user-badge b { font-weight: 600; color: #fff; }
+  .user-badge span { font-size: 11px; opacity: .75; }
+
+  #resetBtn {
+    background: rgba(255,255,255,.14); color: #fff; border: 1px solid rgba(255,255,255,.3);
+    border-radius: 6px; padding: 5px 12px; font-size: 12px; font-weight: 600; cursor: pointer;
+    transition: background .15s, border-color .15s;
+  }
+  #resetBtn:hover { background: rgba(255,255,255,.24); border-color: rgba(255,255,255,.5); }
+  #resetBtn:active { transform: scale(.97); }
+
+  main { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 16px 20px 20px; }
+  .stage {
+    position: relative; min-width: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+    padding: 10px; display: flex; align-items: center; justify-content: center; align-self: start;
+  }
+  .wrap { position: relative; width: 100%; aspect-ratio: 960 / 560; --u: 1; }
+  canvas { display: block; width: 100%; height: 100%; border-radius: 4px; }
+  .gate {
+    position: absolute; left: calc(24px * var(--u)); right: calc(24px * var(--u)); bottom: calc(22px * var(--u));
+    background: #fff7e0; border: 2px solid var(--wait); border-radius: 8px;
+    padding: calc(10px * var(--u)) calc(14px * var(--u)); box-shadow: 0 4px 16px rgba(23,49,77,.18);
+    font-size: max(11px, calc(14px * var(--u))); line-height: 1.35;
+  }
+  .gate[hidden] { display: none; }
+  .gate b { display: block; }
+  .gate span { color: var(--ink-soft); }
+
+  aside { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .card { flex: none; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
+  .card h2 { margin: 0 0 8px; font-size: 13px; font-weight: 650; color: var(--ink-soft); }
+  #taskTitle { font-weight: 650; font-size: 15px; margin-bottom: 6px; }
+  dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; font-size: 13px; }
+  dt { color: var(--ink-soft); }
+  dd { margin: 0; overflow-wrap: anywhere; }
+
+  ol#pipeline { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+  ol#pipeline li { display: flex; align-items: flex-start; gap: 9px; padding: 5px 7px; border-radius: 5px; color: var(--ink-soft); font-size: 12.5px; line-height: 1.35; }
+  ol#pipeline li::before { content: ""; width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--line); flex: none; margin-top: 3px; }
+  ol#pipeline li b { color: var(--ink); font-weight: 650; }
+  ol#pipeline li.done { color: var(--ink); }
+  ol#pipeline li.done::before { background: var(--done); border-color: var(--done); }
+  ol#pipeline li.now { color: var(--ink); font-weight: 600; background: #e6f5f2; }
+  ol#pipeline li.now::before { background: var(--work); border-color: var(--work); }
+  ol#pipeline li.now.isgate { background: #fff1cc; }
+  ol#pipeline li.now.isgate::before { background: var(--wait); border-color: var(--wait); }
+  ol#pipeline li.now.isblocked { background: #fdecea; color: #7a1f12; }
+  ol#pipeline li.now.isblocked::before { background: var(--block); border-color: var(--block); }
+
+  #agentModels { display: grid; gap: 6px; font-size: 12.5px; }
+  .m-card { display: flex; align-items: center; justify-content: space-between; padding: 7px 10px; border-radius: 6px; background: #f8fafc; border: 1px solid #e2e8f0; transition: all .2s ease; }
+  .m-card.active { background: #f0fdf4; border-color: #86efac; box-shadow: 0 0 0 1px #86efac; }
+  .m-card b { font-weight: 600; color: var(--ink); display: flex; align-items: center; gap: 8px; font-size: 12.5px; }
+  .m-card b i { width: 8px; height: 8px; border-radius: 50%; background: var(--idle); display: inline-block; flex: none; }
+  .m-card.active b i { background: var(--work); box-shadow: 0 0 0 3px rgba(27,153,139,.25); }
+  .m-card em { font-style: normal; font-size: 11px; font-weight: 650; padding: 2px 8px; border-radius: 99px; }
+  .m-card.active em { background: #dcfce7; color: #166534; }
+  .m-card:not(.active) em { color: var(--ink-soft); opacity: .7; }
+
+  /* Log Aktivitas: Scrollable maks ~20 pesan di layar, menampung hingga 100 entri */
+  #log {
+    list-style: none; margin: 0; padding: 0; font-size: 12.5px;
+    max-height: 380px; overflow-y: auto; display: grid; gap: 5px;
+    padding-right: 4px; scrollbar-width: thin; scrollbar-color: var(--line) transparent;
+    overscroll-behavior: contain;
+  }
+  #log:empty::before { content: "Belum ada catatan aktivitas."; color: var(--ink-soft); }
+  #log li { color: var(--ink-soft); line-height: 1.35; border-bottom: 1px solid #f1f5f9; padding-bottom: 3px; }
+  #log time { color: var(--ink); font-weight: 600; margin-right: 6px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  .chat { display: grid; gap: 6px; max-height: 360px; overflow-y: auto; font-size: 12.5px; padding-right: 4px; overscroll-behavior: contain; scrollbar-width: thin; }
+  .chat:empty::before { content: "Belum ada percakapan. Kirim prompt dari VSCode / Antigravity."; color: var(--ink-soft); }
+  .chat .m { padding: 6px 9px; border-radius: 8px; overflow-wrap: anywhere; min-width: 0; }
+  .chat .m small { display: block; font-size: 11px; opacity: .75; margin-bottom: 2px; font-variant-numeric: tabular-nums; }
+  /* Rich text: maks 5 baris, lebih dari itu diakhiri "..." */
+  .chat .m .body { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 5; line-clamp: 5; overflow: hidden; line-height: 1.4; word-break: break-word; }
+  .chat .body > :first-child { margin-top: 0; }
+  .chat .body > :last-child { margin-bottom: 0; }
+  .chat .body p, .chat .body ul, .chat .body ol, .chat .body blockquote, .chat .body pre, .chat .body table, .chat .body h4 { margin: 0 0 4px; }
+  .chat .body h4 { font-size: 12.5px; font-weight: 700; }
+  .chat .body ul, .chat .body ol { padding-left: 18px; }
+  .chat .body a { color: #1a5fb4; text-decoration: underline; }
+  .chat .body code { font: 11.5px/1.35 ui-monospace, Consolas, monospace; background: rgba(23,49,77,.09); padding: 0 4px; border-radius: 3px; }
+  .chat .body pre { background: #f4f7fa; border: 1px solid var(--line); border-radius: 5px; padding: 4px 6px; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .chat .body pre code { background: none; padding: 0; }
+  .chat .body blockquote { border-left: 3px solid var(--line); padding-left: 7px; color: var(--ink-soft); }
+  .chat .body table { border-collapse: collapse; font-size: 11.5px; }
+  .chat .body th, .chat .body td { border: 1px solid var(--line); padding: 1px 5px; text-align: left; }
+  .chat .body th { background: rgba(23,49,77,.06); }
+  .chat .body hr { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
+  .chat .body mark { background: #fff3b0; }
+  .chat .body kbd { font: 11px ui-monospace, Consolas, monospace; border: 1px solid var(--line); border-radius: 3px; padding: 0 3px; background: #fff; }
+  .chat .user { background: #fbe9e3; justify-self: end; max-width: 92%; }
+  .chat .assistant { background: #e6f5f2; justify-self: start; max-width: 96%; }
+  .chat .thinking { background: #f3f0fa; color: #4a3b69; font-style: italic; justify-self: start; max-width: 96%; font-size: 12px; border-left: 3px solid #85589f; }
+  .chat .tool { background: #f4f7fa; border: 1px solid var(--line); color: var(--ink-soft); font: 11.5px/1.4 ui-monospace, Consolas, monospace; padding: 4px 7px; border-radius: 6px; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+  @media (min-width: 961px) {
+    html, body { height: 100%; }
+    body { min-height: 0; overflow: hidden; }
+    main {
+      flex: 1; min-height: 0;
+      grid-template-columns: minmax(0, 1fr) clamp(320px, 32vw, 440px);
+      grid-template-rows: minmax(0, 1fr);
+    }
+    .stage { align-self: stretch; min-height: 0; overflow: hidden; }
+    .wrap { width: auto; }
+    aside { min-height: 0; overflow-y: auto; overflow-x: hidden; padding-right: 6px; scrollbar-width: thin; scrollbar-color: var(--line) transparent; overscroll-behavior: contain; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>AI SDLC Team</h1>
+  <div id="conn" role="status"><i></i><span>Menghubungkan...</span></div>
+  <div class="spacer"></div>
+  <div class="user-badge" id="userBtn" title="Klik untuk mengubah nama peran Anda">
+    <span>Peran:</span> <b id="userBadgeName">Rama</b> ✏️
+  </div>
+  <button id="resetBtn" type="button" title="Bersihkan visualizer & histori percakapan">Reset Visualizer</button>
+  <label><input type="checkbox" id="demoToggle"> Mode demo</label>
+</header>
+
+<main>
+  <section class="stage" id="stage">
+    <div class="wrap" id="wrap">
+      <canvas id="c" role="img" aria-label="Animasi kantor: lima peran bekerja pada task, dokumen berpindah antar meja sesuai alur kerja."></canvas>
+      <div class="gate" id="gate" hidden aria-live="polite"><b id="gateTitle"></b><span id="gateText"></span></div>
+    </div>
+  </section>
+
+  <aside>
+    <div class="card">
+      <h2>Task aktif</h2>
+      <div id="taskTitle">Belum ada task</div>
+      <dl id="taskMeta"></dl>
+    </div>
+    <div class="card">
+      <h2>Agent</h2>
+      <div id="agentModels"></div>
+    </div>
+    <div class="card">
+      <h2>Percakapan</h2>
+      <div class="chat" id="chat" aria-live="polite"></div>
+    </div>
+    <div class="card" hidden>
+      <h2>Alur kerja</h2>
+      <ol id="pipeline"></ol>
+    </div>
+    <div class="card">
+      <h2>Aktivitas</h2>
+      <ul id="log"></ul>
+    </div>
+  </aside>
+</main>
+
+<script>
+'use strict';
+/* ---------- konstanta & user name ---------- */
+let USER_NAME = localStorage.getItem('office_user_name') || 'Rama';
+
+const getPhases = () => [
+  ['you',       USER_NAME,            'Penginput task/prompt & approver Implementation Plan'],
+  ['architect', 'Software Architect', 'Scanner project, pembuat Implementation Plan, pros & cons'],
+  ['developer', 'Code Engineer',      'Eksekusi perubahan code & unit test, Task Jira, PR Template & branch GitHub'],
+  ['qa',        'SDET',               'Eksekusi Unit Test project (pastikan green flow / pop chat bila test error)'],
+  ['scribe',    'Doc Scribing',       'Pembuatan doc (RFC, TD, dll) ke Strand Docmost MCP']
+];
+const PHASE_STEP = { intake: 0, profile: 1, plan: 1, gate1: 0, branch: 2, code: 2, test: 3, docs: 4, gate2: 0, release: 2, done: 5 };
+const DEFAULT_MODELS = [
+  { name: 'Gemini 4 Argon',    active: false },
+  { name: 'Gemini 3.8 Flash',  active: true },
+  { name: 'Claude Opus 5.5',   active: false },
+  { name: 'Claude Sonnet 5.5', active: false }
+];
+const COLORS = { working: '#1b998b', waiting: '#d98e04', blocked: '#c73e2a', done: '#3f6fa3', idle: '#8695a3' };
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const STAFF = {
+  you:       { x: 120, y: 112, name: USER_NAME,            shirt: '#ffffff', hair: '#2b2118', skin: '#e9bd94' },
+  architect: { x: 250, y: 290, name: 'Architect'       , shirt: '#85589f', hair: '#10121a', skin: '#f1c8a0' },
+  developer: { x: 250, y: 456, name: 'Engineer',           shirt: '#2f6fb3', hair: '#5a3b1e', skin: '#e9bd94' },
+  qa:        { x: 570, y: 456, name: 'SDET',               shirt: '#c2782b', hair: '#241a14', skin: '#c68e63' },
+  scribe:    { x: 570, y: 290, name: 'Doc Scribing',       shirt: '#b5485d', hair: '#3b2a1c', skin: '#f1c8a0' },
+};
+const ALIAS = { manager: 'architect', scout: 'architect', release: 'developer' };
+const canon = id => ALIAS[id] || id;
+const PROPS = {
+  jira:    { x: 600, y: 108,  name: 'Jira' },
+  docmost: { x: 740, y: 112,  name: 'Docmost' },
+  github:  { x: 880, y: 116,  name: 'GitHub' },
+};
+const POS = (id) => STAFF[id] || PROPS[id];
+const TEAM_ORDER = ['architect', 'developer', 'qa', 'scribe'];
+
+function updateUserName(newName) {
+  if (!newName || !newName.trim()) return;
+  USER_NAME = newName.trim();
+  localStorage.setItem('office_user_name', USER_NAME);
+  document.getElementById('userBadgeName').textContent = USER_NAME;
+  STAFF.you.name = USER_NAME;
+  try {
+    fetch('/user', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userName: USER_NAME }) });
+  } catch {}
+  renderPanel();
+}
+document.getElementById('userBadgeName').textContent = USER_NAME;
+document.getElementById('userBtn').addEventListener('click', () => {
+  const n = prompt('Masukkan nama Anda untuk visualizer:', USER_NAME);
+  if (n && n.trim() && n.trim() !== USER_NAME) updateUserName(n);
+});
+
+/* ---------- state ---------- */
+const emptyState = () => ({
+  task: null, phase: 'intake', gate: null, handoffs: [], log: [],
+  agents: Object.fromEntries(TEAM_ORDER.map(a => [a, { status: 'idle', message: '' }]))
+});
+let S = emptyState();
+let seenHandoff = 0;
+let youActiveUntil = 0;
+const flights = [];
+const talks = [];
+const pulses = {};
+
+/* ---------- canvas ---------- */
+const cv = document.getElementById('c');
+const ctx = cv.getContext('2d');
+const W = 960, H = 560, ASPECT = W / H;
+const stageEl = document.getElementById('stage'), wrapEl = document.getElementById('wrap');
+const stacked = matchMedia('(max-width: 960px)');
+let curW = 0, curDpr = 0;
+function dprNow() { return Math.min(3, window.devicePixelRatio || 1); }
+function fit() {
+  const cs = getComputedStyle(stageEl);
+  const padX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
+  const padY = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+  let w = stageEl.clientWidth - padX;
+  if (!stacked.matches) w = Math.min(w, (stageEl.clientHeight - padY) * ASPECT);
+  w = Math.max(200, Math.floor(w));
+  const h = Math.round(w / ASPECT), dpr = dprNow();
+  if (w === curW && dpr === curDpr) return;
+  curW = w; curDpr = dpr;
+  wrapEl.style.width = w + 'px'; wrapEl.style.height = h + 'px';
+  wrapEl.style.setProperty('--u', (w / W).toFixed(4));
+  cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+}
+new ResizeObserver(fit).observe(stageEl);
+window.addEventListener('resize', fit);
+stacked.addEventListener('change', () => { curW = 0; fit(); });
+fit();
+
+const FONT = '"Segoe UI", system-ui, sans-serif';
+function rrect(x, y, w, h, r, fill, stroke, lw) {
+  ctx.beginPath(); ctx.roundRect(x, y, w, h, r);
+  if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+  if (stroke) { ctx.lineWidth = lw || 1; ctx.strokeStyle = stroke; ctx.stroke(); }
+}
+function text(str, x, y, size, color, weight, align) {
+  ctx.font = `${weight || 500} ${size}px ${FONT}`;
+  ctx.fillStyle = color; ctx.textAlign = align || 'center'; ctx.textBaseline = 'alphabetic';
+  ctx.fillText(str, x, y);
+}
+function clip(str, max) { return str.length > max ? str.slice(0, max - 1) + '\u2026' : str; }
+
+function drawRoom(t) {
+  for (let ty = 0; ty < H; ty += 40) for (let tx = 0; tx < W; tx += 40) {
+    ctx.fillStyle = ((tx + ty) / 40) % 2 ? '#dfe6ec' : '#d6dee6';
+    ctx.fillRect(tx, ty, 40, 40);
+  }
+  rrect(20, 52, 240, 124, 10, '#c7d4e3');
+  rrect(520, 56, 420, 130, 10, '#d3dde8');
+  ctx.fillStyle = '#f5f7f9'; ctx.fillRect(0, 0, W, 38);
+  ctx.fillStyle = '#b9cbd9'; ctx.fillRect(0, 36, W, 3);
+  for (let x = 40; x < W - 40; x += 150) {
+    rrect(x, 8, 90, 22, 3, '#bcd8ec'); ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.fillRect(x + 6, 11, 28, 4);
+  }
+}
+
+function isGateActive() {
+  return Boolean(S.gate && S.phase !== 'done' && (S.phase === 'gate1' || S.phase === 'gate2' || S.phase === 'release'));
+}
+
+function drawStaff(id, t) {
+  const st = STAFF[id];
+  const gateOpen = isGateActive();
+  const youBusy = id === 'you' && (t < youActiveUntil || flights.some(f => f.from === 'you') || talks.some(k => k.a === 'you' || k.b === 'you'));
+  const a = id === 'you'
+    ? { status: gateOpen ? 'waiting' : (youBusy ? 'working' : 'idle'), message: gateOpen ? `Menunggu keputusan ${USER_NAME}` : (youBusy ? 'Input prompt...' : '') }
+    : (S.agents[id] || { status: 'idle', message: '' });
+  const x = st.x, y = st.y;
+  const working = a.status === 'working';
+  const bob = REDUCED ? 0 : (a.status === 'idle' ? Math.sin(t / 900 + x) * 1.2 : working ? Math.sin(t / 130) * 0.9 : 0);
+
+  ctx.fillStyle = 'rgba(23,49,77,.12)'; ctx.beginPath(); ctx.ellipse(x, y + 44, 46, 8, 0, 0, 7); ctx.fill();
+  ctx.fillStyle = st.shirt; ctx.fillRect(x - 14, y - 20 + bob, 28, 30);
+  if (st.shirt === '#ffffff') { ctx.strokeStyle = '#b8c6d4'; ctx.lineWidth = 1; ctx.strokeRect(x - 14.5, y - 20.5 + bob, 29, 31); }
+  
+  const raised = a.status === 'waiting';
+  const arm = (dx, swing) => {
+    ctx.fillStyle = st.shirt;
+    if (raised && dx > 0) {
+      ctx.fillRect(x + 14, y - 46 + bob, 7, 28);
+      if (st.shirt === '#ffffff') { ctx.strokeStyle = '#b8c6d4'; ctx.lineWidth = 1; ctx.strokeRect(x + 13.5, y - 46.5 + bob, 8, 29); }
+      ctx.fillStyle = st.skin; ctx.fillRect(x + 14, y - 52 + bob, 7, 7);
+    }
+    else if (working) {
+      ctx.fillRect(x + dx, y - 14 + bob, 7, 24 + swing);
+      if (st.shirt === '#ffffff') { ctx.strokeStyle = '#b8c6d4'; ctx.lineWidth = 1; ctx.strokeRect(x + dx - 0.5, y - 14.5 + bob, 8, 25 + swing); }
+      ctx.fillStyle = st.skin; ctx.fillRect(x + dx, y + 10 + swing + bob, 7, 5);
+    }
+    else {
+      ctx.fillRect(x + dx, y - 16 + bob, 7, 26);
+      if (st.shirt === '#ffffff') { ctx.strokeStyle = '#b8c6d4'; ctx.lineWidth = 1; ctx.strokeRect(x + dx - 0.5, y - 16.5 + bob, 8, 27); }
+      ctx.fillStyle = st.skin; ctx.fillRect(x + dx, y + 10 + bob, 7, 5);
+    }
+  };
+  const sw = REDUCED ? 0 : Math.sin(t / 85) * 2.2;
+  arm(-21, sw); arm(14, -sw);
+  
+  ctx.fillStyle = st.skin; ctx.fillRect(x - 12, y - 46 + bob, 24, 24);
+  ctx.fillStyle = st.hair; ctx.fillRect(x - 13, y - 49 + bob, 26, 9); ctx.fillRect(x - 13, y - 49 + bob, 4, 18);
+  const open = REDUCED || ((t / 1000 + x * 0.01) % 4) > 0.16;
+  ctx.fillStyle = '#1b1b24';
+  if (open) { ctx.fillRect(x - 6, y - 35 + bob, 3, 3); ctx.fillRect(x + 3, y - 35 + bob, 3, 3); }
+  else { ctx.fillRect(x - 7, y - 34 + bob, 5, 1); ctx.fillRect(x + 2, y - 34 + bob, 5, 1); }
+  if (a.status === 'done') { ctx.fillRect(x - 4, y - 28 + bob, 8, 2); }
+  if (a.status === 'blocked') { ctx.fillRect(x - 4, y - 27 + bob, 8, 2); ctx.fillRect(x - 6, y - 28 + bob, 2, 2); ctx.fillRect(x + 4, y - 28 + bob, 2, 2); }
+
+  const pulse = pulses[id] ? Math.max(0, 1 - (t - pulses[id]) / 700) : 0;
+  ctx.fillStyle = '#b88a55'; ctx.fillRect(x - 56, y + 8, 112, 36);
+  ctx.fillStyle = '#cfa56e'; ctx.fillRect(x - 56, y + 8, 112, 7);
+  ctx.fillStyle = 'rgba(0,0,0,.12)'; ctx.fillRect(x - 56, y + 40, 112, 4);
+  if (pulse) { ctx.strokeStyle = `rgba(27,153,139,${pulse})`; ctx.lineWidth = 3; ctx.strokeRect(x - 58, y + 6, 116, 40); }
+  ctx.fillStyle = '#e7ebef'; ctx.fillRect(x - 24, y + 17, 30, 7);
+  ctx.fillStyle = '#4a5663'; ctx.fillRect(x + 22, y - 4, 32, 24);
+  const scr = a.status === 'idle' ? '#2d3a48' : COLORS[a.status];
+  ctx.fillStyle = scr; ctx.fillRect(x + 25, y - 1, 26, 17);
+  if (working) {
+    ctx.fillStyle = 'rgba(255,255,255,.75)';
+    for (let i = 0; i < 4; i++) {
+      const wdt = 8 + ((Math.floor(t / 220) * 7 + i * 5) % 14);
+      ctx.fillRect(x + 28, y + 2 + i * 3.6, wdt, 1.6);
+    }
+  }
+  ctx.fillStyle = COLORS[a.status]; ctx.beginPath(); ctx.arc(x - 46, y + 20, 4, 0, 7); ctx.fill();
+  text(st.name, x - 8, y + 36, 12, '#fff', 650, 'center');
+
+  if (a.status === 'done' && S.phase === 'done') drawBadge(x + 28, y - 52, COLORS.done, '\u2713');
+  if (a.status === 'blocked') drawBadge(x + 28, y - 52, COLORS.blocked, '!');
+  if (a.status === 'waiting' && id !== 'you') drawBadge(x + 28, y - 52, COLORS.waiting, '?');
+
+  if (id === 'qa' && a.status === 'blocked') {
+    const lines = ['Test case error:'].concat(String(a.message || '').split(';').map(s => s.trim()).filter(Boolean).slice(0, 4).map(s => clip(s, 30)));
+    const bw = 200, bh = 12 + lines.length * 16, bx = x + 74, by = y - bh / 2 - 6;
+    rrect(bx, by, bw, bh, 8, '#fdecea', COLORS.blocked, 2);
+    ctx.fillStyle = '#fdecea'; ctx.beginPath(); ctx.moveTo(bx, by + bh / 2 - 6); ctx.lineTo(bx, by + bh / 2 + 6); ctx.lineTo(bx - 8, by + bh / 2); ctx.fill();
+    lines.forEach((ln, i) => text(ln, bx + 12, by + 20 + i * 16, 11.5, i ? '#7a1f12' : COLORS.blocked, i ? 500 : 700, 'left'));
+    return;
+  }
+  let msg = a.message || '';
+  if (a.status === 'working' && (!msg || msg === 'Selesai')) {
+    msg = 'Sedang mengerjakan...';
+  }
+  if (msg && a.status !== 'idle' && (S.phase === 'done' || msg !== 'Selesai')) {
+    const cmsg = clip(msg, 34);
+    ctx.font = `500 11.5px ${FONT}`;
+    const w = Math.min(ctx.measureText(cmsg).width + 18, 230);
+    const bx = Math.max(6, Math.min(W - w - 6, x - w / 2)), by = y - 86;
+    rrect(bx, by, w, 24, 6, '#fff', COLORS[a.status], 1.5);
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(x - 5, by + 24); ctx.lineTo(x + 5, by + 24); ctx.lineTo(x, by + 31); ctx.fill();
+    text(cmsg, bx + w / 2, by + 16, 11.5, '#17314d', 500, 'center');
+  }
+}
+function drawBadge(x, y, color, ch) {
+  ctx.fillStyle = color; ctx.beginPath(); ctx.arc(x, y, 9, 0, 7); ctx.fill();
+  text(ch, x, y + 4.5, 13, '#fff', 700, 'center');
+}
+
+function drawBell(t) {
+  const s = STAFF.you;
+  if (!isGateActive()) return;
+  const k = REDUCED ? 0.5 : (Math.sin(t / 220) + 1) / 2;
+  ctx.strokeStyle = `rgba(217,142,4,${0.35 + k * 0.5})`; ctx.lineWidth = 3;
+  for (let i = 1; i <= 3; i++) { ctx.beginPath(); ctx.arc(s.x + 62, s.y - 26, 8 + i * 6 + k * 4, -1.2, 1.2); ctx.stroke(); }
+  ctx.fillStyle = '#e8a317'; ctx.beginPath(); ctx.arc(s.x + 62, s.y - 26, 8, 0, 7); ctx.fill();
+}
+
+function drawProps(t) {
+  const glow = id => pulses[id] ? Math.max(0, 1 - (t - pulses[id]) / 800) : 0;
+  // Jira board
+  let p = PROPS.jira, g = glow('jira');
+  rrect(p.x - 52, p.y - 36, 104, 70, 4, '#fff', g ? `rgba(27,153,139,${g})` : '#9fb2c4', g ? 3 : 1.5);
+  ['#c9dcee', '#d9ead3', '#fde6bf'].forEach((c, i) => {
+    ctx.fillStyle = '#eef2f6'; ctx.fillRect(p.x - 46 + i * 32, p.y - 30, 30, 58);
+    ctx.fillStyle = c; ctx.fillRect(p.x - 43 + i * 32, p.y - 24, 24, 12); if (i < 2) ctx.fillRect(p.x - 43 + i * 32, p.y - 8, 24, 12);
+  });
+  text(p.name, p.x, p.y + 52, 12, '#17314d', 650);
+  // Docmost shelf
+  p = PROPS.docmost; g = glow('docmost');
+  rrect(p.x - 44, p.y - 40, 88, 78, 3, '#a47a4a', g ? `rgba(27,153,139,${g})` : null, 3);
+  [0, 1, 2].forEach(r => {
+    ctx.fillStyle = '#7f5c35'; ctx.fillRect(p.x - 40, p.y - 34 + r * 24 + 18, 80, 3);
+    ['#3f6fa3', '#b5485d', '#3d8361', '#d98e04', '#85589f', '#2f6fb3'].forEach((c, i) => {
+      ctx.fillStyle = c; ctx.fillRect(p.x - 38 + i * 13, p.y - 34 + r * 24 + (i % 2 ? 4 : 0), 10, 18 - (i % 2 ? 4 : 0));
+    });
+  });
+  text(p.name, p.x, p.y + 56, 12, '#17314d', 650);
+  // GitHub mailbox
+  p = PROPS.github; g = glow('github');
+  ctx.fillStyle = '#6b7b8b'; ctx.fillRect(p.x - 3, p.y + 6, 6, 30);
+  rrect(p.x - 32, p.y - 26, 64, 36, 16, '#17314d', g ? `rgba(27,153,139,${g})` : null, 3);
+  ctx.fillStyle = '#0f2236'; ctx.fillRect(p.x - 22, p.y - 6, 44, 3);
+  ctx.fillStyle = g ? '#e8a317' : '#d9694a'; ctx.fillRect(p.x + 30, p.y - 30 - (g ? 8 : 0), 5, 22 + (g ? 8 : 0));
+  text(p.name, p.x, p.y + 56, 12, '#17314d', 650);
+}
+
+function drawTalks(t) {
+  for (let i = talks.length - 1; i >= 0; i--) {
+    const k = talks[i];
+    if (t > k.t1) { talks.splice(i, 1); continue; }
+    if (t < k.t0) continue;
+    const turn = Math.floor((t - k.t0) / 700) % 2;
+    [[k.a, turn === 0], [k.b, turn === 1]].forEach(([id, speaking]) => {
+      const s = STAFF[id]; if (!s) return;
+      const bx = id === 'you' ? s.x + 95 : s.x, by = id === 'you' ? s.y + 14 : s.y - 124;
+      const col = speaking ? '#d98e04' : '#9fb2c4';
+      rrect(bx - 28, by - 13, 56, 26, 13, '#fff', col, 2);
+      ctx.fillStyle = '#fff'; ctx.beginPath();
+      if (id === 'you') { ctx.moveTo(bx - 20, by + 10); ctx.lineTo(bx - 10, by + 12); ctx.lineTo(bx - 30, by + 22); } else { ctx.moveTo(bx - 5, by + 12); ctx.lineTo(bx + 5, by + 12); ctx.lineTo(bx, by + 19); }
+      ctx.fill();
+      for (let d = 0; d < 3; d++) {
+        const r = speaking && !REDUCED ? 2.6 + Math.sin(t / 130 + d) * 1.2 : 2.6;
+        ctx.fillStyle = col; ctx.beginPath(); ctx.arc(bx - 10 + d * 10, by, r, 0, 7); ctx.fill();
+      }
+    });
+  }
+}
+
+function drawFlights(t) {
+  for (let i = flights.length - 1; i >= 0; i--) {
+    const f = flights[i];
+    const p = Math.max(0, Math.min(1, (t - f.t0) / f.dur));
+    const a = POS(f.from), b = POS(f.to);
+    if (!a || !b) { flights.splice(i, 1); continue; }
+    const e = p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+    const x = a.x + (b.x - a.x) * e;
+    const y = a.y + (b.y - a.y) * e - Math.sin(Math.PI * e) * 46 - 10;
+    ctx.save(); ctx.translate(x, y); ctx.rotate(REDUCED ? 0 : Math.sin(t / 90) * 0.12);
+    ctx.fillStyle = 'rgba(23,49,77,.15)'; ctx.fillRect(-8, 12, 18, 3);
+    rrect(-9, -12, 18, 24, 2, '#fff', '#17314d', 1.5);
+    ctx.fillStyle = '#9fb2c4'; for (let k = 0; k < 4; k++) ctx.fillRect(-6, -8 + k * 5, 12, 1.6);
+    ctx.restore();
+    if (f.label) text(f.label, x, y - 18, 10.5, '#17314d', 600, 'center');
+    if (p >= 1) { pulses[f.to] = t; flights.splice(i, 1); }
+  }
+}
+
+function frame(t) {
+  if (dprNow() !== curDpr) fit();
+  ctx.setTransform(cv.width / W, 0, 0, cv.height / H, 0, 0);
+  drawRoom(t);
+  drawProps(t);
+  ['you', 'architect', 'developer', 'qa', 'scribe'].forEach(id => drawStaff(id, t));
+  drawBell(t);
+  drawTalks(t);
+  drawFlights(t);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+/* ---------- panel ---------- */
+const $ = id => document.getElementById(id);
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+function fmtDateTime(iso) {
+  const d = new Date(iso);
+  if (isNaN(d)) return '';
+  const pad = n => String(n).padStart(2, '0');
+  return `${pad(d.getDate())} ${MONTHS[d.getMonth()]} ${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+
+function renderPanel() {
+  const tk = S.task;
+  $('taskTitle').textContent = tk ? tk.title : 'Belum ada task';
+  const meta = $('taskMeta'); meta.replaceChildren();
+  if (tk) [['Proyek', tk.project], ['Branch', tk.branch], ['Mode', tk.mode === 'A' ? 'A: file diketahui' : tk.mode === 'B' ? 'B: flow/issue' : tk.mode]]
+    .forEach(([k, v]) => { const dt = document.createElement('dt'); dt.textContent = k; const dd = document.createElement('dd'); dd.textContent = v || '-'; meta.append(dt, dd); });
+
+  const modelsBox = $('agentModels'); modelsBox.replaceChildren();
+  const rawModels = (S.models && (Array.isArray(S.models.models) ? S.models.models : Array.isArray(S.models) ? S.models : null)) || DEFAULT_MODELS;
+  rawModels.forEach(m => {
+    const card = document.createElement('div');
+    card.className = 'm-card' + (m.active ? ' active' : '');
+    const b = document.createElement('b');
+    const dot = document.createElement('i');
+    b.append(dot, document.createTextNode(m.name));
+    const em = document.createElement('em');
+    em.textContent = m.active ? 'Aktif' : 'Standby';
+    card.append(b, em);
+    modelsBox.append(card);
+  });
+
+  const stepIdx = PHASE_STEP[S.phase] ?? 0;
+  const ol = $('pipeline'); ol.replaceChildren();
+  getPhases().forEach(([roleId, roleTitle, desc], i) => {
+    const li = document.createElement('li');
+    const wrap = document.createElement('div');
+    const b = document.createElement('b'); b.textContent = roleTitle + ' : ';
+    wrap.append(b, document.createTextNode(desc));
+    li.append(wrap);
+    const agStatus = roleId === 'you' ? (isGateActive() ? 'waiting' : 'idle') : (S.agents[roleId]?.status || 'idle');
+    if (S.phase === 'done') {
+      li.className = 'done';
+    } else if (agStatus === 'blocked') {
+      li.className = 'now isblocked';
+    } else if (i === stepIdx || agStatus === 'working' || agStatus === 'waiting') {
+      li.className = 'now' + ((S.phase.startsWith('gate') || agStatus === 'waiting') ? ' isgate' : '');
+    } else if (i < stepIdx || agStatus === 'done') {
+      li.className = 'done';
+    }
+    ol.append(li);
+  });
+
+  const g = $('gate');
+  if (isGateActive()) {
+    g.hidden = false;
+    $('gateTitle').textContent = `Gate ${S.gate.n}: menunggu keputusan ${USER_NAME}`;
+    $('gateText').textContent = S.gate.question || '';
+  } else g.hidden = true;
+
+  // Render Log Aktivitas: hingga 100 entri, urutan terbaru di atas
+  const log = $('log'); log.replaceChildren();
+  (S.log || []).slice(-100).reverse().forEach(e => {
+    const li = document.createElement('li'); const tm = document.createElement('time');
+    tm.textContent = fmtDateTime(e.at);
+    li.append(tm, document.createTextNode(e.text)); log.append(li);
+  });
+}
+
+/* ---------- rich text (markdown + HTML aman) untuk panel Percakapan ---------- */
+const escHtml = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+const SAFE_TAGS = 'b|i|em|strong|u|s|del|ins|mark|kbd|sub|sup|small';
+function renderRich(src) {
+  const stash = [];
+  const hold = html => '\u0000' + (stash.push(html) - 1) + '\u0000';
+  let s = String(src ?? '').replace(/\r\n?/g, '\n');
+  // 1. code fence (termasuk fence yang terpotong tanpa penutup) & inline code
+  s = s.replace(/```[^\n]*\n([\s\S]*?)(?:```|$)/g, (m, c) => '\n' + hold('<pre><code>' + escHtml(c.replace(/\n$/, '')) + '</code></pre>') + '\n');
+  s = s.replace(/`([^`\n]+)`/g, (m, c) => hold('<code>' + escHtml(c) + '</code>'));
+  // 2. escape semua HTML, lalu hidupkan kembali hanya tag whitelist tanpa atribut
+  s = escHtml(s);
+  s = s.replace(new RegExp('&lt;(/?)(' + SAFE_TAGS + ')\\s*&gt;', 'gi'), '<$1$2>');
+  s = s.replace(/&lt;br\s*\/?&gt;/gi, '<br>').replace(/&lt;hr\s*\/?&gt;/gi, '\n---\n');
+  s = s.replace(/&lt;\/?(?:p|div|span|ul|ol|li|h[1-6])(?:\s[^&]*)?&gt;/gi, '\n');
+  const inline = t => t
+    .replace(/\[([^\]\n]+)\]\(([^)\s]+)\)/g, (m, label, url) => /^(https?:|file:)/i.test(url) ? '<a href="' + url + '" target="_blank" rel="noopener noreferrer">' + label + '</a>' : label)
+    .replace(/\*\*([^*\n]+?)\*\*|__([^_\n]+?)__/g, (m, a, b) => '<strong>' + (a || b) + '</strong>')
+    .replace(/~~([^~\n]+?)~~/g, '<del>$1</del>')
+    .replace(/(^|[^*\w])\*([^*\s][^*\n]*?)\*(?![*\w])/g, '$1<em>$2</em>')
+    .replace(/(^|[^_\w])_([^_\s][^_\n]*?)_(?![_\w])/g, '$1<em>$2</em>');
+  const cells = l => l.trim().replace(/^\||\|$/g, '').split('|').map(c => inline(c.trim()));
+  const lines = s.split('\n');
+  const out = [];
+  for (let i = 0; i < lines.length; i++) {
+    const l = lines[i];
+    if (!l.trim()) continue;
+    let m;
+    if (/^\u0000\d+\u0000$/.test(l.trim())) { out.push(l.trim()); continue; }
+    if ((m = l.match(/^\s{0,3}(#{1,6})\s+(.*)$/))) { out.push('<h4>' + inline(m[2]) + '</h4>'); continue; }
+    if (/^\s*([-*_])(\s*\1){2,}\s*$/.test(l)) { out.push('<hr>'); continue; }
+    if (/^\s*&gt;/.test(l)) {
+      const q = [];
+      while (i < lines.length && /^\s*&gt;/.test(lines[i])) q.push(inline(lines[i].replace(/^\s*&gt;\s?/, ''))), i++;
+      i--; out.push('<blockquote>' + q.join('<br>') + '</blockquote>'); continue;
+    }
+    if (/^\s*\|/.test(l) && i + 1 < lines.length && /^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$/.test(lines[i + 1])) {
+      const head = cells(l); i += 2;
+      const rows = [];
+      while (i < lines.length && /^\s*\|/.test(lines[i])) rows.push(cells(lines[i++]));
+      i--;
+      out.push('<table><thead><tr>' + head.map(c => '<th>' + c + '</th>').join('') + '</tr></thead><tbody>' +
+        rows.map(r => '<tr>' + r.map(c => '<td>' + c + '</td>').join('') + '</tr>').join('') + '</tbody></table>');
+      continue;
+    }
+    if ((m = l.match(/^\s*([-*+]|\d+[.)])\s+(.*)$/))) {
+      const ordered = /\d/.test(m[1]);
+      const items = [];
+      while (i < lines.length && (m = lines[i].match(/^\s*([-*+]|\d+[.)])\s+(.*)$/)) && /\d/.test(m[1]) === ordered) {
+        let t = m[2].replace(/^\[( |x|X)\]\s+/, (x, c) => c === ' ' ? '☐ ' : '☑ ');
+        items.push('<li>' + inline(t) + '</li>'); i++;
+      }
+      i--; out.push(ordered ? '<ol>' + items.join('') + '</ol>' : '<ul>' + items.join('') + '</ul>'); continue;
+    }
+    const para = [];
+    while (i < lines.length && lines[i].trim() && !/^\u0000\d+\u0000$/.test(lines[i].trim()) &&
+           !/^\s{0,3}#{1,6}\s/.test(lines[i]) && !/^\s*([-*+]|\d+[.)])\s+/.test(lines[i]) && !/^\s*&gt;/.test(lines[i]) && !/^\s*\|/.test(lines[i])) para.push(inline(lines[i++]));
+    i--; out.push('<p>' + para.join('<br>') + '</p>');
+  }
+  return out.join('').replace(/\u0000(\d+)\u0000/g, (m, n) => stash[+n] ?? '');
+}
+
+let chatKey = '';
+function renderChat(msgs) {
+  const list = (msgs || []).filter(m => m.role === 'user' || m.role === 'assistant').slice(-100);
+  const qa = S.agents.qa;
+  if (!demoOn && qa && qa.status === 'blocked') {
+    const t = 'Test case error: ' + (qa.message || '');
+    const lastQ = list[list.length - 1];
+    if (!lastQ || lastQ.text !== t) list.push({ n: 'qa-err', role: 'assistant', agent: 'qa', text: t });
+  }
+  const key = list.length + ':' + (list.length ? (list[list.length - 1].n || '') + ':' + (list[list.length - 1].text || '').length : '');
+  if (key === chatKey) return;
+  const wasInit = Boolean($('chat').dataset.init);
+  chatKey = key;
+  const box = $('chat');
+  if (wasInit && !demoOn && list.length) {
+    const lastM = list[list.length - 1];
+    const now = performance.now();
+    if (lastM.role === 'user') {
+      youActiveUntil = now + 2600;
+    }
+  }
+  const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 40;
+  box.replaceChildren();
+  list.forEach(m => {
+    const d = document.createElement('div');
+    d.className = 'm ' + (m.role || 'assistant');
+    const sm = document.createElement('small');
+    const who = m.role === 'user' ? USER_NAME : (m.agent ? (STAFF[canon(m.agent)]?.name || m.agent) : 'Agent');
+    const roleTag = m.role === 'tool' ? ' [tool]' : m.role === 'thinking' ? ' [thinking]' : '';
+    sm.textContent = who + roleTag + (m.at ? ' \u00b7 ' + fmtDateTime(m.at) : '');
+    const body = document.createElement('div');
+    body.className = 'body';
+    try { body.innerHTML = renderRich(m.md != null && m.md !== '' ? m.md : m.text); }
+    catch { body.textContent = m.text || ''; }
+    d.append(sm, body);
+    box.append(d);
+  });
+  if (atBottom || !box.dataset.init) box.scrollTop = box.scrollHeight;
+  box.dataset.init = '1';
+}
+
+function apply(next, now) {
+  S = Object.assign(emptyState(), next);
+  if (next.userName && next.userName !== USER_NAME) {
+    USER_NAME = next.userName;
+    localStorage.setItem('office_user_name', USER_NAME);
+    document.getElementById('userBadgeName').textContent = USER_NAME;
+    STAFF.you.name = USER_NAME;
+  }
+  const PRI = { idle: 0, done: 1, working: 2, waiting: 3, blocked: 4 };
+  const ag = emptyState().agents;
+  Object.entries(next.agents || {}).forEach(([k, v]) => {
+    const t = canon(k);
+    if (ag[t] && (PRI[v.status] || 0) >= (PRI[ag[t].status] || 0)) ag[t] = v;
+  });
+  S.agents = ag;
+  const hs = (S.handoffs || []).map(x => Object.assign({}, x, { from: canon(x.from), to: canon(x.to) })).filter(x => x.from !== x.to);
+  const maxN = (S.handoffs || []).reduce((m, h) => Math.max(m, h.n), 0);
+  if (maxN < seenHandoff) seenHandoff = 0;
+
+  // Antrean sequential (estafet mendarat dulu sebelum lanjut) & deduplikasi flight
+  let lastFlightEnd = flights.reduce((m, f) => Math.max(m, f.t0 + f.dur), now);
+  const dur = REDUCED ? 1 : 1200;
+
+  hs.filter(h => h.n > seenHandoff).forEach(h => {
+    if (!POS(h.from) || !POS(h.to)) return;
+    const isDup = flights.some(f => f.from === h.from && f.to === h.to && f.label === h.label && Math.abs(f.t0 - now) < 1500);
+    if (isDup) return;
+
+    if (h.from === 'you') youActiveUntil = Math.max(youActiveUntil, now + 2400);
+
+    const t0 = Math.max(now, lastFlightEnd + 80);
+    flights.push({ from: h.from, to: h.to, label: h.label, t0, dur });
+    lastFlightEnd = t0 + dur;
+
+    if (/tolak|revisi|reject|diskusi|dampak/i.test(h.label || '')) {
+      flights.push({ from: h.to, to: h.from, label: '', t0: t0 + dur + 80, dur: REDUCED ? 1 : 1000 });
+      flights.push({ from: h.from, to: h.to, label: '', t0: t0 + dur * 2 + 160, dur: REDUCED ? 1 : 1000 });
+      talks.push({ a: h.from, b: h.to, t0, t1: t0 + dur * 3 + 600 });
+      lastFlightEnd = t0 + dur * 3 + 240;
+    }
+  });
+  seenHandoff = Math.max(seenHandoff, maxN);
+  renderPanel();
+}
+
+/* ---------- koneksi live ---------- */
+const conn = $('conn');
+function setConn(kind, msg) { conn.className = kind; conn.querySelector('span').textContent = msg; }
+let demoOn = false, firstPoll = true, primed = false;
+
+async function poll() {
+  if (demoOn) return;
+  try {
+    const r = await fetch('/state.json', { cache: 'no-store' });
+    if (!r.ok) throw new Error(r.status);
+    const j = await r.json();
+    setConn('live', j.empty ? 'Terhubung, menunggu task' : 'Live: .office/state.json');
+    if (!primed) { seenHandoff = (j.handoffs || []).reduce((m, x) => Math.max(m, x.n), 0); primed = true; }
+    if (!j.models) {
+      try { const u = await fetch('/usage.json', { cache: 'no-store' }); if (u.ok) j.models = await u.json(); } catch {}
+    }
+    apply(j.empty ? emptyState() : j, performance.now());
+    try { const c = await fetch('/chat.json', { cache: 'no-store' }); renderChat(c.ok ? (await c.json()).messages : []); } catch {}
+  } catch (e) {
+    if (firstPoll) { $('demoToggle').checked = true; startDemo(); }
+    else setConn('', 'Terputus, mencoba lagi...');
+  }
+  firstPoll = false;
+}
+setInterval(poll, 1000); poll();
+
+/* ---------- demo ---------- */
+const DEMO = [
+  s => { s.task = { id: 'demo', title: 'Order Service - Add endpoint pembatalan order', project: 'order-service', branch: 'feature/ORD-142-cancel-order', mode: 'A' }; s.phase = 'intake'; s.agents.architect = { status: 'working', message: `Menerima task dari ${USER_NAME}` }; h(s, 'you', 'architect', 'task'); },
+  s => { s.phase = 'profile'; s.agents.architect = { status: 'working', message: 'Scan project order-service' }; },
+  s => { s.phase = 'plan'; s.agents.architect = { status: 'working', message: 'Menyusun opsi, pros dan cons' }; },
+  s => { s.agents.architect = { status: 'working', message: 'Memetakan dampak Unit Test' }; },
+  s => { s.agents.architect = { status: 'waiting', message: 'Plan siap' }; h(s, 'architect', 'you', 'plan.md'); s.phase = 'gate1'; s.gate = { n: 1, question: 'Approve opsi A (rekomendasi) atau minta revisi?' }; },
+  s => { s.gate = null; s.phase = 'plan'; s.agents.architect = { status: 'working', message: `Diskusi revisi dengan ${USER_NAME}` }; h(s, 'you', 'architect', 'Tolak plan: revisi'); },
+  s => { s.agents.developer = { status: 'working', message: 'Cek dampak revisi ke kode' }; h(s, 'architect', 'developer', 'task'); },
+  s => { s.agents.developer = { status: 'idle', message: '' }; s.agents.architect = { status: 'working', message: 'Menyusun plan revisi' }; },
+  s => { s.agents.architect = { status: 'waiting', message: 'Plan revisi siap' }; h(s, 'architect', 'you', 'plan v2'); s.phase = 'gate1'; s.gate = { n: 1, question: 'Plan sudah direvisi. Approve?' }; },
+  s => { },
+  s => { s.gate = null; s.agents.architect = { status: 'idle', message: '' }; s.phase = 'branch'; h(s, 'architect', 'developer', 'task'); s.agents.developer = { status: 'working', message: 'Branch baru dari main' }; },
+  s => { s.phase = 'code'; s.agents.developer = { status: 'working', message: 'Implement OrdersService.Cancel' }; h(s, 'developer', 'github', 'Commit'); },
+  s => { s.agents.developer = { status: 'working', message: 'Tulis unit test CancelOrder' }; },
+  s => { s.agents.developer = { status: 'idle', message: '' }; h(s, 'developer', 'qa', 'task'); s.phase = 'test'; s.agents.qa = { status: 'working', message: 'dotnet test --filter OrderService' }; },
+  s => { s.agents.qa = { status: 'blocked', message: 'CancelOrder_WhenPaid_ReturnsConflict; CancelOrder_UpdatesStatusColumn' }; h(s, 'qa', 'developer', 'test error'); },
+  s => { s.phase = 'code'; s.agents.developer = { status: 'working', message: 'Perbaiki unit test yang error' }; },
+  s => { s.agents.developer = { status: 'idle', message: '' }; h(s, 'developer', 'qa', 'task'); s.phase = 'test'; s.agents.qa = { status: 'working', message: 'Rerun test case yang error' }; },
+  s => { s.agents.qa = { status: 'working', message: 'dotnet test --filter OrderService' }; },
+  s => { s.agents.qa = { status: 'idle', message: '' }; h(s, 'qa', 'scribe', 'task'); s.phase = 'docs'; s.agents.scribe = { status: 'working', message: 'Draft Tech Doc' }; },
+  s => { s.agents.scribe = { status: 'waiting', message: 'Draft docs siap' }; s.phase = 'gate2'; h(s, 'scribe', 'you', 'review'); s.gate = { n: 2, question: 'Review diff, hasil test, dan draft docs. Setuju?' }; },
+  s => { },
+  s => { },
+  s => { s.gate = null; s.agents.scribe = { status: 'working', message: 'Menulis ke Strand Docmost MCP' }; h(s, 'scribe', 'docmost', 'Push Doc'); },
+  s => { s.agents.scribe = { status: 'idle', message: '' }; s.phase = 'release'; s.agents.developer = { status: 'working', message: 'Draft Jira Task dan PR' }; h(s, 'developer', 'jira', 'Write Jira'); },
+  s => { h(s, 'developer', 'you', 'pr.html'); s.agents.developer = { status: 'waiting', message: 'Izin push dan PR?' }; s.gate = { n: 3, question: 'Push branch dan buat PR (draft)?' }; },
+  s => { },
+  s => { s.gate = null; s.agents.developer = { status: 'working', message: 'Push dan buat PR' }; h(s, 'developer', 'github', 'Push Branch'); h(s, 'developer', 'github', 'Create PR'); },
+  s => { s.phase = 'done'; Object.keys(s.agents).forEach(k => s.agents[k] = { status: 'done', message: 'Selesai' }); h(s, 'developer', 'you', 'jawaban'); },
+  s => { },
+  s => { },
+];
+const DEMO_CHAT = {
+  0: [['user', null, 'Tambah endpoint pembatalan order di order-service, branch feature/ORD-142-cancel-order']],
+  4: [['assistant', 'architect', 'Plan siap. Opsi A (rekomendasi): tambah OrdersService.Cancel + endpoint DELETE. Approve opsi A?']],
+  5: [['user', null, 'Tolak plan: tolong revisi, dampak ke OrdersController belum dibahas']],
+  8: [['assistant', 'architect', 'Plan revisi siap, dampak ke OrdersController sudah dimasukkan. Approve?']],
+  10: [['user', null, 'approve plan revisi']],
+  14: [['assistant', 'qa', 'Test case error: CancelOrder_WhenPaid_ReturnsConflict; CancelOrder_UpdatesStatusColumn. Kembali ke Code Engineer untuk perbaikan.']],
+  16: [['assistant', 'developer', 'Unit test sudah diperbaiki. SDET, tolong jalankan ulang.']],
+  18: [['assistant', 'qa', 'Rerun selesai: 6 test hijau.']],
+  24: [['assistant', 'developer', 'Draft PR siap. Push dan buat PR (draft)?']],
+};
+function h(s, from, to, label) { s.handoffSeq = (s.handoffSeq || 0) + 1; s.handoffs.push({ n: s.handoffSeq, from, to, label }); }
+
+let demoTimer = null, demoStep = 0, demoState = null, prevMsg = {}, demoChat = [];
+function startDemo() {
+  demoOn = true; demoStep = 0; prevMsg = {}; demoState = Object.assign(emptyState(), { handoffSeq: 0 }); seenHandoff = 0;
+  setConn('demo', 'Mode demo (data contoh)');
+  clearInterval(demoTimer);
+  demoTimer = setInterval(() => {
+    if (demoStep >= DEMO.length) { demoStep = 0; prevMsg = {}; demoState = Object.assign(emptyState(), { handoffSeq: 0 }); seenHandoff = 0; flights.length = 0; talks.length = 0; }
+    if (demoStep === 0) { demoChat = []; chatKey = ''; }
+    (DEMO_CHAT[demoStep] || []).forEach(([role, agent, text]) => demoChat.push({ n: demoChat.length + 1, at: new Date().toISOString(), role, agent, text }));
+    renderChat(demoChat);
+    DEMO[demoStep](demoState);
+    Object.entries(demoState.agents).forEach(([k, v]) => {
+      if (v.message && prevMsg[k] !== v.message) demoState.log.push({ at: new Date().toISOString(), text: `${k}: ${v.message}` });
+      prevMsg[k] = v.message;
+    });
+    demoState.log = demoState.log.slice(-100);
+    demoStep++;
+    apply(JSON.parse(JSON.stringify(demoState)), performance.now());
+  }, 2200);
+}
+function stopDemo() { demoOn = false; chatKey = ''; renderChat([]); clearInterval(demoTimer); flights.length = 0; seenHandoff = 0; S = emptyState(); primed = false; renderPanel(); setConn('', 'Menghubungkan...'); poll(); }
+$('demoToggle').addEventListener('change', e => e.target.checked ? startDemo() : stopDemo());
+
+$('resetBtn').addEventListener('click', async () => {
+  if (!confirm('Bersihkan visualizer & histori percakapan sekarang?')) return;
+  try {
+    await fetch('/reset', { method: 'POST' });
+    S = emptyState();
+    seenHandoff = 0;
+    flights.length = 0;
+    talks.length = 0;
+    renderPanel();
+    renderChat([]);
+    setConn('live', 'Visualizer di-reset');
+  } catch (e) {
+    alert('Gagal reset: ' + e.message);
+  }
+});
+
+renderPanel();
+</script>
+</body>
+</html>

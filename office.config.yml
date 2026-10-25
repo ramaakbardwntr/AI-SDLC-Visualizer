@@ -1,0 +1,63 @@
+# ============================================================
+#  Konfigurasi Kantor AI Software Engineer
+#  Edit file ini sekali, semua agent membacanya.
+# ============================================================
+office:
+  language: id                  # bahasa komunikasi agent
+  workspace_dir: workspace      # tempat repo di-clone (gh repo clone)
+
+git:
+  base_branch_candidates: [main, master]       # dicek berurutan, tanya user bila keduanya ada
+  protected_branches: [main, master, develop]  # agent TIDAK PERNAH commit/push langsung ke sini
+  branch_name_policy: user-provided            # nama branch SELALU dari user, agent tidak boleh mengarang
+  allow_local_commits_on_feature_branch: true
+  allow_push_without_approval: false
+  allow_force_push: false
+
+docmost:                        # Strand / Docmost MCP yang sudah kamu setup
+  mcp_server_name: strand       # nama server di .mcp.json (tool jadi mcp__strand__*)
+  system_parent_page_id: ""     # halaman "<System> Tech Doc" (induk semua Service Tech Doc)
+  rfc_parent_page_id: ""        # halaman induk tempat RFC disimpan
+  # ID template ada di office-config/platform-notes.md
+
+jira:
+  base_url: ""                  # contoh: https://namaperusahaan.atlassian.net/browse/
+  default_project_key: ""
+
+testing:
+  mock: [external_client, third_party_client]   # WAJIB di-mock
+  never_mock: [repository, database]            # JANGAN di-mock
+  require_seed_and_cleanup: true
+  assert: [affected_table_fields, response]
+  run_only_affected_tests: true                 # dilarang dotnet test tanpa --filter
+
+# Daftar proyek. Diisi/diperbarui lewat: /scan-project <nama>  (atau edit manual)
+projects:
+  - name: FBI-Superapps.api-net-membership
+    repo: KLG-tech/FBI-Superapps.api-net-membership
+    type: microservice          # microservice | monolith | legacy  (dikonfirmasi saat scan)
+    tfm: net6.0                 # net6.0 | net8.0 | net10.0
+    base_branch: master
+    docmost_service_page_id: "01a0cca6-be74-7923-b6aa-b66849c96aa9" # slug: g4jacQb6Yd
+    profile: project-profiles/FBI-Superapps.api-net-membership/SKILLS.md
+  - name: FBI-Superapps.api-net-news
+    repo: KLG-tech/FBI-Superapps.api-net-news
+    type: microservice          # microservice | monolith | legacy  (dikonfirmasi saat scan)
+    tfm: net8.0                 # net6.0 | net8.0 | net10.0
+    base_branch: master
+    docmost_service_page_id: "01a0cce3-9ea5-7550-b972-80ba4e6ef4a5" # slug: cii4vH9BWs
+    profile: project-profiles/FBI-Superapps.api-net-news/SKILLS.md
+  - name: FBI-Superapps.api-reporting
+    repo: KLG-Tech/FBI-Superapps.api-reporting
+    type: microservice          # microservice | monolith | legacy  (dikonfirmasi saat scan)
+    tfm: node20.18.0-ts4.6.4
+    base_branch: master
+    docmost_service_page_id: "01a170e7-d654-76ee-9d2d-948fa8f61ad2" # slug: 1vZzwbh1uG
+    profile: project-profiles/FBI-Superapps.api-reporting/SKILLS.md
+  - name: example-order-service
+    repo: your-org/example-order-service
+    type: microservice          # microservice | monolith | legacy  (dikonfirmasi saat scan)
+    tfm: net8.0                 # net6.0 | net8.0 | net10.0
+    base_branch: main
+    docmost_service_page_id: ""
+    profile: project-profiles/example-order-service/SKILLS.md

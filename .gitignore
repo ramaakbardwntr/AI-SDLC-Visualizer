@@ -1,0 +1,6 @@
+.office/
+workspace/*
+!workspace/.gitkeep
+.mcp.json
+node_modules/
+.agents/hooks.json
