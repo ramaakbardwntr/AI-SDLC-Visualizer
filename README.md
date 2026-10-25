@@ -1,4 +1,4 @@
-# Kantor AI Software Engineer
+# AI SDLC Visualizer
 
 Tim agent AI untuk mengerjakan task di proyek .NET (6, 8, nanti 10) di GitHub. Berjalan di lingkungan **Antigravity**: sesi utama bertindak sebagai **Office Manager**, enam agent spesialis mengerjakan tugas sesuai keahliannya, dan kamu memegang **tiga gerbang persetujuan (Gate)**.
 
