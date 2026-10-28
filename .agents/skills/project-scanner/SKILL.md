@@ -1,6 +1,6 @@
 ---
 name: project-scanner
-description: Scan a .NET repository (6/8/10; microservice, monolith, or legacy) and generate a project profile at project-profiles/<project>/SKILLS.md covering architecture, conventions, testing setup, and guardrails. Use whenever the user requests "scan project", "create project profile", "learn this repo", or when starting a task on a project that lacks a profile.
+description: Scan a .NET repository (6/8/10; microservice, monolith, or legacy) and generate a project profile at .agents/reference/<project>/SKILLS.md covering architecture, conventions, testing setup, and guardrails. Use whenever the user requests "scan project", "create project profile", "learn this repo", or when starting a task on a project that lacks a profile.
 ---
 
 # Project Scanner
@@ -60,7 +60,7 @@ Reference `tech-doc-generator` Step 2 for comprehensive signals to ensure profil
 Record 5-10 specific "DO NOT" rules based on repository evidence (e.g. "Do not modify `LegacyPriceHelper`, used in 14 places without tests", "All entities must inherit `AuditableEntity`", "Do not use C# `record` syntax due to LangVersion 9").
 
 ### 9. Write Profile
-Copy `project-profiles/_template/SKILLS.md`, fill all sections, and save to `project-profiles/<project>/SKILLS.md` with `status: draft`. Add/update the project entry in `office.config.yml`. Sections where no information was found must be written as `Not found`, never omitted. Ambiguities belong under **Open Questions**.
+Copy `.agents/reference/_template/SKILLS.md`, fill all sections, and save to `.agents/reference/<project>/SKILLS.md` with `status: draft`. Add/update the project entry in `office.config.yml`. Sections where no information was found must be written as `Not found`, never omitted. Ambiguities belong under **Open Questions**.
 
 ## Validation Checklist Before Completion
 - [ ] Every claim has a supporting file path citation.

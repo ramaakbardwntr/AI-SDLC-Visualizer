@@ -1,6 +1,5 @@
 ---
-description: Tampilkan status kantor, task aktif, dan gate yang menunggu
+description: Display AI Engineering Office status, active task, and pending gates
 ---
 
-Baca `.office/state.json` dan daftar `.office/tasks/`. Laporkan ringkas: task aktif (judul, proyek, branch), fase sekarang, status tiap agent, gate yang menunggu keputusan user (bila ada), dan task lain yang belum selesai. Ingatkan bahwa visualizer bisa dibuka lewat `node tools/serve-visualizer.mjs` (http://localhost:4177).
-
+Read `.office/state.json` and `.office/tasks/`. Report a concise summary: active task (title, project, branch), current phase, active AI model status (`argon`, `flash`, `opus`, `sonnet`), pending gate awaiting user decision (if any), and unfinished tasks. Remind the user that the 2D visualizer can be viewed at `node tools/serve-visualizer.mjs` (http://localhost:4177).

@@ -7,7 +7,7 @@ description: Authoring and executing xUnit test suites for this office - mock on
 
 ## Pattern Hierarchy
 1. **User-provided test examples** for this task (in `brief.md` or task message). Strictly mirror their structure, naming, and helper conventions.
-2. Representative test in the `Testing` section of the project profile (`project-profiles/<project>/SKILLS.md`).
+2. Representative test in the `Testing` section of the project profile (`.agents/reference/<project>/SKILLS.md`).
 3. The baseline template below, used only when neither of the above two sources exists.
 
 ## Core Rules

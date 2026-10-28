@@ -3,61 +3,60 @@
 #  Edit file ini sekali, semua agent membacanya.
 # ============================================================
 office:
-  language: id                  # bahasa komunikasi agent
-  workspace_dir: workspace      # tempat repo di-clone (gh repo clone)
+  language: en                  # visualizer UI and documentation language
+  workspace_dir: workspace      # local repository clone target (gh repo clone)
 
 git:
-  base_branch_candidates: [main, master]       # dicek berurutan, tanya user bila keduanya ada
-  protected_branches: [main, master, develop]  # agent TIDAK PERNAH commit/push langsung ke sini
-  branch_name_policy: user-provided            # nama branch SELALU dari user, agent tidak boleh mengarang
+  base_branch_candidates: [main, master]       # checked sequentially; confirm if both exist
+  protected_branches: [main, master, develop]  # agents NEVER commit/push directly to protected branches
+  branch_name_policy: user-provided            # branch names are strictly provided by user
   allow_local_commits_on_feature_branch: true
   allow_push_without_approval: false
   allow_force_push: false
 
-docmost:                        # Strand / Docmost MCP yang sudah kamu setup
-  mcp_server_name: strand       # nama server di .mcp.json (tool jadi mcp__strand__*)
-  system_parent_page_id: ""     # halaman "<System> Tech Doc" (induk semua Service Tech Doc)
-  rfc_parent_page_id: ""        # halaman induk tempat RFC disimpan
-  # ID template ada di office-config/platform-notes.md
+docmost:                        # Strand / Docmost MCP integration
+  mcp_server_name: strand       # server name in .mcp.json (tools prefixed with mcp__strand__*)
+  system_parent_page_id: ""     # "<System> Tech Doc" root page ID
+  rfc_parent_page_id: ""        # RFC root page ID
 
 jira:
-  base_url: ""                  # contoh: https://namaperusahaan.atlassian.net/browse/
+  base_url: ""                  # example: https://company.atlassian.net/browse/
   default_project_key: ""
 
 testing:
-  mock: [external_client, third_party_client]   # WAJIB di-mock
-  never_mock: [repository, database]            # JANGAN di-mock
+  mock: [external_client, third_party_client]   # mock external clients only
+  never_mock: [repository, database]            # NEVER mock repository or database
   require_seed_and_cleanup: true
   assert: [affected_table_fields, response]
-  run_only_affected_tests: true                 # dilarang dotnet test tanpa --filter
+  run_only_affected_tests: true                 # run filtered unit tests only (--filter)
 
-# Daftar proyek. Diisi/diperbarui lewat: /scan-project <nama>  (atau edit manual)
+# Configured projects. Generated/updated via /scan-project <name>
 projects:
   - name: FBI-Superapps.api-net-membership
     repo: KLG-tech/FBI-Superapps.api-net-membership
-    type: microservice          # microservice | monolith | legacy  (dikonfirmasi saat scan)
-    tfm: net6.0                 # net6.0 | net8.0 | net10.0
+    type: microservice
+    tfm: net6.0
     base_branch: master
     docmost_service_page_id: "01a0cca6-be74-7923-b6aa-b66849c96aa9" # slug: g4jacQb6Yd
-    profile: project-profiles/FBI-Superapps.api-net-membership/SKILLS.md
+    profile: .agents/reference/FBI-Superapps.api-net-membership/SKILLS.md
   - name: FBI-Superapps.api-net-news
     repo: KLG-tech/FBI-Superapps.api-net-news
-    type: microservice          # microservice | monolith | legacy  (dikonfirmasi saat scan)
-    tfm: net8.0                 # net6.0 | net8.0 | net10.0
+    type: microservice
+    tfm: net8.0
     base_branch: master
     docmost_service_page_id: "01a0cce3-9ea5-7550-b972-80ba4e6ef4a5" # slug: cii4vH9BWs
-    profile: project-profiles/FBI-Superapps.api-net-news/SKILLS.md
+    profile: .agents/reference/FBI-Superapps.api-net-news/SKILLS.md
   - name: FBI-Superapps.api-reporting
     repo: KLG-Tech/FBI-Superapps.api-reporting
-    type: microservice          # microservice | monolith | legacy  (dikonfirmasi saat scan)
+    type: microservice
     tfm: node20.18.0-ts4.6.4
     base_branch: master
     docmost_service_page_id: "01a170e7-d654-76ee-9d2d-948fa8f61ad2" # slug: 1vZzwbh1uG
-    profile: project-profiles/FBI-Superapps.api-reporting/SKILLS.md
-  - name: example-order-service
-    repo: your-org/example-order-service
-    type: microservice          # microservice | monolith | legacy  (dikonfirmasi saat scan)
-    tfm: net8.0                 # net6.0 | net8.0 | net10.0
+    profile: .agents/reference/FBI-Superapps.api-reporting/SKILLS.md
+  - name: ai-engineering-office
+    repo: ramaakbardwntr/ai-engineering-office
+    type: tooling
+    tfm: node20.12.2-esm
     base_branch: main
     docmost_service_page_id: ""
-    profile: project-profiles/example-order-service/SKILLS.md
+    profile: .agents/reference/ai-engineering-office/SKILLS.md

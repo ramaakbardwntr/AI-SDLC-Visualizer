@@ -1,31 +1,31 @@
-# Visualizer kantor (wajib)
+# Office Visualizer Synchronization (Mandatory)
 
-Kantor ini punya visualizer yang membaca `.office/state.json` dan `.office/chat.json`. Perbarui lewat terminal dari root folder ini (Node 18+). Gagal menulis tidak boleh menghentikan pekerjaan. Alur kerja lengkap ada di `AGENTS.md`.
+This office runs a 2D web visualizer that reads `.office/state.json` and `.office/chat.json`. Synchronize state via the terminal from the workspace root (Node 18+). A state write failure must never halt engineering work. Complete workflow details are in `AGENTS.md`.
 
-Awal setiap instruksi dari user:
-`node tools/office-state.mjs say user "<ringkasan singkat prompt user>"`
+At the start of every user instruction:
+`node tools/office-state.mjs say user "<concise prompt summary>"`
 
-Saat pindah langkah / peran:
-```
-node tools/office-state.mjs task <id> "<judul>" <project> <branch> <mode A|B>
+When advancing phases or agent status:
+```bash
+node tools/office-state.mjs task <id> "<title>" <project> <branch>
 node tools/office-state.mjs phase <intake|profile|plan|gate1|branch|code|test|docs|gate2|release|done>
-node tools/office-state.mjs agent <manager|scout|architect|developer|qa|scribe|release> <idle|working|waiting|done|blocked> "<pesan singkat>"
-node tools/office-state.mjs handoff <dari> <ke> "<label>"
-node tools/office-state.mjs gate <1|2|3|none> "<pertanyaan ke user>"
+node tools/office-state.mjs agent <argon|flash|opus|sonnet> <idle|working|waiting|done|blocked> "<short message>"
+node tools/office-state.mjs handoff <from> <to> "<label>"
+node tools/office-state.mjs gate <1|2|3|none> "<question for user>"
 ```
 
-Aturan penting Gate & Selesai:
-- Segera setelah user menyetujui/proceed sebuah Gate (`gate1`, `gate2`, `gate3`), **wajib** bersihkan gate (`node tools/office-state.mjs gate none`) dan pindahkan `phase` ke fase kerja berikutnya agar animasi `"Menunggu keputusanmu"` langsung berhenti.
-- Saat seluruh pekerjaan yang diminta user telah selesai dan tidak ada aksi lanjut yang menunggu izin user, **wajib** set `node tools/office-state.mjs gate none` dan `node tools/office-state.mjs phase done`.
-- Panel **Percakapan** hanya menampilkan ringkasan/poin penting percakapan (`user` & `assistant`), bukan log detail setiap tool call atau thinking.
-- Panel **Aktivitas** scrollable menampilkan log aktivitas hingga 100 entri.
+Crucial Gate & Completion Rules:
+- Immediately upon user approval/proceed at a Gate (`gate1`, `gate2`, `gate3`), you **must** clear the gate (`node tools/office-state.mjs gate none`) and transition `phase` to the next working phase so the awaiting decision banner disappears immediately.
+- Once all requested work is finished and no actions are awaiting user approval, you **must** set `node tools/office-state.mjs gate none` and `node tools/office-state.mjs phase done`.
+- The **Conversation** panel displays concise summaries of conversation turns (`user` & `assistant`).
+- The **Activity** panel displays up to 100 recent reverse-chronological log entries.
 
-Akhir setiap jawaban ke user:
-`node tools/office-state.mjs say assistant "<ringkasan singkat jawaban>"`
+At the end of every response to the user:
+`node tools/office-state.mjs say assistant "<concise response summary>"`
 
-Saat memerankan sebuah peran (scout, architect, developer, qa, scribe, release), set statusnya `working` di awal dan `done` di akhir.
+When executing on behalf of an active AI model (`argon`, `flash`, `opus`, `sonnet`), set its status to `working` at the start and `done` (or `idle`) upon completion.
 
-Saat mulai **task/scan baru** (bila `.office/state.json` atau `.office/chat.json` masih berisi histori task sebelumnya) atau saat **task selesai (`phase done`)**, **tanyakan (prompt) ke user** apakah histori pengerjaan & chat sebelumnya ingin di-clear/dispose:
-- Clear visualizer & chat saja: `node tools/office-state.mjs reset`
-- Dispose penuh (clear visualizer + chat + hapus `.office/tasks/<task-id|all>`): `node tools/office-state.mjs dispose [all|<task-id>]`
-Jangan menjalankan `reset` atau `dispose` otomatis tanpa persetujuan user.
+When starting a **new task/scan** (if `.office/state.json` or `.office/chat.json` contains history from a previous task) or when reaching **task completion (`phase done`)**, **prompt the user** whether previous task history should be cleared or disposed:
+- Clear visualizer & chat only: `node tools/office-state.mjs reset`
+- Full dispose (clear visualizer + chat + delete `.office/tasks/<task-id|all>`): `node tools/office-state.mjs dispose [all|<task-id>]`
+Do not execute `reset` or `dispose` automatically without explicit user consent.
