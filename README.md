@@ -1,6 +1,6 @@
 # AI SDLC Visualizer
 
-An **AI Software Development Life Cycle (SDLC) & 2D Office Visualizer** platform designed to orchestrate a team of specialized AI agents working on software engineering tasks (primarily **.NET 6 / 8 / 10** projects as well as **Node.js / TypeScript** services) on GitHub. Running within **Antigravity** (or Claude Code): the primary session operates as the **Office Manager**, six specialized agents execute tasks according to their domain expertise, and you maintain complete oversight through **three approval gates (Gates)**.
+An **AI Software Development Life Cycle (SDLC) & 2D Office Visualizer** platform designed to orchestrate a team of specialized AI agents working on software engineering tasks (primarily **.NET 6 / 8 / 10** projects as well as **Node.js / TypeScript** services) on GitHub. Running within **Antigravity** (or Claude Code): the primary session operates as the **Office Manager**, 4 centralized AI Model agents (**Gemini 4 Argon**, **Gemini 3.8 Flash**, **Claude Opus 5.5**, and **Claude Sonnet 5.5**) execute workflow phases according to their specialized capabilities, and you maintain complete oversight through **three approval gates (Gates)**.
 
 All configurations, agent definitions, slash commands, system rules, and skills are centrally consolidated within the [`.agents/`](file:///D:/Project/Local/ai-engineering-office/.agents) directory and the primary operational guide [`AGENTS.md`](file:///D:/Project/Local/ai-engineering-office/AGENTS.md) as the *Single Source of Truth*.
 
@@ -33,11 +33,11 @@ All configurations, agent definitions, slash commands, system rules, and skills 
 
 | Agent / Entity | Visualizer Desk | Primary Responsibility |
 |---|---|---|
-| **User** (`you`) | **User Role** (default: **Rama**, white shirt) | Submits tasks/prompts, clarifies intake questions, and retains final authority on **Gate 1, Gate 2, and Gate 3**. Name is customizable directly from the visualizer header. |
-| `argon` | **Gemini 4 Argon** (Royal Blue desk) | High-capability orchestration, project scanning, architectural analysis, and implementation planning. |
-| `flash` | **Gemini 3.8 Flash** (Teal desk) | Rapid diagnostics, fast codebase search, low-latency execution, and lightweight subagent delegation. |
-| `opus` | **Claude Opus 5.5** (Purple desk) | Deep reasoning, complex business logic evaluation, Technical Documentation, and Docmost RFC authoring. |
-| `sonnet` | **Claude Sonnet 5.5** (Amber desk) | Source code implementation, xUnit testing, Git branch management, Jira tasks, and Pull Request releases. |
+| **User** (`you`) | **User Role** (default: **Rama**, dark navy shirt `#162d50`, natural skin `#f1c8a0`, sleek dark hair `#1b1b24`) | Submits tasks/prompts, clarifies intake questions, and retains final authority on **Gate 1, Gate 2, and Gate 3**. Name is customizable directly from the visualizer header. |
+| `argon` | **Gemini 4 Argon** (Deep royal indigo shirt `#4c3bcf`, desk widened to 144px) | High-capability orchestration, project scanning, architectural analysis, and implementation planning. |
+| `flash` | **Gemini 3.8 Flash** (Light violet shirt `#8b7cf6`, desk widened to 144px) | Rapid diagnostics, fast codebase search, low-latency execution, and lightweight subagent delegation. |
+| `opus` | **Claude Opus 5.5** (Deep burnt terracotta shirt `#b54526`, desk widened to 144px) | Deep reasoning, complex business logic evaluation, Technical Documentation, and Docmost RFC authoring. |
+| `sonnet` | **Claude Sonnet 5.5** (Warm light coral shirt `#f09067`, desk widened to 144px) | Source code implementation, xUnit testing, Git branch management, Jira tasks, and Pull Request releases. |
 
 **3 External Service Props on Canvas:**
 - **Jira** (Kanban Board): Receives handoff animations when drafting or writing Jira issues (`Write Jira`).
@@ -89,18 +89,24 @@ The web interface [`visualizer/index.html`](file:///D:/Project/Local/ai-engineer
 - **Centralized Workflow Execution on 4 AI Model Avatars:**
   - Every workflow phase executes on whichever AI model agent is active (`Gemini 4 Argon`, `Gemini 3.8 Flash`, `Claude Opus 5.5`, `Claude Sonnet 5.5`).
   - Multi-model transitions or subagent delegations animate smooth handoffs across model desks.
+- **1:1 Activity-Synced Speech Bubbles (Auto-Fit 2-Line Stroked Bubbles):**
+  - Canvas speech bubbles strictly mirror the latest `Activity` log 1:1, rendering a continuous stroked rounded-rect and pointer-tail path with pixel-measured 2-line word wrapping (`maxWidth: 236px`).
+  - Eliminates hook race conditions (`PostInvocation` / `PreInvocation`) that previously caused bubbles to display generic `Working...` or repeat raw prompt text.
 - **Accurate Action Bubbles on Plan Edits:**
   - In-place edits to `implementation_plan.md` display `Editing implementation_plan.md` on the avatar without resetting the active workflow phase.
 - **Real-Time Active AI Model Indicator:**
-  - The **Agent** card in the right-hand panel reflects model availability (`Gemini 4 Argon`, `Gemini 3.8 Flash`, `Claude Opus 5.5`, `Claude Sonnet 5.5`) with a live green indicator for **Active** vs **Standby** based on current session usage.
+  - The **Agent Models** card in the right-hand panel reflects model availability (`Gemini 4 Argon`, `Gemini 3.8 Flash`, `Claude Opus 5.5`, `Claude Sonnet 5.5`) with live dot swatches and an **Active** vs **Standby** status indicator.
 - **Unit Test Error Visualization (Non-Green Flow):**
-  - If a test execution fails, the **SDET** (`qa`) role automatically switches to `blocked`, rendering a distinct red error bubble listing failed test cases on canvas and in the Chat panel, followed by a `test error` handoff back to the **Engineer**.
+  - If a test execution fails, the active model agent automatically switches to `blocked`, rendering a distinct red error bubble listing failed test cases on canvas and in the Chat panel, followed by corrective execution.
 - **Interactive User Identity & One-Click Reset:**
   - The user avatar sports a dark navy shirt (`#162d50`) with an editable name badge (**`Role: <Name> ✏️`**) in the header (persisted across sessions via `localStorage` and `.office/config.json`), sharing uniform sleek hair and skin tone (`#f1c8a0`) with the agent team.
   - Includes a dedicated **Reset Visualizer** header button to wipe state and chat history on demand.
 - **Rich-Text Conversation & Chronological Activity Log:**
   - **Conversation:** Renders safe Markdown & HTML (bold, italic, `inline code`, code blocks, tables, lists, blockquotes, links) without third-party dependencies, completely untruncated within an elongated, neatly scrollable card container (`max-height: 480px`).
   - **Activity:** Displays up to 100 recent activity entries in reverse-chronological order with precise timestamps (`DD MMM YYYY HH:mm:ss`).
+- **Dual-Stack Localhost Server & Clean Footprint:**
+  - [`serve-visualizer.mjs`](file:///D:/Project/Local/ai-engineering-office/tools/serve-visualizer.mjs) binds both IPv4 (`127.0.0.1`) and IPv6 loopback (`::1`) on port `4177`, ensuring seamless browser access on Windows.
+  - Obsolete `Mode: A / B` fields and ~280 lines of dead code have been completely eradicated from UI, state, CLI, and docs.
 - **Autonomous Demo Mode:**
   - When opened independently or enabled via the **Demo mode** toggle, the visualizer simulates a complete SDLC lifecycle (including Gate 1 plan revision loops and failed unit test recovery).
 
