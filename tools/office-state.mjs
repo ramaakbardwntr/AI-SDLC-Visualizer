@@ -1,16 +1,22 @@
 #!/usr/bin/env node
-// Menulis .office/state.json yang dibaca visualizer. Tanpa dependensi (Node 18+).
+// Writes .office/state.json read by visualizer. Zero dependencies (Node 18+).
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { syncChatFileToDisk, summarizeForChat, getUserName } from './mirror-transcript.mjs';
+import {
+  syncChatFileToDisk,
+  getUserName,
+  MODEL_AGENTS,
+  MODEL_META,
+  canonAgent,
+  readJsonSafe,
+  writeJsonSafe,
+} from './mirror-transcript.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const dir = path.join(root, '.office');
 const file = path.join(dir, 'state.json');
 
-const AGENTS = ['manager', 'scout', 'architect', 'developer', 'qa', 'scribe', 'release'];
-const TARGETS = [...AGENTS, 'you', 'docmost', 'github', 'jira'];
 const STATUS = ['idle', 'working', 'waiting', 'done', 'blocked'];
 const PHASES = ['intake', 'profile', 'plan', 'gate1', 'branch', 'code', 'test', 'docs', 'gate2', 'release', 'done'];
 
@@ -18,29 +24,25 @@ const fresh = () => ({
   task: null,
   phase: 'intake',
   gate: null,
-  agents: Object.fromEntries(AGENTS.map(a => [a, { status: 'idle', message: '' }])),
+  activeAgent: 'flash',
+  agents: Object.fromEntries(MODEL_AGENTS.map(a => [a, { status: 'idle', message: '' }])),
   handoffs: [],
   handoffSeq: 0,
   log: [],
   userName: getUserName(),
 });
 
-function writeJsonSafe(target, obj) {
-  fs.mkdirSync(dir, { recursive: true });
-  const json = JSON.stringify(obj, null, 2);
-  const tmp = target + '.' + process.pid + '.tmp';
-  try {
-    fs.writeFileSync(tmp, json);
-    fs.renameSync(tmp, target);
-  } catch {
-    fs.writeFileSync(target, json);
-    try { fs.unlinkSync(tmp); } catch {}
-  }
-}
-
 function load() {
-  try { return { ...fresh(), ...JSON.parse(fs.readFileSync(file, 'utf8')) }; }
-  catch { return fresh(); }
+  const raw = readJsonSafe(file, {});
+  const base = fresh();
+  const loadedAgents = { ...base.agents };
+  if (raw.agents) {
+    for (const [k, v] of Object.entries(raw.agents)) {
+      const c = canonAgent(k);
+      if (loadedAgents[c]) loadedAgents[c] = v;
+    }
+  }
+  return { ...base, ...raw, agents: loadedAgents };
 }
 
 function save(s) {
@@ -66,7 +68,7 @@ switch (cmd) {
     try { fs.rmSync(path.join(dir, 'chat.json'), { force: true }); } catch {}
     break;
   }
-  case 'dispose': {   // dispose [all|<task-id>]: bersihkan state.json + chat.json + hapus folder .office/tasks/<id|all>
+  case 'dispose': {
     const [target] = a;
     const taskId = target || s.task?.id;
     const tasksDir = path.join(dir, 'tasks');
@@ -81,57 +83,57 @@ switch (cmd) {
     break;
   }
   case 'task': {
-    const [id, title, project = '-', branch = '-', mode = '-'] = a;
-    if (!id) fail('usage: task <id> "<judul>" <project> <branch> <mode>');
-    s.task = { id, title: title || id, project, branch, mode };
-    pushLog(s, `Task dimulai: ${title || id}`);
+    const [id, title, project = '-', branch = '-'] = a;
+    if (!id) fail('usage: task <id> "<title>" <project> <branch>');
+    s.task = { id, title: title || id, project, branch };
+    pushLog(s, `Task started: ${title || id}`);
     break;
   }
   case 'phase': {
     const [p] = a;
-    if (!PHASES.includes(p)) fail(`phase harus salah satu: ${PHASES.join(', ')}`);
+    if (!PHASES.includes(p)) fail(`phase must be one of: ${PHASES.join(', ')}`);
     s.phase = p;
-    // Otomatis bersihkan gate apabila berpindah ke fase kerja non-gate atau done
     if (!p.startsWith('gate')) {
       s.gate = null;
-      for (const ag of AGENTS) {
+      for (const ag of MODEL_AGENTS) {
         if (s.agents[ag]?.status === 'waiting') {
-          s.agents[ag] = { status: p === 'done' ? 'done' : 'idle', message: p === 'done' ? 'Selesai' : '' };
+          s.agents[ag] = { status: p === 'done' ? 'done' : 'idle', message: p === 'done' ? 'Done' : '' };
         }
       }
     }
     if (p === 'done') {
       s.gate = null;
-      s.agents.manager = { status: 'done', message: 'Task selesai' };
-      for (const ag of AGENTS) {
+      for (const ag of MODEL_AGENTS) {
         if (s.agents[ag]?.status === 'working' || s.agents[ag]?.status === 'waiting') {
-          s.agents[ag] = { status: 'done', message: s.agents[ag].message || 'Selesai' };
+          s.agents[ag] = { status: 'done', message: s.agents[ag].message || 'Done' };
         }
       }
     }
-    pushLog(s, `Fase: ${p}`);
+    pushLog(s, `Phase: ${p}`);
     break;
   }
   case 'agent': {
     const [id, status, ...msg] = a;
-    if (!AGENTS.includes(id)) fail(`agent harus salah satu: ${AGENTS.join(', ')}`);
-    if (!STATUS.includes(status)) fail(`status harus salah satu: ${STATUS.join(', ')}`);
-    s.agents[id] = { status, message: msg.join(' ').slice(0, 80) };
-    // Bila ada agent mulai working setelah gate, otomatis bersihkan gate agar animasi "Menunggu keputusan" hilang
+    if (!STATUS.includes(status)) fail(`status must be one of: ${STATUS.join(', ')}`);
+    const canonicalId = canonAgent(id, s.activeAgent || 'flash');
+    s.agents[canonicalId] = { status, message: msg.join(' ').slice(0, 80) };
+    s.activeAgent = canonicalId;
     if (status === 'working' && s.gate) {
       s.gate = null;
       if (s.phase === 'gate1') s.phase = 'code';
       else if (s.phase === 'gate2') s.phase = 'docs';
     }
-    if (msg.length) pushLog(s, `${id}: ${msg.join(' ')}`);
+    const agentLabel = MODEL_META[canonicalId]?.name || canonicalId;
+    if (msg.length) pushLog(s, `${agentLabel}: ${msg.join(' ')}`);
     break;
   }
   case 'handoff': {
     const [from, to, ...label] = a;
-    if (!TARGETS.includes(from) || !TARGETS.includes(to)) fail(`from/to harus salah satu: ${TARGETS.join(', ')}`);
+    const canFrom = ['you', 'docmost', 'github', 'jira'].includes(from) ? from : canonAgent(from, s.activeAgent || 'flash');
+    const canTo = ['you', 'docmost', 'github', 'jira'].includes(to) ? to : canonAgent(to, s.activeAgent || 'flash');
     s.handoffSeq += 1;
     const l = (label.join(' ') || 'task').slice(0, 24);
-    s.handoffs.push({ n: s.handoffSeq, from, to, label: l, at: new Date().toISOString() });
+    s.handoffs.push({ n: s.handoffSeq, from: canFrom, to: canTo, label: l, at: new Date().toISOString() });
     s.handoffs = s.handoffs.slice(-20);
     break;
   }
@@ -139,38 +141,51 @@ switch (cmd) {
     const [g, ...q] = a;
     if (g === 'none' || g === undefined) {
       s.gate = null;
-      if (s.agents.manager?.status === 'waiting') {
-        s.agents.manager = { status: s.phase === 'done' ? 'done' : 'idle', message: s.phase === 'done' ? 'Task selesai' : '' };
+      for (const ag of MODEL_AGENTS) {
+        if (s.agents[ag]?.status === 'waiting') {
+          s.agents[ag] = { status: s.phase === 'done' ? 'done' : 'idle', message: s.phase === 'done' ? 'Done' : '' };
+        }
       }
     } else if (['1', '2', '3'].includes(g)) {
-      s.gate = { n: Number(g), question: q.join(' ') || `Menunggu keputusan ${userName}` };
-      pushLog(s, `Gate ${g}: menunggu keputusan ${userName}`);
-    } else fail('gate harus 1, 2, 3, atau none');
+      s.gate = { n: Number(g), question: q.join(' ') || `Awaiting ${userName}'s decision` };
+      pushLog(s, `Gate ${g}: awaiting ${userName}'s decision`);
+    } else fail('gate must be 1, 2, 3, or none');
     break;
   }
   case 'log': {
     pushLog(s, a.join(' '));
     break;
   }
-  case 'say': {   // pesan ringkas untuk panel Percakapan: say <user|assistant> "<teks>" [agent]
+  case 'say': {
     const [role, text, who] = a;
-    if (!['user', 'assistant'].includes(role) || !text) fail('usage: say <user|assistant> "<teks>" [agent]');
+    if (!['user', 'assistant'].includes(role) || !text) fail('usage: say <user|assistant> "<text>" [agent]');
     if (role === 'user' && s.gate) {
       s.gate = null;
     }
     const cf = path.join(dir, 'chat.json');
     let c; try { c = JSON.parse(fs.readFileSync(cf, 'utf8')); } catch { c = { seq: 0, messages: [] }; }
     c.seq = (c.seq || 0) + 1;
-    const summaryText = summarizeForChat(text, role);
-    c.messages = [...(c.messages || []).filter(m => m.role === 'user' || m.role === 'assistant'), { n: c.seq, at: new Date().toISOString(), role, ...(who ? { agent: who } : {}), text: summaryText }].slice(-100);
+    const rawText = String(text || '').replace(/\r\n/g, '\n').trim();
+    const agentName = who ? (canonAgent(who, s.activeAgent || 'flash')) : undefined;
+    c.messages = [
+      ...(c.messages || []).filter(m => m.role === 'user' || m.role === 'assistant'),
+      {
+        n: c.seq,
+        at: new Date().toISOString(),
+        role,
+        ...(agentName ? { agent: agentName } : {}),
+        text: rawText,
+        md: rawText
+      }
+    ];
     writeJsonSafe(cf, c);
     break;
   }
   default:
-    fail('perintah: reset | dispose | task | phase | agent | handoff | gate | log | say');
+    fail('command: reset | dispose | task | phase | agent | handoff | gate | log | say');
 }
 
 save(s);
-if (cmd !== 'reset' && cmd !== 'dispose') {
+if (cmd === 'say') {
   syncChatFileToDisk();
 }

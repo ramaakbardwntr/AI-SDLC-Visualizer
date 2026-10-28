@@ -1,12 +1,11 @@
 ---
-description: Lanjutkan task yang tertunda atau jawab sebuah gate (approve/revisi/batal)
-argument-hint: <task-id> [keputusan, misal "approve opsi A"]
+description: Resume a paused task or submit a gate decision (approve/revise/cancel)
+argument-hint: <task-id> [decision, e.g. "approve option A"]
 ---
 
-Lanjutkan task: **$ARGUMENTS**
+Resume task: **$ARGUMENTS**
 
-1. Baca `.office/state.json` dan folder `.office/tasks/<task-id>/` (`brief.md`, `plan.md`, `test-report.md`, `docs-draft.md`, ...). Tentukan fase terakhir yang selesai.
-2. Ada keputusan user di argumen: terapkan pada gate yang sedang menunggu (`approve opsi X` = lanjut; revisi = kembali ke agent terkait; batal = `phase done` dan catat alasan). Tidak ada keputusan dan gate masih menunggu: tampilkan ulang pertanyaan gate. Diam bukan persetujuan.
-3. Verifikasi kondisi repo sebelum lanjut: branch aktif benar, working tree sesuai, commit yang diharapkan ada.
-4. Lanjutkan dari fase berikutnya sesuai `AGENTS.md`.
-
+1. Read `.office/state.json` and `.office/tasks/<task-id>/` (`brief.md`, `plan.md`, `test-report.md`, `docs-draft.md`, ...). Identify the latest completed phase.
+2. If user provides a decision in arguments, apply it to the pending gate (`approve option X` = proceed; revision = return to plan; cancel = `phase done`). If no decision is provided and gate is waiting, re-prompt the gate question.
+3. Verify repository state before proceeding: correct active branch, clean working tree, expected commits present.
+4. Continue execution from the next SDLC phase.

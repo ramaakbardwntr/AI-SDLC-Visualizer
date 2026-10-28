@@ -1,15 +1,14 @@
 ---
-description: Mulai task baru (Mode A: sebut file, atau Mode B: jelaskan business flow/issue)
-argument-hint: <deskripsi task singkat, boleh kosong>
+description: Start a new task
+argument-hint: <brief task description, optional>
 ---
 
-Mulai task baru. Input awal user: **$ARGUMENTS**
+Initiate new task. Initial user input: **$ARGUMENTS**
 
-Ikuti "Alur kerja" di `AGENTS.md` dari Fase 1. Ringkas:
+Follow the SDLC workflow from Phase 1 (Intake):
 
-1. Cek apakah `.office/state.json` masih memiliki task sebelumnya. Bila ada, tanyakan ke user (sekaligus dengan pertanyaan intake) apakah histori sebelumnya ingin di-clear (`node tools/office-state.mjs reset` atau `node tools/office-state.mjs dispose`) atau tetap disimpan. Buat `task-id` (`YYYYMMDD-slug`), lalu `task <id> "<judul>" <project> <branch> <A|B>` dan `phase intake`.
-2. Tanyakan sekaligus hanya yang belum jelas: proyek, Mode A/B (file atau business flow/issue), **nama branch**, issue/Jira key, contoh pola Unit Test, dan apakah ini feature baru.
-3. Cek branch ada/tidaknya (skill `git-workflow`) dan beri tahu user hasilnya.
-4. Buat `.office/tasks/<id>/brief.md` dari `templates/task-brief.md`.
-5. Lanjut Fase 2 (profil), Fase 3 (plan oleh `architect`), lalu **berhenti di Gate 1**. Jangan coding sebelum user menyetujui.
-
+1. Check if `.office/state.json` contains history from a previous task. If so, prompt the user whether to reset/dispose previous state or retain it. Generate `task-id` (`YYYYMMDD-slug`), then set `node tools/office-state.mjs task <id> "<title>" <project> <branch> <A|B>` and `node tools/office-state.mjs phase intake`.
+2. Clarify any remaining unknowns: project name, **branch name** (always provided by user), issue/Jira key, unit test pattern example, and whether this is a new feature.
+3. Verify branch presence (`git-workflow` skill) and inform the user.
+4. Create `.office/tasks/<id>/brief.md` from `templates/task-brief.md`.
+5. Proceed to Phase 2 (project profile check), Phase 3 (plan authoring on active AI model), and **halt at Gate 1**. No coding may begin before user approval.

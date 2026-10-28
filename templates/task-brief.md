@@ -14,7 +14,7 @@
 ## Permintaan user
 <salin permintaan apa adanya>
 
-## File yang disebut user (Mode A)
+## File yang disebut user
 - `path/ke/File.cs` - <function/perubahan yang diminta>
 
 ## Business flow / gejala issue (Mode B)

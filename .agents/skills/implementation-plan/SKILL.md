@@ -1,13 +1,13 @@
 ---
 name: implementation-plan
-description: Author an Implementation Plan for .NET engineering tasks in standard format (findings, affected files, options with pros/cons, Unit Test and Tech Doc impact, estimates) for user review and approval prior to coding. Use at the beginning of every task, whether files are known upfront (Mode A) or only business flow/issues are described (Mode B).
+description: Author an Implementation Plan for .NET engineering tasks in standard format (findings, affected files, options with pros/cons, Unit Test and Tech Doc impact, estimates) for user review and approval prior to coding. Use at the beginning of every task to plan architectural changes, affected files, tests, and documentation before coding.
 ---
 
 # Implementation Plan
 
 The plan is a basis for discussion and decision-making, not a mere formality. The user makes decisions based on this document, so it must be honest, specific, and traceable to the codebase. Use `templates/implementation-plan.md` as the skeleton and persist it at `.office/tasks/<id>/plan.md`.
 
-## Mode A - Known Files
+## Known Files Approach
 1. Read the files referenced by the user. Trace callers and dependencies (`grep` class/method names) to surface unmentioned impacts.
 2. Restate the task in your own words (one concise paragraph) so misunderstandings are caught early.
 
@@ -17,7 +17,7 @@ The plan is a basis for discussion and decision-making, not a mere formality. Th
 3. If root cause cannot yet be determined with certainty, state so clearly and propose verification steps (logs, read-only queries, reproduction test). Do not force a solution on top of unverified assumptions.
 
 ## Plan Structure (Fixed Order)
-1. **Task Summary** and mode (Mode A / Mode B).
+1. **Task Summary** and scope.
 2. **Findings**: current flow, root cause or architectural gap, concrete evidence.
 3. **Scope of Changes**: table of `File | Class/Method | Action (modify/add/delete) | Rationale`.
 4. **Solution Options**: at least 2 options when a real design decision exists. For each option: technical approach, **Pros**, **Cons**, risks, and estimate (mandays; 1 manday = 9 work hours, increments of 0.25, aligned with `jira-task-generator`). If only one approach is genuinely feasible, justify why instead of inventing false comparisons. Conclude with **Recommendation** and rationale.
