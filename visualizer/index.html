@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="id">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -81,21 +81,7 @@
   dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; font-size: 13px; }
   dt { color: var(--ink-soft); }
   dd { margin: 0; overflow-wrap: anywhere; }
-
-  ol#pipeline { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
-  ol#pipeline li { display: flex; align-items: flex-start; gap: 9px; padding: 5px 7px; border-radius: 5px; color: var(--ink-soft); font-size: 12.5px; line-height: 1.35; }
-  ol#pipeline li::before { content: ""; width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--line); flex: none; margin-top: 3px; }
-  ol#pipeline li b { color: var(--ink); font-weight: 650; }
-  ol#pipeline li.done { color: var(--ink); }
-  ol#pipeline li.done::before { background: var(--done); border-color: var(--done); }
-  ol#pipeline li.now { color: var(--ink); font-weight: 600; background: #e6f5f2; }
-  ol#pipeline li.now::before { background: var(--work); border-color: var(--work); }
-  ol#pipeline li.now.isgate { background: #fff1cc; }
-  ol#pipeline li.now.isgate::before { background: var(--wait); border-color: var(--wait); }
-  ol#pipeline li.now.isblocked { background: #fdecea; color: #7a1f12; }
-  ol#pipeline li.now.isblocked::before { background: var(--block); border-color: var(--block); }
-
-  #agentModels { display: grid; gap: 6px; font-size: 12.5px; }
+#agentModels { display: grid; gap: 6px; font-size: 12.5px; }
   .m-card { display: flex; align-items: center; justify-content: space-between; padding: 7px 10px; border-radius: 6px; background: #f8fafc; border: 1px solid #e2e8f0; transition: all .2s ease; }
   .m-card.active { background: #f0fdf4; border-color: #86efac; box-shadow: 0 0 0 1px #86efac; }
   .m-card b { font-weight: 600; color: var(--ink); display: flex; align-items: center; gap: 8px; font-size: 12.5px; }
@@ -105,23 +91,21 @@
   .m-card.active em { background: #dcfce7; color: #166534; }
   .m-card:not(.active) em { color: var(--ink-soft); opacity: .7; }
 
-  /* Log Aktivitas: Scrollable maks ~20 pesan di layar, menampung hingga 100 entri */
   #log {
     list-style: none; margin: 0; padding: 0; font-size: 12.5px;
     max-height: 380px; overflow-y: auto; display: grid; gap: 5px;
     padding-right: 4px; scrollbar-width: thin; scrollbar-color: var(--line) transparent;
     overscroll-behavior: contain;
   }
-  #log:empty::before { content: "Belum ada catatan aktivitas."; color: var(--ink-soft); }
+  #log:empty::before { content: "No activity recorded yet."; color: var(--ink-soft); }
   #log li { color: var(--ink-soft); line-height: 1.35; border-bottom: 1px solid #f1f5f9; padding-bottom: 3px; }
   #log time { color: var(--ink); font-weight: 600; margin-right: 6px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
-  .chat { display: grid; gap: 6px; max-height: 360px; overflow-y: auto; font-size: 12.5px; padding-right: 4px; overscroll-behavior: contain; scrollbar-width: thin; }
-  .chat:empty::before { content: "Belum ada percakapan. Kirim prompt dari VSCode / Antigravity."; color: var(--ink-soft); }
+  .chat { display: grid; gap: 6px; max-height: 480px; overflow-y: auto; font-size: 12.5px; padding-right: 4px; overscroll-behavior: contain; scrollbar-width: thin; }
+  .chat:empty::before { content: "No conversation yet. Send a prompt from VSCode / Antigravity."; color: var(--ink-soft); }
   .chat .m { padding: 6px 9px; border-radius: 8px; overflow-wrap: anywhere; min-width: 0; }
   .chat .m small { display: block; font-size: 11px; opacity: .75; margin-bottom: 2px; font-variant-numeric: tabular-nums; }
-  /* Rich text: maks 5 baris, lebih dari itu diakhiri "..." */
-  .chat .m .body { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 5; line-clamp: 5; overflow: hidden; line-height: 1.4; word-break: break-word; }
+  .chat .m .body { line-height: 1.4; word-break: break-word; }
   .chat .body > :first-child { margin-top: 0; }
   .chat .body > :last-child { margin-bottom: 0; }
   .chat .body p, .chat .body ul, .chat .body ol, .chat .body blockquote, .chat .body pre, .chat .body table, .chat .body h4 { margin: 0 0 4px; }
@@ -140,10 +124,7 @@
   .chat .body kbd { font: 11px ui-monospace, Consolas, monospace; border: 1px solid var(--line); border-radius: 3px; padding: 0 3px; background: #fff; }
   .chat .user { background: #fbe9e3; justify-self: end; max-width: 92%; }
   .chat .assistant { background: #e6f5f2; justify-self: start; max-width: 96%; }
-  .chat .thinking { background: #f3f0fa; color: #4a3b69; font-style: italic; justify-self: start; max-width: 96%; font-size: 12px; border-left: 3px solid #85589f; }
-  .chat .tool { background: #f4f7fa; border: 1px solid var(--line); color: var(--ink-soft); font: 11.5px/1.4 ui-monospace, Consolas, monospace; padding: 4px 7px; border-radius: 6px; white-space: pre-wrap; overflow-wrap: anywhere; }
-
-  @media (min-width: 961px) {
+@media (min-width: 961px) {
     html, body { height: 100%; }
     body { min-height: 0; overflow: hidden; }
     main {
@@ -161,43 +142,39 @@
 <body>
 <header>
   <h1>AI SDLC Team</h1>
-  <div id="conn" role="status"><i></i><span>Menghubungkan...</span></div>
+  <div id="conn" role="status"><i></i><span>Connecting...</span></div>
   <div class="spacer"></div>
-  <div class="user-badge" id="userBtn" title="Klik untuk mengubah nama peran Anda">
-    <span>Peran:</span> <b id="userBadgeName">Rama</b> ✏️
+  <div class="user-badge" id="userBtn" title="Click to change your display name">
+    <span>Role:</span> <b id="userBadgeName">Rama</b> ✏️
   </div>
-  <button id="resetBtn" type="button" title="Bersihkan visualizer & histori percakapan">Reset Visualizer</button>
-  <label><input type="checkbox" id="demoToggle"> Mode demo</label>
+  <button id="resetBtn" type="button" title="Clear visualizer & conversation history">Reset Visualizer</button>
+  <label><input type="checkbox" id="demoToggle"> Demo mode</label>
 </header>
 
 <main>
   <section class="stage" id="stage">
     <div class="wrap" id="wrap">
-      <canvas id="c" role="img" aria-label="Animasi kantor: lima peran bekerja pada task, dokumen berpindah antar meja sesuai alur kerja."></canvas>
+      <canvas id="c" role="img" aria-label="Office animation: four AI model agents working on tasks, documents moving across desks and external tools."></canvas>
       <div class="gate" id="gate" hidden aria-live="polite"><b id="gateTitle"></b><span id="gateText"></span></div>
     </div>
   </section>
 
   <aside>
     <div class="card">
-      <h2>Task aktif</h2>
-      <div id="taskTitle">Belum ada task</div>
+      <h2>Active task</h2>
+      <div id="taskTitle">No active task</div>
       <dl id="taskMeta"></dl>
     </div>
     <div class="card">
-      <h2>Agent</h2>
+      <h2>Agents</h2>
       <div id="agentModels"></div>
     </div>
     <div class="card">
-      <h2>Percakapan</h2>
+      <h2>Conversation</h2>
       <div class="chat" id="chat" aria-live="polite"></div>
     </div>
-    <div class="card" hidden>
-      <h2>Alur kerja</h2>
-      <ol id="pipeline"></ol>
-    </div>
-    <div class="card">
-      <h2>Aktivitas</h2>
+<div class="card">
+      <h2>Activity</h2>
       <ul id="log"></ul>
     </div>
   </aside>
@@ -205,42 +182,40 @@
 
 <script>
 'use strict';
-/* ---------- konstanta & user name ---------- */
+/* ---------- constants & user name ---------- */
 let USER_NAME = localStorage.getItem('office_user_name') || 'Rama';
 
-const getPhases = () => [
-  ['you',       USER_NAME,            'Penginput task/prompt & approver Implementation Plan'],
-  ['architect', 'Software Architect', 'Scanner project, pembuat Implementation Plan, pros & cons'],
-  ['developer', 'Code Engineer',      'Eksekusi perubahan code & unit test, Task Jira, PR Template & branch GitHub'],
-  ['qa',        'SDET',               'Eksekusi Unit Test project (pastikan green flow / pop chat bila test error)'],
-  ['scribe',    'Doc Scribing',       'Pembuatan doc (RFC, TD, dll) ke Strand Docmost MCP']
-];
-const PHASE_STEP = { intake: 0, profile: 1, plan: 1, gate1: 0, branch: 2, code: 2, test: 3, docs: 4, gate2: 0, release: 2, done: 5 };
 const DEFAULT_MODELS = [
-  { name: 'Gemini 4 Argon',    active: false },
-  { name: 'Gemini 3.8 Flash',  active: true },
-  { name: 'Claude Opus 5.5',   active: false },
-  { name: 'Claude Sonnet 5.5', active: false }
+  { id: 'argon',  name: 'Gemini 4 Argon',    active: false },
+  { id: 'flash',  name: 'Gemini 3.8 Flash',  active: true },
+  { id: 'opus',   name: 'Claude Opus 5.5',   active: false },
+  { id: 'sonnet', name: 'Claude Sonnet 5.5', active: false }
 ];
 const COLORS = { working: '#1b998b', waiting: '#d98e04', blocked: '#c73e2a', done: '#3f6fa3', idle: '#8695a3' };
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const STAFF = {
-  you:       { x: 120, y: 112, name: USER_NAME,            shirt: '#ffffff', hair: '#2b2118', skin: '#e9bd94' },
-  architect: { x: 250, y: 290, name: 'Architect'       , shirt: '#85589f', hair: '#10121a', skin: '#f1c8a0' },
-  developer: { x: 250, y: 456, name: 'Engineer',           shirt: '#2f6fb3', hair: '#5a3b1e', skin: '#e9bd94' },
-  qa:        { x: 570, y: 456, name: 'SDET',               shirt: '#c2782b', hair: '#241a14', skin: '#c68e63' },
-  scribe:    { x: 570, y: 290, name: 'Doc Scribing',       shirt: '#b5485d', hair: '#3b2a1c', skin: '#f1c8a0' },
+  you:    { x: 120, y: 112, name: USER_NAME,           shirt: '#162d50', hair: '#1b1b24', skin: '#f1c8a0' },
+  argon:  { x: 260, y: 290, name: 'Gemini 4 Argon',    shirt: '#4c3bcf', hair: '#1b1b24', skin: '#f1c8a0' },
+  flash:  { x: 610, y: 290, name: 'Gemini 3.8 Flash',  shirt: '#8b7cf6', hair: '#1b1b24', skin: '#f1c8a0' },
+  opus:   { x: 260, y: 456, name: 'Claude Opus 5.5',   shirt: '#b54526', hair: '#1b1b24', skin: '#f1c8a0' },
+  sonnet: { x: 610, y: 456, name: 'Claude Sonnet 5.5', shirt: '#f09067', hair: '#1b1b24', skin: '#f1c8a0' },
 };
-const ALIAS = { manager: 'architect', scout: 'architect', release: 'developer' };
-const canon = id => ALIAS[id] || id;
+
 const PROPS = {
-  jira:    { x: 600, y: 108,  name: 'Jira' },
-  docmost: { x: 740, y: 112,  name: 'Docmost' },
-  github:  { x: 880, y: 116,  name: 'GitHub' },
+  jira:    { x: 600, y: 108, name: 'Jira' },
+  docmost: { x: 740, y: 112, name: 'Docmost' },
+  github:  { x: 880, y: 116, name: 'GitHub' },
 };
-const POS = (id) => STAFF[id] || PROPS[id];
-const TEAM_ORDER = ['architect', 'developer', 'qa', 'scribe'];
+
+const ALIAS = {
+  'gemini-4-argon': 'argon', 'gemini-3-8-flash': 'flash', 'gemini-3.8-flash': 'flash', 'flash_lite': 'flash',
+  'claude-opus-5-5': 'opus', 'claude-opus-5.5': 'opus',
+  'claude-sonnet-5-5': 'sonnet', 'claude-sonnet-5.5': 'sonnet'
+};
+const canon = id => ALIAS[id] || (STAFF[id] || PROPS[id] ? id : 'flash');
+const POS = id => STAFF[canon(id)] || PROPS[id];
+const TEAM_ORDER = ['argon', 'flash', 'opus', 'sonnet'];
 
 function updateUserName(newName) {
   if (!newName || !newName.trim()) return;
@@ -255,13 +230,13 @@ function updateUserName(newName) {
 }
 document.getElementById('userBadgeName').textContent = USER_NAME;
 document.getElementById('userBtn').addEventListener('click', () => {
-  const n = prompt('Masukkan nama Anda untuk visualizer:', USER_NAME);
+  const n = prompt('Enter your display name for the visualizer:', USER_NAME);
   if (n && n.trim() && n.trim() !== USER_NAME) updateUserName(n);
 });
 
 /* ---------- state ---------- */
 const emptyState = () => ({
-  task: null, phase: 'intake', gate: null, handoffs: [], log: [],
+  task: null, phase: 'intake', gate: null, handoffs: [], log: [], activeAgent: 'flash',
   agents: Object.fromEntries(TEAM_ORDER.map(a => [a, { status: 'idle', message: '' }]))
 });
 let S = emptyState();
@@ -326,7 +301,7 @@ function drawRoom(t) {
 }
 
 function isGateActive() {
-  return Boolean(S.gate && S.phase !== 'done' && (S.phase === 'gate1' || S.phase === 'gate2' || S.phase === 'release'));
+  return Boolean(S.gate && S.phase !== 'done');
 }
 
 function drawStaff(id, t) {
@@ -334,7 +309,7 @@ function drawStaff(id, t) {
   const gateOpen = isGateActive();
   const youBusy = id === 'you' && (t < youActiveUntil || flights.some(f => f.from === 'you') || talks.some(k => k.a === 'you' || k.b === 'you'));
   const a = id === 'you'
-    ? { status: gateOpen ? 'waiting' : (youBusy ? 'working' : 'idle'), message: gateOpen ? `Menunggu keputusan ${USER_NAME}` : (youBusy ? 'Input prompt...' : '') }
+    ? { status: gateOpen ? 'waiting' : (youBusy ? 'working' : 'idle'), message: gateOpen ? `Awaiting ${USER_NAME}'s decision` : (youBusy ? 'Sending prompt...' : '') }
     : (S.agents[id] || { status: 'idle', message: '' });
   const x = st.x, y = st.y;
   const working = a.status === 'working';
@@ -342,25 +317,20 @@ function drawStaff(id, t) {
 
   ctx.fillStyle = 'rgba(23,49,77,.12)'; ctx.beginPath(); ctx.ellipse(x, y + 44, 46, 8, 0, 0, 7); ctx.fill();
   ctx.fillStyle = st.shirt; ctx.fillRect(x - 14, y - 20 + bob, 28, 30);
-  if (st.shirt === '#ffffff') { ctx.strokeStyle = '#b8c6d4'; ctx.lineWidth = 1; ctx.strokeRect(x - 14.5, y - 20.5 + bob, 29, 31); }
-  
-  const raised = a.status === 'waiting';
+const raised = a.status === 'waiting';
   const arm = (dx, swing) => {
     ctx.fillStyle = st.shirt;
     if (raised && dx > 0) {
       ctx.fillRect(x + 14, y - 46 + bob, 7, 28);
-      if (st.shirt === '#ffffff') { ctx.strokeStyle = '#b8c6d4'; ctx.lineWidth = 1; ctx.strokeRect(x + 13.5, y - 46.5 + bob, 8, 29); }
-      ctx.fillStyle = st.skin; ctx.fillRect(x + 14, y - 52 + bob, 7, 7);
+ctx.fillStyle = st.skin; ctx.fillRect(x + 14, y - 52 + bob, 7, 7);
     }
     else if (working) {
       ctx.fillRect(x + dx, y - 14 + bob, 7, 24 + swing);
-      if (st.shirt === '#ffffff') { ctx.strokeStyle = '#b8c6d4'; ctx.lineWidth = 1; ctx.strokeRect(x + dx - 0.5, y - 14.5 + bob, 8, 25 + swing); }
-      ctx.fillStyle = st.skin; ctx.fillRect(x + dx, y + 10 + swing + bob, 7, 5);
+ctx.fillStyle = st.skin; ctx.fillRect(x + dx, y + 10 + swing + bob, 7, 5);
     }
     else {
       ctx.fillRect(x + dx, y - 16 + bob, 7, 26);
-      if (st.shirt === '#ffffff') { ctx.strokeStyle = '#b8c6d4'; ctx.lineWidth = 1; ctx.strokeRect(x + dx - 0.5, y - 16.5 + bob, 8, 27); }
-      ctx.fillStyle = st.skin; ctx.fillRect(x + dx, y + 10 + bob, 7, 5);
+ctx.fillStyle = st.skin; ctx.fillRect(x + dx, y + 10 + bob, 7, 5);
     }
   };
   const sw = REDUCED ? 0 : Math.sin(t / 85) * 2.2;
@@ -376,10 +346,12 @@ function drawStaff(id, t) {
   if (a.status === 'blocked') { ctx.fillRect(x - 4, y - 27 + bob, 8, 2); ctx.fillRect(x - 6, y - 28 + bob, 2, 2); ctx.fillRect(x + 4, y - 28 + bob, 2, 2); }
 
   const pulse = pulses[id] ? Math.max(0, 1 - (t - pulses[id]) / 700) : 0;
-  ctx.fillStyle = '#b88a55'; ctx.fillRect(x - 56, y + 8, 112, 36);
-  ctx.fillStyle = '#cfa56e'; ctx.fillRect(x - 56, y + 8, 112, 7);
-  ctx.fillStyle = 'rgba(0,0,0,.12)'; ctx.fillRect(x - 56, y + 40, 112, 4);
-  if (pulse) { ctx.strokeStyle = `rgba(27,153,139,${pulse})`; ctx.lineWidth = 3; ctx.strokeRect(x - 58, y + 6, 116, 40); }
+  const dw = id === 'you' ? 112 : 144;
+  const dx0 = x - dw / 2;
+  ctx.fillStyle = '#b88a55'; ctx.fillRect(dx0, y + 8, dw, 36);
+  ctx.fillStyle = '#cfa56e'; ctx.fillRect(dx0, y + 8, dw, 7);
+  ctx.fillStyle = 'rgba(0,0,0,.12)'; ctx.fillRect(dx0, y + 40, dw, 4);
+  if (pulse) { ctx.strokeStyle = `rgba(27,153,139,${pulse})`; ctx.lineWidth = 3; ctx.strokeRect(dx0 - 2, y + 6, dw + 4, 40); }
   ctx.fillStyle = '#e7ebef'; ctx.fillRect(x - 24, y + 17, 30, 7);
   ctx.fillStyle = '#4a5663'; ctx.fillRect(x + 22, y - 4, 32, 24);
   const scr = a.status === 'idle' ? '#2d3a48' : COLORS[a.status];
@@ -391,38 +363,148 @@ function drawStaff(id, t) {
       ctx.fillRect(x + 28, y + 2 + i * 3.6, wdt, 1.6);
     }
   }
-  ctx.fillStyle = COLORS[a.status]; ctx.beginPath(); ctx.arc(x - 46, y + 20, 4, 0, 7); ctx.fill();
-  text(st.name, x - 8, y + 36, 12, '#fff', 650, 'center');
+  ctx.fillStyle = COLORS[a.status]; ctx.beginPath(); ctx.arc(dx0 + 10, y + 20, 4, 0, 7); ctx.fill();
+  text(st.name, x, y + 36, id === 'you' ? 12 : 11.5, '#fff', 650, 'center');
 
   if (a.status === 'done' && S.phase === 'done') drawBadge(x + 28, y - 52, COLORS.done, '\u2713');
   if (a.status === 'blocked') drawBadge(x + 28, y - 52, COLORS.blocked, '!');
   if (a.status === 'waiting' && id !== 'you') drawBadge(x + 28, y - 52, COLORS.waiting, '?');
 
-  if (id === 'qa' && a.status === 'blocked') {
+  // Red error bubble on ANY model avatar that is blocked by unit test errors
+  if (id !== 'you' && a.status === 'blocked') {
     const lines = ['Test case error:'].concat(String(a.message || '').split(';').map(s => s.trim()).filter(Boolean).slice(0, 4).map(s => clip(s, 30)));
-    const bw = 200, bh = 12 + lines.length * 16, bx = x + 74, by = y - bh / 2 - 6;
+    const bw = 220, bh = 12 + lines.length * 16, bx = x + 76, by = y - bh / 2 - 6;
     rrect(bx, by, bw, bh, 8, '#fdecea', COLORS.blocked, 2);
     ctx.fillStyle = '#fdecea'; ctx.beginPath(); ctx.moveTo(bx, by + bh / 2 - 6); ctx.lineTo(bx, by + bh / 2 + 6); ctx.lineTo(bx - 8, by + bh / 2); ctx.fill();
     lines.forEach((ln, i) => text(ln, bx + 12, by + 20 + i * 16, 11.5, i ? '#7a1f12' : COLORS.blocked, i ? 500 : 700, 'left'));
     return;
   }
+
   let msg = a.message || '';
-  if (a.status === 'working' && (!msg || msg === 'Selesai')) {
-    msg = 'Sedang mengerjakan...';
+  if (id !== 'you' && a.status === 'working') {
+    const latestAct = latestAgentActivity(id);
+    if (!msg || msg === 'Done' || msg === 'Working...' || /^Executing:\s/i.test(msg)) {
+      msg = latestAct || 'Analyzing request...';
+    }
   }
-  if (msg && a.status !== 'idle' && (S.phase === 'done' || msg !== 'Selesai')) {
-    const cmsg = clip(msg, 34);
+  if (msg && a.status !== 'idle' && (S.phase === 'done' || msg !== 'Done')) {
     ctx.font = `500 11.5px ${FONT}`;
-    const w = Math.min(ctx.measureText(cmsg).width + 18, 230);
-    const bx = Math.max(6, Math.min(W - w - 6, x - w / 2)), by = y - 86;
-    rrect(bx, by, w, 24, 6, '#fff', COLORS[a.status], 1.5);
-    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(x - 5, by + 24); ctx.lineTo(x + 5, by + 24); ctx.lineTo(x, by + 31); ctx.fill();
-    text(cmsg, bx + w / 2, by + 16, 11.5, '#17314d', 500, 'center');
+    const lines = wrapBubbleLines(msg, 212, id === 'you' ? 1 : 2);
+    const bottomY = id === 'you' ? y - 56 : y - 64;
+    drawSpeechBubble(x, bottomY, lines, COLORS[a.status]);
   }
 }
 function drawBadge(x, y, color, ch) {
   ctx.fillStyle = color; ctx.beginPath(); ctx.arc(x, y, 9, 0, 7); ctx.fill();
   text(ch, x, y + 4.5, 13, '#fff', 700, 'center');
+}
+function fitLinePx(str, maxW) {
+  if (ctx.measureText(str).width <= maxW) return str;
+  let lo = 0, hi = str.length;
+  while (lo < hi) {
+    const mid = Math.ceil((lo + hi) / 2);
+    if (ctx.measureText(str.slice(0, mid) + '\u2026').width <= maxW) lo = mid;
+    else hi = mid - 1;
+  }
+  return str.slice(0, Math.max(1, lo)).trimEnd() + '\u2026';
+}
+
+function wrapBubbleLines(str, maxW, maxLines) {
+  const words = String(str || '').trim().split(/\s+/).filter(Boolean);
+  if (!words.length) return [];
+  const lines = [];
+  let cur = '';
+  for (let i = 0; i < words.length; i++) {
+    const w = words[i];
+    const cand = cur ? cur + ' ' + w : w;
+    if (ctx.measureText(cand).width <= maxW) {
+      cur = cand;
+    } else if (!cur) {
+      if (lines.length + 1 >= maxLines) {
+        lines.push(fitLinePx(words.slice(i).join(' '), maxW));
+        return lines;
+      }
+      let cut = 1;
+      while (cut < w.length && ctx.measureText(w.slice(0, cut + 1)).width <= maxW) cut++;
+      lines.push(w.slice(0, cut));
+      words[i] = w.slice(cut);
+      i--;
+    } else {
+      lines.push(cur);
+      cur = '';
+      if (lines.length >= maxLines) {
+        lines[maxLines - 1] = fitLinePx(lines[maxLines - 1] + ' ' + words.slice(i).join(' '), maxW);
+        return lines;
+      }
+      i--;
+    }
+  }
+  if (cur) lines.push(cur);
+  return lines.slice(0, maxLines);
+}
+
+function latestAgentActivity(id) {
+  const st = STAFF[id];
+  if (!st || !Array.isArray(S.log)) return '';
+  const prefix = st.name + ': ';
+  const uPrefix1 = USER_NAME + ': ';
+  const uPrefix2 = USER_NAME + ' requested ';
+  for (let i = S.log.length - 1; i >= 0; i--) {
+    const entry = String(S.log[i]?.text || '');
+    if (entry.startsWith(prefix)) {
+      const act = entry.slice(prefix.length).trim();
+      if (act && act !== 'Done' && act !== 'Working...') return act;
+    }
+    if (entry.startsWith(uPrefix1) || entry.startsWith(uPrefix2)) break;
+  }
+  return '';
+}
+
+function drawSpeechBubble(cx, bottomY, lines, borderColor) {
+  if (!lines.length) return;
+  ctx.font = `500 11.5px ${FONT}`;
+  const lineH = 15, padX = 12, padY = 6;
+  const maxLineW = lines.reduce((m, ln) => Math.max(m, ctx.measureText(ln).width), 0);
+  const bw = Math.max(64, Math.ceil(maxLineW) + padX * 2);
+  const bh = lines.length * lineH + padY * 2 - 2;
+  const bx = Math.max(8, Math.min(W - bw - 8, Math.round(cx - bw / 2)));
+  const by = Math.round(bottomY - bh);
+  const r = 7;
+  const tx = Math.max(bx + r + 7, Math.min(bx + bw - r - 7, cx));
+  const tw = 5.5, th = 6;
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(bx + r, by);
+  ctx.lineTo(bx + bw - r, by);
+  ctx.quadraticCurveTo(bx + bw, by, bx + bw, by + r);
+  ctx.lineTo(bx + bw, by + bh - r);
+  ctx.quadraticCurveTo(bx + bw, by + bh, bx + bw - r, by + bh);
+  ctx.lineTo(tx + tw, by + bh);
+  ctx.lineTo(tx, by + bh + th);
+  ctx.lineTo(tx - tw, by + bh);
+  ctx.lineTo(bx + r, by + bh);
+  ctx.quadraticCurveTo(bx, by + bh, bx, by + bh - r);
+  ctx.lineTo(bx, by + r);
+  ctx.quadraticCurveTo(bx, by, bx + r, by);
+  ctx.closePath();
+
+  ctx.shadowColor = 'rgba(23,49,77,.12)';
+  ctx.shadowBlur = 6;
+  ctx.shadowOffsetY = 2;
+  ctx.fillStyle = '#ffffff';
+  ctx.fill();
+
+  ctx.shadowColor = 'transparent';
+  ctx.lineWidth = 1.6;
+  ctx.strokeStyle = borderColor;
+  ctx.lineJoin = 'round';
+  ctx.stroke();
+  ctx.restore();
+
+  lines.forEach((ln, idx) => {
+    text(ln, bx + bw / 2, by + padY + 10.5 + idx * lineH, 11.5, '#17314d', 500, 'center');
+  });
 }
 
 function drawBell(t) {
@@ -470,12 +552,13 @@ function drawTalks(t) {
     if (t < k.t0) continue;
     const turn = Math.floor((t - k.t0) / 700) % 2;
     [[k.a, turn === 0], [k.b, turn === 1]].forEach(([id, speaking]) => {
-      const s = STAFF[id]; if (!s) return;
-      const bx = id === 'you' ? s.x + 95 : s.x, by = id === 'you' ? s.y + 14 : s.y - 124;
+      const s = STAFF[canon(id)]; if (!s) return;
+      const bx = id === 'you' ? s.x + 95 : s.x, by = id === 'you' ? s.y + 14 : s.y - 134;
       const col = speaking ? '#d98e04' : '#9fb2c4';
       rrect(bx - 28, by - 13, 56, 26, 13, '#fff', col, 2);
       ctx.fillStyle = '#fff'; ctx.beginPath();
-      if (id === 'you') { ctx.moveTo(bx - 20, by + 10); ctx.lineTo(bx - 10, by + 12); ctx.lineTo(bx - 30, by + 22); } else { ctx.moveTo(bx - 5, by + 12); ctx.lineTo(bx + 5, by + 12); ctx.lineTo(bx, by + 19); }
+      if (id === 'you') { ctx.moveTo(bx - 20, by + 10); ctx.lineTo(bx - 10, by + 12); ctx.lineTo(bx - 30, by + 22); }
+      else { ctx.moveTo(bx - 5, by + 12); ctx.lineTo(bx + 5, by + 12); ctx.lineTo(bx, by + 19); }
       ctx.fill();
       for (let d = 0; d < 3; d++) {
         const r = speaking && !REDUCED ? 2.6 + Math.sin(t / 130 + d) * 1.2 : 2.6;
@@ -500,7 +583,7 @@ function drawFlights(t) {
     ctx.fillStyle = '#9fb2c4'; for (let k = 0; k < 4; k++) ctx.fillRect(-6, -8 + k * 5, 12, 1.6);
     ctx.restore();
     if (f.label) text(f.label, x, y - 18, 10.5, '#17314d', 600, 'center');
-    if (p >= 1) { pulses[f.to] = t; flights.splice(i, 1); }
+    if (p >= 1) { pulses[canon(f.to)] = t; flights.splice(i, 1); }
   }
 }
 
@@ -509,7 +592,7 @@ function frame(t) {
   ctx.setTransform(cv.width / W, 0, 0, cv.height / H, 0, 0);
   drawRoom(t);
   drawProps(t);
-  ['you', 'architect', 'developer', 'qa', 'scribe'].forEach(id => drawStaff(id, t));
+  ['you', 'argon', 'flash', 'opus', 'sonnet'].forEach(id => drawStaff(id, t));
   drawBell(t);
   drawTalks(t);
   drawFlights(t);
@@ -529,54 +612,51 @@ function fmtDateTime(iso) {
 
 function renderPanel() {
   const tk = S.task;
-  $('taskTitle').textContent = tk ? tk.title : 'Belum ada task';
+  $('taskTitle').textContent = tk ? tk.title : 'No active task';
   const meta = $('taskMeta'); meta.replaceChildren();
-  if (tk) [['Proyek', tk.project], ['Branch', tk.branch], ['Mode', tk.mode === 'A' ? 'A: file diketahui' : tk.mode === 'B' ? 'B: flow/issue' : tk.mode]]
-    .forEach(([k, v]) => { const dt = document.createElement('dt'); dt.textContent = k; const dd = document.createElement('dd'); dd.textContent = v || '-'; meta.append(dt, dd); });
+  if (tk) [
+    ['Project', tk.project],
+    ['Branch', tk.branch]
+  ].forEach(([k, v]) => {
+    const dt = document.createElement('dt'); dt.textContent = k;
+    const dd = document.createElement('dd'); dd.textContent = v || '-';
+    meta.append(dt, dd);
+  });
 
   const modelsBox = $('agentModels'); modelsBox.replaceChildren();
   const rawModels = (S.models && (Array.isArray(S.models.models) ? S.models.models : Array.isArray(S.models) ? S.models : null)) || DEFAULT_MODELS;
   rawModels.forEach(m => {
     const card = document.createElement('div');
-    card.className = 'm-card' + (m.active ? ' active' : '');
+    const mid = m.id || canon(m.name);
+    const agentState = S.agents[mid];
+    const isAct = Boolean(m.active || (agentState && agentState.status === 'working'));
+    card.className = 'm-card' + (isAct ? ' active' : '');
     const b = document.createElement('b');
     const dot = document.createElement('i');
+    const agentColor = STAFF[mid]?.shirt || '#8695a3';
+    dot.style.background = agentColor;
+    if (isAct) dot.style.boxShadow = '0 0 0 3px ' + agentColor + '44';
     b.append(dot, document.createTextNode(m.name));
     const em = document.createElement('em');
-    em.textContent = m.active ? 'Aktif' : 'Standby';
+    let label = isAct ? 'Active' : 'Standby';
+    if (agentState) {
+      if (agentState.status === 'working') label = 'Working';
+      else if (agentState.status === 'waiting') label = 'Waiting';
+      else if (agentState.status === 'blocked') label = 'Blocked';
+      else if (agentState.status === 'done') label = 'Done';
+    }
+    em.textContent = label;
     card.append(b, em);
     modelsBox.append(card);
   });
 
-  const stepIdx = PHASE_STEP[S.phase] ?? 0;
-  const ol = $('pipeline'); ol.replaceChildren();
-  getPhases().forEach(([roleId, roleTitle, desc], i) => {
-    const li = document.createElement('li');
-    const wrap = document.createElement('div');
-    const b = document.createElement('b'); b.textContent = roleTitle + ' : ';
-    wrap.append(b, document.createTextNode(desc));
-    li.append(wrap);
-    const agStatus = roleId === 'you' ? (isGateActive() ? 'waiting' : 'idle') : (S.agents[roleId]?.status || 'idle');
-    if (S.phase === 'done') {
-      li.className = 'done';
-    } else if (agStatus === 'blocked') {
-      li.className = 'now isblocked';
-    } else if (i === stepIdx || agStatus === 'working' || agStatus === 'waiting') {
-      li.className = 'now' + ((S.phase.startsWith('gate') || agStatus === 'waiting') ? ' isgate' : '');
-    } else if (i < stepIdx || agStatus === 'done') {
-      li.className = 'done';
-    }
-    ol.append(li);
-  });
-
-  const g = $('gate');
+const g = $('gate');
   if (isGateActive()) {
     g.hidden = false;
-    $('gateTitle').textContent = `Gate ${S.gate.n}: menunggu keputusan ${USER_NAME}`;
+    $('gateTitle').textContent = `Gate ${S.gate.n}: awaiting ${USER_NAME}'s decision`;
     $('gateText').textContent = S.gate.question || '';
   } else g.hidden = true;
 
-  // Render Log Aktivitas: hingga 100 entri, urutan terbaru di atas
   const log = $('log'); log.replaceChildren();
   (S.log || []).slice(-100).reverse().forEach(e => {
     const li = document.createElement('li'); const tm = document.createElement('time');
@@ -585,17 +665,15 @@ function renderPanel() {
   });
 }
 
-/* ---------- rich text (markdown + HTML aman) untuk panel Percakapan ---------- */
+/* ---------- rich text for Conversation panel ---------- */
 const escHtml = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 const SAFE_TAGS = 'b|i|em|strong|u|s|del|ins|mark|kbd|sub|sup|small';
 function renderRich(src) {
   const stash = [];
   const hold = html => '\u0000' + (stash.push(html) - 1) + '\u0000';
   let s = String(src ?? '').replace(/\r\n?/g, '\n');
-  // 1. code fence (termasuk fence yang terpotong tanpa penutup) & inline code
   s = s.replace(/```[^\n]*\n([\s\S]*?)(?:```|$)/g, (m, c) => '\n' + hold('<pre><code>' + escHtml(c.replace(/\n$/, '')) + '</code></pre>') + '\n');
   s = s.replace(/`([^`\n]+)`/g, (m, c) => hold('<code>' + escHtml(c) + '</code>'));
-  // 2. escape semua HTML, lalu hidupkan kembali hanya tag whitelist tanpa atribut
   s = escHtml(s);
   s = s.replace(new RegExp('&lt;(/?)(' + SAFE_TAGS + ')\\s*&gt;', 'gi'), '<$1$2>');
   s = s.replace(/&lt;br\s*\/?&gt;/gi, '<br>').replace(/&lt;hr\s*\/?&gt;/gi, '\n---\n');
@@ -649,14 +727,21 @@ function renderRich(src) {
 
 let chatKey = '';
 function renderChat(msgs) {
-  const list = (msgs || []).filter(m => m.role === 'user' || m.role === 'assistant').slice(-100);
-  const qa = S.agents.qa;
-  if (!demoOn && qa && qa.status === 'blocked') {
-    const t = 'Test case error: ' + (qa.message || '');
-    const lastQ = list[list.length - 1];
-    if (!lastQ || lastQ.text !== t) list.push({ n: 'qa-err', role: 'assistant', agent: 'qa', text: t });
+  const list = (msgs || []).filter(m => m.role === 'user' || m.role === 'assistant');
+  
+  // Pop test error into chat if any active model has blocked status
+  if (!demoOn) {
+    const blocked = Object.entries(S.agents || {}).find(([k, v]) => k !== 'you' && v && v.status === 'blocked');
+    if (blocked) {
+      const [bId, bState] = blocked;
+      const t = 'Test case error: ' + (bState.message || '');
+      const lastQ = list[list.length - 1];
+      if (!lastQ || lastQ.text !== t) list.push({ n: 'test-err', role: 'assistant', agent: bId, text: t });
+    }
   }
-  const key = list.length + ':' + (list.length ? (list[list.length - 1].n || '') + ':' + (list[list.length - 1].text || '').length : '');
+
+  const lastText = list.length ? (list[list.length - 1].md || list[list.length - 1].text || '') : '';
+  const key = list.length + ':' + (list.length ? (list[list.length - 1].n || '') + ':' + lastText.length : '');
   if (key === chatKey) return;
   const wasInit = Boolean($('chat').dataset.init);
   chatKey = key;
@@ -675,8 +760,7 @@ function renderChat(msgs) {
     d.className = 'm ' + (m.role || 'assistant');
     const sm = document.createElement('small');
     const who = m.role === 'user' ? USER_NAME : (m.agent ? (STAFF[canon(m.agent)]?.name || m.agent) : 'Agent');
-    const roleTag = m.role === 'tool' ? ' [tool]' : m.role === 'thinking' ? ' [thinking]' : '';
-    sm.textContent = who + roleTag + (m.at ? ' \u00b7 ' + fmtDateTime(m.at) : '');
+    sm.textContent = who + (m.at ? ' \u00b7 ' + fmtDateTime(m.at) : '');
     const body = document.createElement('div');
     body.className = 'body';
     try { body.innerHTML = renderRich(m.md != null && m.md !== '' ? m.md : m.text); }
@@ -707,7 +791,6 @@ function apply(next, now) {
   const maxN = (S.handoffs || []).reduce((m, h) => Math.max(m, h.n), 0);
   if (maxN < seenHandoff) seenHandoff = 0;
 
-  // Antrean sequential (estafet mendarat dulu sebelum lanjut) & deduplikasi flight
   let lastFlightEnd = flights.reduce((m, f) => Math.max(m, f.t0 + f.dur), now);
   const dur = REDUCED ? 1 : 1200;
 
@@ -722,7 +805,7 @@ function apply(next, now) {
     flights.push({ from: h.from, to: h.to, label: h.label, t0, dur });
     lastFlightEnd = t0 + dur;
 
-    if (/tolak|revisi|reject|diskusi|dampak/i.test(h.label || '')) {
+    if (/tolak|revisi|reject|revise|diskusi|dampak/i.test(h.label || '')) {
       flights.push({ from: h.to, to: h.from, label: '', t0: t0 + dur + 80, dur: REDUCED ? 1 : 1000 });
       flights.push({ from: h.from, to: h.to, label: '', t0: t0 + dur * 2 + 160, dur: REDUCED ? 1 : 1000 });
       talks.push({ a: h.from, b: h.to, t0, t1: t0 + dur * 3 + 600 });
@@ -733,7 +816,7 @@ function apply(next, now) {
   renderPanel();
 }
 
-/* ---------- koneksi live ---------- */
+/* ---------- live polling ---------- */
 const conn = $('conn');
 function setConn(kind, msg) { conn.className = kind; conn.querySelector('span').textContent = msg; }
 let demoOn = false, firstPoll = true, primed = false;
@@ -744,80 +827,212 @@ async function poll() {
     const r = await fetch('/state.json', { cache: 'no-store' });
     if (!r.ok) throw new Error(r.status);
     const j = await r.json();
-    setConn('live', j.empty ? 'Terhubung, menunggu task' : 'Live: .office/state.json');
+    setConn('live', j.empty ? 'Connected, waiting for task' : 'Live: .office/state.json');
     if (!primed) { seenHandoff = (j.handoffs || []).reduce((m, x) => Math.max(m, x.n), 0); primed = true; }
-    if (!j.models) {
-      try { const u = await fetch('/usage.json', { cache: 'no-store' }); if (u.ok) j.models = await u.json(); } catch {}
-    }
-    apply(j.empty ? emptyState() : j, performance.now());
+apply(j.empty ? emptyState() : j, performance.now());
     try { const c = await fetch('/chat.json', { cache: 'no-store' }); renderChat(c.ok ? (await c.json()).messages : []); } catch {}
   } catch (e) {
     if (firstPoll) { $('demoToggle').checked = true; startDemo(); }
-    else setConn('', 'Terputus, mencoba lagi...');
+    else setConn('', 'Disconnected, retrying...');
   }
   firstPoll = false;
 }
 setInterval(poll, 1000); poll();
 
-/* ---------- demo ---------- */
+/* ---------- demo simulation (Centralized 4-Model SDLC Flow) ---------- */
 const DEMO = [
-  s => { s.task = { id: 'demo', title: 'Order Service - Add endpoint pembatalan order', project: 'order-service', branch: 'feature/ORD-142-cancel-order', mode: 'A' }; s.phase = 'intake'; s.agents.architect = { status: 'working', message: `Menerima task dari ${USER_NAME}` }; h(s, 'you', 'architect', 'task'); },
-  s => { s.phase = 'profile'; s.agents.architect = { status: 'working', message: 'Scan project order-service' }; },
-  s => { s.phase = 'plan'; s.agents.architect = { status: 'working', message: 'Menyusun opsi, pros dan cons' }; },
-  s => { s.agents.architect = { status: 'working', message: 'Memetakan dampak Unit Test' }; },
-  s => { s.agents.architect = { status: 'waiting', message: 'Plan siap' }; h(s, 'architect', 'you', 'plan.md'); s.phase = 'gate1'; s.gate = { n: 1, question: 'Approve opsi A (rekomendasi) atau minta revisi?' }; },
-  s => { s.gate = null; s.phase = 'plan'; s.agents.architect = { status: 'working', message: `Diskusi revisi dengan ${USER_NAME}` }; h(s, 'you', 'architect', 'Tolak plan: revisi'); },
-  s => { s.agents.developer = { status: 'working', message: 'Cek dampak revisi ke kode' }; h(s, 'architect', 'developer', 'task'); },
-  s => { s.agents.developer = { status: 'idle', message: '' }; s.agents.architect = { status: 'working', message: 'Menyusun plan revisi' }; },
-  s => { s.agents.architect = { status: 'waiting', message: 'Plan revisi siap' }; h(s, 'architect', 'you', 'plan v2'); s.phase = 'gate1'; s.gate = { n: 1, question: 'Plan sudah direvisi. Approve?' }; },
-  s => { },
-  s => { s.gate = null; s.agents.architect = { status: 'idle', message: '' }; s.phase = 'branch'; h(s, 'architect', 'developer', 'task'); s.agents.developer = { status: 'working', message: 'Branch baru dari main' }; },
-  s => { s.phase = 'code'; s.agents.developer = { status: 'working', message: 'Implement OrdersService.Cancel' }; h(s, 'developer', 'github', 'Commit'); },
-  s => { s.agents.developer = { status: 'working', message: 'Tulis unit test CancelOrder' }; },
-  s => { s.agents.developer = { status: 'idle', message: '' }; h(s, 'developer', 'qa', 'task'); s.phase = 'test'; s.agents.qa = { status: 'working', message: 'dotnet test --filter OrderService' }; },
-  s => { s.agents.qa = { status: 'blocked', message: 'CancelOrder_WhenPaid_ReturnsConflict; CancelOrder_UpdatesStatusColumn' }; h(s, 'qa', 'developer', 'test error'); },
-  s => { s.phase = 'code'; s.agents.developer = { status: 'working', message: 'Perbaiki unit test yang error' }; },
-  s => { s.agents.developer = { status: 'idle', message: '' }; h(s, 'developer', 'qa', 'task'); s.phase = 'test'; s.agents.qa = { status: 'working', message: 'Rerun test case yang error' }; },
-  s => { s.agents.qa = { status: 'working', message: 'dotnet test --filter OrderService' }; },
-  s => { s.agents.qa = { status: 'idle', message: '' }; h(s, 'qa', 'scribe', 'task'); s.phase = 'docs'; s.agents.scribe = { status: 'working', message: 'Draft Tech Doc' }; },
-  s => { s.agents.scribe = { status: 'waiting', message: 'Draft docs siap' }; s.phase = 'gate2'; h(s, 'scribe', 'you', 'review'); s.gate = { n: 2, question: 'Review diff, hasil test, dan draft docs. Setuju?' }; },
-  s => { },
-  s => { },
-  s => { s.gate = null; s.agents.scribe = { status: 'working', message: 'Menulis ke Strand Docmost MCP' }; h(s, 'scribe', 'docmost', 'Push Doc'); },
-  s => { s.agents.scribe = { status: 'idle', message: '' }; s.phase = 'release'; s.agents.developer = { status: 'working', message: 'Draft Jira Task dan PR' }; h(s, 'developer', 'jira', 'Write Jira'); },
-  s => { h(s, 'developer', 'you', 'pr.html'); s.agents.developer = { status: 'waiting', message: 'Izin push dan PR?' }; s.gate = { n: 3, question: 'Push branch dan buat PR (draft)?' }; },
-  s => { },
-  s => { s.gate = null; s.agents.developer = { status: 'working', message: 'Push dan buat PR' }; h(s, 'developer', 'github', 'Push Branch'); h(s, 'developer', 'github', 'Create PR'); },
-  s => { s.phase = 'done'; Object.keys(s.agents).forEach(k => s.agents[k] = { status: 'done', message: 'Selesai' }); h(s, 'developer', 'you', 'jawaban'); },
-  s => { },
-  s => { },
+  // 0: Intake by Gemini 4 Argon
+  s => {
+    s.task = { id: 'demo', title: 'Order Service - Add order cancellation endpoint', project: 'order-service', branch: 'feature/ORD-142-cancel-order' };
+    s.phase = 'intake';
+    s.activeAgent = 'argon';
+    s.agents.argon = { status: 'working', message: `Received task from ${USER_NAME}` };
+    h(s, 'you', 'argon', 'task');
+  },
+  // 1: Project profile scan
+  s => {
+    s.phase = 'profile';
+    s.agents.argon = { status: 'working', message: 'Scanning order-service' };
+  },
+  // 2: Plan drafting
+  s => {
+    s.phase = 'plan';
+    s.agents.argon = { status: 'working', message: 'Drafting implementation_plan.md' };
+  },
+  // 3: Unit test scenario mapping
+  s => {
+    s.agents.argon = { status: 'working', message: 'Mapping unit test scenarios' };
+  },
+  // 4: Gate 1 submission
+  s => {
+    s.agents.argon = { status: 'waiting', message: 'Plan ready' };
+    h(s, 'argon', 'you', 'plan.md');
+    s.phase = 'gate1';
+    s.gate = { n: 1, question: 'Approve Option A (recommended) or request revision?' };
+  },
+  // 5: Gate 1 plan revision requested by User
+  s => {
+    s.gate = null;
+    s.phase = 'plan';
+    s.agents.argon = { status: 'working', message: `Discussing revision with ${USER_NAME}` };
+    h(s, 'you', 'argon', 'Revise plan');
+  },
+  // 6: Analyzing controller impact
+  s => {
+    s.agents.argon = { status: 'working', message: 'Analyzing OrdersController impact' };
+  },
+  // 7: REQUIREMENT 2 FIX: Avatar displays "Editing implementation_plan.md"
+  s => {
+    s.agents.argon = { status: 'working', message: 'Editing implementation_plan.md' };
+  },
+  // 8: Plan v2 ready at Gate 1
+  s => {
+    s.agents.argon = { status: 'waiting', message: 'Plan v2 ready' };
+    h(s, 'argon', 'you', 'plan v2');
+    s.phase = 'gate1';
+    s.gate = { n: 1, question: 'Plan revised with OrdersController impact. Approve?' };
+  },
+  // 9: Gate 1 approved -> Model delegation to Claude Sonnet 5.5
+  s => {
+    s.gate = null;
+    s.agents.argon = { status: 'idle', message: '' };
+    s.phase = 'branch';
+    s.activeAgent = 'sonnet';
+    h(s, 'argon', 'sonnet', 'delegate');
+    s.agents.sonnet = { status: 'working', message: 'Create branch: feature/ORD-142-cancel-order' };
+    h(s, 'sonnet', 'github', 'Branch');
+  },
+  // 10: Coding OrdersService.Cancel
+  s => {
+    s.phase = 'code';
+    s.agents.sonnet = { status: 'working', message: 'Implement OrdersService.Cancel' };
+    h(s, 'sonnet', 'github', 'Commit');
+  },
+  // 11: Drafting unit tests
+  s => {
+    s.agents.sonnet = { status: 'working', message: 'Drafting CancelOrder unit tests' };
+  },
+  // 12: Running unit tests -> Error triggers blocked red bubble on avatar
+  s => {
+    s.phase = 'test';
+    s.agents.sonnet = { status: 'blocked', message: 'CancelOrder_WhenPaid_ReturnsConflict; CancelOrder_UpdatesStatusColumn' };
+    h(s, 'sonnet', 'sonnet', 'test error');
+  },
+  // 13: Fixing code bug
+  s => {
+    s.phase = 'code';
+    s.agents.sonnet = { status: 'working', message: 'Fixing conflict status in OrdersService' };
+  },
+  // 14: Rerunning tests
+  s => {
+    s.phase = 'test';
+    s.agents.sonnet = { status: 'working', message: 'Running tests: dotnet test --filter OrderService' };
+  },
+  // 15: Tests pass green
+  s => {
+    s.agents.sonnet = { status: 'working', message: 'All 6 tests passed green' };
+  },
+  // 16: REQUIREMENT 2 FIX: Updating implementation_plan.md after coding
+  s => {
+    s.phase = 'code';
+    s.agents.sonnet = { status: 'working', message: 'Editing implementation_plan.md' };
+  },
+  // 17: Documentation delegated to Claude Opus 5.5
+  s => {
+    s.agents.sonnet = { status: 'idle', message: '' };
+    s.activeAgent = 'opus';
+    h(s, 'sonnet', 'opus', 'docs');
+    s.phase = 'docs';
+    s.agents.opus = { status: 'working', message: 'Drafting Tech Doc' };
+  },
+  // 18: Gate 2 review
+  s => {
+    s.agents.opus = { status: 'waiting', message: 'Docs draft ready' };
+    s.phase = 'gate2';
+    h(s, 'opus', 'you', 'review');
+    s.gate = { n: 2, question: 'Review diff, test report, and draft docs. Approve?' };
+  },
+  // 19: Publishing to Docmost MCP
+  s => {
+    s.gate = null;
+    s.agents.opus = { status: 'working', message: 'Publishing doc to Strand Docmost MCP' };
+    h(s, 'opus', 'docmost', 'Push Doc');
+  },
+  // 20: Release preparation on Claude Sonnet 5.5
+  s => {
+    s.agents.opus = { status: 'idle', message: '' };
+    s.activeAgent = 'sonnet';
+    h(s, 'opus', 'sonnet', 'release');
+    s.phase = 'release';
+    s.agents.sonnet = { status: 'working', message: 'Drafting Jira task and PR description' };
+    h(s, 'sonnet', 'jira', 'Write Jira');
+  },
+  // 21: Gate 3 review
+  s => {
+    h(s, 'sonnet', 'you', 'pr.html');
+    s.agents.sonnet = { status: 'waiting', message: 'Approve push & PR?' };
+    s.gate = { n: 3, question: 'Push branch and create GitHub Pull Request?' };
+  },
+  // 22: Push branch & create PR
+  s => {
+    s.gate = null;
+    s.agents.sonnet = { status: 'working', message: 'Pushing branch and creating PR' };
+    h(s, 'sonnet', 'github', 'Push Branch');
+    h(s, 'sonnet', 'github', 'Create PR');
+  },
+  // 23: Complete
+  s => {
+    s.phase = 'done';
+    Object.keys(s.agents).forEach(k => { s.agents[k] = { status: 'done', message: 'Done' }; });
+    h(s, 'sonnet', 'you', 'response');
+  },
 ];
+
 const DEMO_CHAT = {
-  0: [['user', null, 'Tambah endpoint pembatalan order di order-service, branch feature/ORD-142-cancel-order']],
-  4: [['assistant', 'architect', 'Plan siap. Opsi A (rekomendasi): tambah OrdersService.Cancel + endpoint DELETE. Approve opsi A?']],
-  5: [['user', null, 'Tolak plan: tolong revisi, dampak ke OrdersController belum dibahas']],
-  8: [['assistant', 'architect', 'Plan revisi siap, dampak ke OrdersController sudah dimasukkan. Approve?']],
-  10: [['user', null, 'approve plan revisi']],
-  14: [['assistant', 'qa', 'Test case error: CancelOrder_WhenPaid_ReturnsConflict; CancelOrder_UpdatesStatusColumn. Kembali ke Code Engineer untuk perbaikan.']],
-  16: [['assistant', 'developer', 'Unit test sudah diperbaiki. SDET, tolong jalankan ulang.']],
-  18: [['assistant', 'qa', 'Rerun selesai: 6 test hijau.']],
-  24: [['assistant', 'developer', 'Draft PR siap. Push dan buat PR (draft)?']],
+  0: [['user', null, 'Add order cancellation endpoint to order-service, branch feature/ORD-142-cancel-order']],
+  4: [['assistant', 'argon', 'Plan ready. Option A (recommended): add OrdersService.Cancel + DELETE endpoint. Approve Option A?']],
+  5: [['user', null, 'Revise plan: OrdersController cancellation impact not covered yet']],
+  8: [['assistant', 'argon', 'Plan v2 ready, OrdersController impact included. Approve?']],
+  9: [['user', null, 'Approve plan v2']],
+  12: [['assistant', 'sonnet', 'Test case error: CancelOrder_WhenPaid_ReturnsConflict; CancelOrder_UpdatesStatusColumn. Fixing logic.']],
+  14: [['assistant', 'sonnet', 'OrdersService conflict status fixed. Rerunning unit tests.']],
+  15: [['assistant', 'sonnet', 'Rerun complete: 6 tests green.']],
+  18: [['assistant', 'opus', 'Tech Doc draft ready. Review diff, test report, and draft docs. Approve?']],
+  19: [['user', null, 'Approve docs']],
+  21: [['assistant', 'sonnet', 'Draft PR ready. Push branch and create GitHub Pull Request?']],
+  22: [['user', null, 'Approve push and create PR']],
+  23: [['assistant', 'sonnet', 'Completed: branch pushed and GitHub Pull Request created successfully.']],
 };
-function h(s, from, to, label) { s.handoffSeq = (s.handoffSeq || 0) + 1; s.handoffs.push({ n: s.handoffSeq, from, to, label }); }
+
+function h(s, from, to, label) {
+  s.handoffSeq = (s.handoffSeq || 0) + 1;
+  s.handoffs.push({ n: s.handoffSeq, from, to, label });
+}
 
 let demoTimer = null, demoStep = 0, demoState = null, prevMsg = {}, demoChat = [];
 function startDemo() {
   demoOn = true; demoStep = 0; prevMsg = {}; demoState = Object.assign(emptyState(), { handoffSeq: 0 }); seenHandoff = 0;
-  setConn('demo', 'Mode demo (data contoh)');
+  setConn('demo', 'Demo mode (sample data)');
   clearInterval(demoTimer);
   demoTimer = setInterval(() => {
-    if (demoStep >= DEMO.length) { demoStep = 0; prevMsg = {}; demoState = Object.assign(emptyState(), { handoffSeq: 0 }); seenHandoff = 0; flights.length = 0; talks.length = 0; }
+    if (demoStep >= DEMO.length) {
+      demoStep = 0; prevMsg = {}; demoState = Object.assign(emptyState(), { handoffSeq: 0 }); seenHandoff = 0; flights.length = 0; talks.length = 0;
+    }
     if (demoStep === 0) { demoChat = []; chatKey = ''; }
     (DEMO_CHAT[demoStep] || []).forEach(([role, agent, text]) => demoChat.push({ n: demoChat.length + 1, at: new Date().toISOString(), role, agent, text }));
     renderChat(demoChat);
     DEMO[demoStep](demoState);
+    demoState.models = {
+      models: [
+        { id: 'argon',  name: 'Gemini 4 Argon',    active: demoState.activeAgent === 'argon' },
+        { id: 'flash',  name: 'Gemini 3.8 Flash',  active: demoState.activeAgent === 'flash' },
+        { id: 'opus',   name: 'Claude Opus 5.5',   active: demoState.activeAgent === 'opus' },
+        { id: 'sonnet', name: 'Claude Sonnet 5.5', active: demoState.activeAgent === 'sonnet' },
+      ]
+    };
     Object.entries(demoState.agents).forEach(([k, v]) => {
-      if (v.message && prevMsg[k] !== v.message) demoState.log.push({ at: new Date().toISOString(), text: `${k}: ${v.message}` });
+      const label = STAFF[canon(k)]?.name || k;
+      if (v.message && prevMsg[k] !== v.message) demoState.log.push({ at: new Date().toISOString(), text: `${label}: ${v.message}` });
       prevMsg[k] = v.message;
     });
     demoState.log = demoState.log.slice(-100);
@@ -825,11 +1040,13 @@ function startDemo() {
     apply(JSON.parse(JSON.stringify(demoState)), performance.now());
   }, 2200);
 }
-function stopDemo() { demoOn = false; chatKey = ''; renderChat([]); clearInterval(demoTimer); flights.length = 0; seenHandoff = 0; S = emptyState(); primed = false; renderPanel(); setConn('', 'Menghubungkan...'); poll(); }
+function stopDemo() {
+  demoOn = false; chatKey = ''; renderChat([]); clearInterval(demoTimer); flights.length = 0; seenHandoff = 0; S = emptyState(); primed = false; renderPanel(); setConn('', 'Connecting...'); poll();
+}
 $('demoToggle').addEventListener('change', e => e.target.checked ? startDemo() : stopDemo());
 
 $('resetBtn').addEventListener('click', async () => {
-  if (!confirm('Bersihkan visualizer & histori percakapan sekarang?')) return;
+  if (!confirm('Clear visualizer and conversation history now?')) return;
   try {
     await fetch('/reset', { method: 'POST' });
     S = emptyState();
@@ -838,9 +1055,9 @@ $('resetBtn').addEventListener('click', async () => {
     talks.length = 0;
     renderPanel();
     renderChat([]);
-    setConn('live', 'Visualizer di-reset');
+    setConn('live', 'Visualizer reset');
   } catch (e) {
-    alert('Gagal reset: ' + e.message);
+    alert('Reset failed: ' + e.message);
   }
 });
 

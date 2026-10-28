@@ -1,21 +1,20 @@
 #!/usr/bin/env node
-// Server lokal sederhana untuk visualizer + live mirroring transcript Antigravity (Main Agent & Subagent).
+// Local server for visualizer + live Antigravity transcript mirroring (Main Agent & Subagents).
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  buildMirroredChat,
   syncChatFileToDisk,
   syncStateFromTranscript,
   resetVisualizer,
-  saveUsageConfig,
-  computeModelUsage,
+  getModelsStatus,
   getUserName,
   setUserName,
 } from './mirror-transcript.mjs';
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const thisFile = fileURLToPath(import.meta.url);
+const root = path.resolve(path.dirname(thisFile), '..');
 const PORT = Number(process.env.PORT || 4177);
 const HEADERS = { 'Cache-Control': 'no-store' };
 
@@ -25,7 +24,12 @@ async function readBody(req) {
   try { return JSON.parse(d || '{}'); } catch { return {}; }
 }
 
-const server = http.createServer(async (req, res) => {
+function send(res, code, type, body) {
+  res.writeHead(code, { 'Content-Type': type, ...HEADERS });
+  res.end(body);
+}
+
+export async function handleVisualizerRequest(req, res) {
   const url = (req.url || '/').split('?')[0];
   const method = req.method || 'GET';
 
@@ -48,29 +52,19 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
-  if (method === 'POST' && url === '/usage') {
-    try {
-      const body = await readBody(req);
-      saveUsageConfig(body);
-      return send(res, 200, 'application/json', JSON.stringify({ ok: true }));
-    } catch (e) {
-      return send(res, 500, 'application/json', JSON.stringify({ error: String(e.message || e) }));
-    }
-  }
-
-  if (url === '/usage.json') {
-    try {
-      const data = computeModelUsage();
-      return send(res, 200, 'application/json', JSON.stringify(data));
-    } catch {
-      return send(res, 500, 'application/json', JSON.stringify({ models: [] }));
-    }
-  }
-
   if (url === '/' || url === '/index.html') {
-    try { return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(root, 'visualizer', 'index.html'))); }
-    catch { return send(res, 500, 'text/plain; charset=utf-8', 'visualizer/index.html tidak ditemukan'); }
+    try {
+      return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(root, 'visualizer', 'index.html')));
+    } catch {
+      return send(res, 500, 'text/plain; charset=utf-8', 'visualizer/index.html not found');
+    }
   }
+
+  if (url === '/favicon.ico') {
+    res.writeHead(204, HEADERS);
+    return res.end();
+  }
+
   if (url === '/state.json') {
     try { syncStateFromTranscript(); } catch {}
     const f = path.join(root, '.office', 'state.json');
@@ -81,28 +75,38 @@ const server = http.createServer(async (req, res) => {
       state = { empty: true };
     }
     state.userName = getUserName();
-    try { state.models = computeModelUsage(); } catch {}
+    try { state.models = getModelsStatus(state.activeAgent); } catch {}
     return send(res, 200, 'application/json', JSON.stringify(state));
   }
+
   if (url === '/chat.json') {
-    const data = buildMirroredChat();
-    syncChatFileToDisk();
+    const data = syncChatFileToDisk();
     return send(res, 200, 'application/json', JSON.stringify(data));
   }
-  send(res, 404, 'text/plain; charset=utf-8', 'Not found');
-});
 
-function send(res, code, type, body) {
-  res.writeHead(code, { 'Content-Type': type, ...HEADERS });
-  res.end(body);
+  send(res, 404, 'text/plain; charset=utf-8', 'Not found');
 }
 
-// Sinkronisasi berkala di background supaya state.json selalu up-to-date
-setInterval(() => {
-  try { syncStateFromTranscript(); } catch {}
-}, 1000).unref();
+if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(thisFile)) {
+  const server = http.createServer(handleVisualizerRequest);
+  const serverV6 = http.createServer(handleVisualizerRequest);
+  serverV6.on('error', () => {});
 
-server.listen(PORT, '127.0.0.1', () => {
-  console.log(`Visualizer: http://localhost:${PORT}`);
-  console.log('Membaca .office/state.json, .office/chat.json, dan live transcript Antigravity dari semua project. Tekan Ctrl+C untuk berhenti.');
-});
+  setInterval(() => {
+    try { syncStateFromTranscript(); } catch {}
+  }, 1000).unref();
+
+  server.on('error', err => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(`Port ${PORT} is already in use. Another serve-visualizer instance may already be running at http://localhost:${PORT}`);
+      process.exit(1);
+    }
+    throw err;
+  });
+
+  server.listen(PORT, '127.0.0.1', () => {
+    try { serverV6.listen(PORT, '::1'); } catch {}
+    console.log(`Visualizer: http://localhost:${PORT}`);
+    console.log('Serving visualizer/index.html, .office/state.json, .office/chat.json, and live Antigravity transcripts. Press Ctrl+C to stop.');
+  });
+}
