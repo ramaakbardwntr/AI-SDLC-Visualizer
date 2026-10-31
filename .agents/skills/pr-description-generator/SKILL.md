@@ -1,6 +1,6 @@
 ---
 name: pr-description-generator
-description: Generate GitHub Pull Request descriptions matching team standards (Issue Link, Description, Changes, Screenshots, Checklist) in GitHub-supported HTML format ready for copy-paste (including raw PostgreSQL migration scripts when database changes occur), based on git branch and commit inspections. Use whenever the user asks to "create PR", "make pull request", "write PR description", "generate PR", "PR template", "gh pr create", or requests a summary of branch changes for code review.
+description: Generate GitHub Pull Request descriptions matching team standards (Issue Link, Description, Changes, Screenshots, Checklist) in GitHub Flavored Markdown (GFM) format ready for copy-paste (including raw PostgreSQL migration scripts when database changes occur), based on git branch and commit inspections. Use whenever the user asks to "create PR", "make pull request", "write PR description", "generate PR", "PR template", "gh pr create", or requests a summary of branch changes for code review.
 ---
 
 # PR Description Generator
@@ -9,28 +9,26 @@ This skill generates GitHub Pull Request descriptions by **directly reading the 
 
 ## Standard Team Template (Must Be Used Verbatim)
 
-Section structure, labels, ordering, and checklist text **must not be altered** (including the exact text `It has meet the definition of done`), as these represent established team standards. Format: GitHub-compatible HTML, with the checklist formatted as a Markdown task list.
+Section structure, labels, ordering, and checklist text **must not be altered** (including the exact text `It has meet the definition of done`), as these represent established team standards. Format: GitHub Flavored Markdown (GFM).
 
-```html
-<h2>Pull Request</h2>
+```markdown
+## Pull Request
 
-<p><strong>Issue Link:</strong> [Link to the related issue, if applicable]</p>
+**Issue Link:** [Link to the related issue, if applicable]
 
-<p><strong>Description:</strong></p>
+**Description:**
 
-<p>[Provide a brief description of your changes.]</p>
+[Provide a brief description of your changes.]
 
-<p><strong>Changes:</strong></p>
+**Changes:**
 
-<ul>
-  <li>[List the changes or features you've implemented.]</li>
-</ul>
+- [List the changes or features you've implemented.]
 
-<p><strong>Screenshots:</strong></p>
+**Screenshots:**
 
-<p>[If your changes affect the user interface, include screenshots or animated GIFs.]</p>
+[If your changes affect the user interface, include screenshots or animated GIFs.]
 
-<p><strong>Checklist:</strong></p>
+**Checklist:**
 
 - [ ] I have tested my changes.
 - [ ] It has meet the definition of done
@@ -38,12 +36,11 @@ Section structure, labels, ordering, and checklist text **must not be altered** 
 - [ ] I have updated the documentation, if necessary.
 ```
 
-HTML Formatting Rules:
-- Only use tags rendered by GitHub: `h2`, `p`, `strong`, `em`, `ul`, `ol`, `li`, `code`, `pre`, `a`, `img`, `details`, `summary`, `br`.
-- **The checklist must be a Markdown task list** (`- [ ]` / `- [x]`), because GitHub strips `<input type="checkbox">` from user HTML. Ensure empty blank lines precede and follow the task list.
-- Insert blank lines between HTML blocks so GitHub renders them properly.
-- Escape `<`, `>`, and `&` characters in prose (e.g. generic `List&lt;Order&gt;`). Also escape inside `<code>` or `<pre>`.
-- Format class, method, and endpoint names with `<code>...</code>`.
+Markdown Formatting Rules:
+- Use standard GitHub Flavored Markdown (GFM): `##` for section header, `**Label:**` for section labels, and `- ` for bullet points. **Do not use HTML tags** (`<h2>`, `<p>`, `<strong>`, `<ul>`, `<li>`, `<code>`, `<pre>`, `<a>`).
+- **The checklist must be a Markdown task list** (`- [ ]` / `- [x]`). Ensure empty blank lines precede and follow the task list.
+- Format class, method, table, and endpoint names with inline code backticks (` `code` `).
+- Format links with standard Markdown `[label](url)`.
 - If the repository has a distinct `.github/pull_request_template.md`, ask the user once which template to use. Default to the standard template above.
 
 ---
@@ -86,7 +83,7 @@ Search in order:
 
 Rules:
 - GitHub Issues: write `Closes #123` for automatic closing on merge, or `Related to #123` if not closing.
-- Jira: combine with known Jira base URL (from repo config, README, or user) into `<a href="...">ABC-123</a>`. If base URL is unknown, write the key alone (`ABC-123`) without fabricating a URL.
+- Jira: combine with known Jira base URL (from repo config, README, or user) into `[ABC-123](https://...)`. If base URL is unknown, write the key alone (`ABC-123`) without fabricating a URL.
 
 ### Step 4 - Write **Description**
 
@@ -102,11 +99,11 @@ Rules:
 
 ### Step 5 - Write **Changes**
 
-`<ul>` with one `<li>` per meaningful change.
+Bulleted list (`- `) with one item per meaningful change.
 
 Rules:
-- Mention specific class, method, endpoint, table, or migration names, e.g. `Add endpoint <code>POST /orders/{id}/cancel</code> in <code>OrdersController</code>`.
-- Group by architectural layer if numerous (API, Service/Business Logic, Data/Migration, Test) using nested `<li>` with `<ul>`. Do not introduce new heading tags.
+- Mention specific class, method, endpoint, table, or migration names, e.g. `Add endpoint `POST /orders/{id}/cancel` in `OrdersController``.
+- Group by architectural layer if numerous (API, Service/Business Logic, Data/Migration, Test) using nested bullets (`  - `). Do not introduce new heading tags.
 - Mention unit tests added or updated.
 - Explicitly highlight reviewer risks: **breaking changes, database migrations, configuration/environment variable changes, API contract changes, and new dependencies**.
 - If database changes occurred (entities/models, DbContext, migrations), include the **Database Changes Query** (PostgreSQL) per **Step 5b** at the end of this Changes section.
@@ -128,7 +125,7 @@ git diff <merge-base>..HEAD --name-only -- '*.cs' | grep -Ei "entit|model|domain
 Inspect modified entities **and existing peer entities** (to mirror audit/base class columns, e.g. `created_by`, `created_at`, `updated_by`, `updated_at`, `version`).
 
 **5b-2. Follow project conventions.** Check from existing entities, configuration, or prior scripts in the repo. Common conventions in this team:
-- **Schema-qualified:** `fbi_sap.product_division`. Schema comes from `ToTable(name, schema)` / `HasDefaultSchema` / peer entities. Do not omit the schema prefix.
+- **Schema-qualified:** `catalog.categories` or `catalog.products`. Schema comes from `ToTable(name, schema)` / `HasDefaultSchema` / peer entities. Do not omit the schema prefix.
 - **snake_case for table and column names**, unquoted. Quote only reserved words or case-sensitive identifiers (e.g. `"version"`).
 - **Constraint and index naming:** primary key `pk_<table_name>` (or `"PK_<table_name>"` if following legacy scripts), index `ix_<table_name>_<column_name>`, unique index `ux_<table_name>_<column_name>`, foreign key `fk_<table_name>_<parent_table>_<column_name>`.
 - If conventions cannot be determined, write `Needs confirmation: <naming / schema convention>` in Notes for Author and state the assumption used.
@@ -163,46 +160,46 @@ Inspect modified entities **and existing peer entities** (to mirror audit/base c
 - Queries must strictly reflect the diff. Do not invent columns or indexes.
 - **Never execute queries against any database.** Queries are presented strictly for review and execution by the author or DBA.
 
-**5b-5. Presentation in the PR.** Place at the **end of the Changes section** (after `</ul>`), formatted with a bold label followed by a plain fenced code block (without language tag) for easy copying. This is not a new heading. Mandatory format:
+**5b-5. Presentation in the PR.** Place at the **end of the Changes section** (after the list items), formatted with a bold label followed by a plain fenced code block (without language tag) for easy copying. This is not a new heading. Mandatory format:
 
-````html
-<p><strong>Database Changes Query:</strong></p>
+````markdown
+**Database Changes Query:**
 
 ```
-ALTER TABLE fbi_sap.master_ah ADD div_id text NULL;
-ALTER TABLE fbi_sap.master_ah ADD div_name text NULL;
+ALTER TABLE catalog.products ADD category_id uuid NULL;
+ALTER TABLE catalog.products ADD category_name text NULL;
 
-CREATE TABLE fbi_sap.product_division (
+CREATE TABLE catalog.categories (
 	id uuid NOT NULL,
-	div_id text NULL,
-	div_name text NULL,
+	code text NULL,
+	name text NULL,
 	updated_by text NULL,
 	updated_at timestamp NULL,
 	created_by text NOT NULL,
 	created_at timestamp NOT NULL,
 	"version" uuid NOT NULL,
-	CONSTRAINT "PK_product_div" PRIMARY KEY (id)
+	CONSTRAINT pk_categories PRIMARY KEY (id)
 );
-CREATE INDEX ix_product_div_id ON fbi_sap.product_division USING btree (div_id);
+CREATE INDEX ix_categories_code ON catalog.categories USING btree (code);
 
-ALTER TABLE fbi_sap.product_group ADD div_id text NULL;
+ALTER TABLE catalog.product_groups ADD category_id uuid NULL;
 
-CREATE TABLE fbi_sap.product_logistic (
+CREATE TABLE catalog.product_inventory (
 	id uuid NOT NULL,
-	article_code text NOT NULL,
-	site text NULL,
-	leadtime text NULL,
+	sku text NOT NULL,
+	warehouse_code text NULL,
+	lead_time_days integer NULL,
 	updated_by text NULL,
 	updated_at timestamp NULL,
 	created_by text NOT NULL,
 	created_at timestamp NOT NULL DEFAULT (now() at time zone 'utc'),
 	"version" uuid NOT NULL,
-	CONSTRAINT pk_product_logistic PRIMARY KEY (id)
+	CONSTRAINT pk_product_inventory PRIMARY KEY (id)
 );
-CREATE INDEX ix_product_logistic_article_code ON fbi_sap.product_logistic (article_code);
-CREATE UNIQUE INDEX ux_product_logistic_article_code_site ON fbi_sap.product_logistic (article_code, site);
+CREATE INDEX ix_product_inventory_sku ON catalog.product_inventory (sku);
+CREATE UNIQUE INDEX ux_product_inventory_sku_warehouse ON catalog.product_inventory (sku, warehouse_code);
 
-ALTER TABLE fbi_sap.product_listing ADD assortment varchar(500) NULL;
+ALTER TABLE catalog.product_listings ADD notes varchar(500) NULL;
 ```
 ````
 
@@ -249,7 +246,7 @@ Rules:
 ### Step 7 - Fill **Screenshots**
 
 - If the diff touches UI (`.razor`, `.cshtml`, `.css`, `.tsx`, `.vue`, etc.): write `[To be attached by author]` and specify the screens/components requiring screenshots. The assistant **must not** fabricate or link images.
-- If purely backend/API: write `N/A - no UI changes.` For API changes, brief sample request/response snippets may be attached in `<pre><code>`.
+- If purely backend/API: write `N/A - no UI changes.` For API changes, brief sample request/response snippets may be attached in fenced code blocks (```json ... ```).
 
 ### Step 8 - Fill **Checklist**
 
@@ -265,8 +262,8 @@ Check `[x]` **only** when evidence exists. Otherwise leave `[ ]` for the author 
 ### Step 9 - Pre-Submission Validation Checklist
 
 - [ ] Headings and section ordering match the template verbatim.
-- [ ] Valid HTML: closed tags, blank lines between blocks, `<`/`>`/`&` properly escaped.
-- [ ] Checklist uses Markdown task list syntax, not HTML `<input>`.
+- [ ] Valid GitHub Flavored Markdown: standard headings (`##`), bold labels (`**Label:**`), and list bullets (`- `). No raw HTML tags (`<h2>`, `<p>`, `<strong>`, `<ul>`, `<li>`, `<code>`).
+- [ ] Checklist uses Markdown task list syntax (`- [ ]` / `- [x]`).
 - [ ] Every bullet in Changes points to verifiable code in the diff.
 - [ ] Issue Link contains no fabricated URLs.
 - [ ] If database changed: **Database Changes Query** is located at the end of Changes, unformatted language fence, reflecting diff entities.
@@ -281,11 +278,11 @@ Check `[x]` **only** when evidence exists. Otherwise leave `[ ]` for the author 
 **PR Title:** `[Service Name] - [Work Performed]`, starting with an action verb (Fix, Add, Improve, Refactor, etc.). If branch has a ticket key, prefix with key, e.g. `ABC-123 Payment Service - Fix transaction duplication during retry`.
 
 **Submission:**
-1. Display title and description in **one single `html` code block** (using 4 backticks ````html if nested Database Changes Query block is present) for easy copy-pasting into GitHub.
+1. Display title and description in **one single `markdown` code block** (using 4 backticks ````markdown if nested Database Changes Query block is present) for easy copy-pasting into GitHub.
 2. If GitHub CLI (`gh`) is available and the user requests PR creation, **request confirmation first**, then execute:
    ```bash
    git push -u origin <branch>
-   gh pr create --base <base-branch> --title "<title>" --body-file <description-file>.html
+   gh pr create --base <base-branch> --title "<title>" --body-file <description-file>.md
    ```
    Add `--draft` if the checklist is incomplete or items require confirmation.
 3. Never push or create PR without explicit user approval.
@@ -297,32 +294,30 @@ Check `[x]` **only** when evidence exists. Otherwise leave `[ ]` for the author 
 `````
 **PR Title:** [Service Name] - [Work Performed]
 
-````html
-<h2>Pull Request</h2>
+````markdown
+## Pull Request
 
-<p><strong>Issue Link:</strong> ...</p>
+**Issue Link:** ...
 
-<p><strong>Description:</strong></p>
+**Description:**
 
-<p>...</p>
+...
 
-<p><strong>Changes:</strong></p>
+**Changes:**
 
-<ul>
-  <li>...</li>
-</ul>
+- ...
 
-<p><strong>Database Changes Query:</strong></p>
+**Database Changes Query:**
 
 ```
 <PostgreSQL queries: ALTER TABLE / CREATE TABLE per entities>
 ```
 
-<p><strong>Screenshots:</strong></p>
+**Screenshots:**
 
-<p>...</p>
+...
 
-<p><strong>Checklist:</strong></p>
+**Checklist:**
 
 - [ ] I have tested my changes.
 - [ ] It has meet the definition of done

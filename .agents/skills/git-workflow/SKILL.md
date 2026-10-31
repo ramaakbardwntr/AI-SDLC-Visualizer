@@ -36,7 +36,7 @@ If the branch already exists, **do not create a new branch** and do not reset it
 Execute from inside the repository folder to ensure permissions apply:
 ```bash
 cd workspace/<repo> && git push -u origin <branch>
-gh pr create --base <base> --title "<title>" --body-file <pr.html> [--draft]
+gh pr create --base <base> --title "<title>" --body-file <pr.md> [--draft]
 ```
 Forbidden actions: force pushing, pushing to protected branches, merging PRs, deleting branches.
 

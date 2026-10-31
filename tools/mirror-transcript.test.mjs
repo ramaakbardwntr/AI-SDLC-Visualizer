@@ -220,6 +220,23 @@ describe('Centralized Model Tool Routing & External Props', () => {
     assert.equal(act.phase, 'release');
     assert.deepEqual(act.propHandoff, ['sonnet', 'jira', 'Write Jira']);
   });
+
+  test('pr.md drafting routes to active model and hands off to github prop', () => {
+    const act = inferToolAction(
+      {
+        name: 'write_file',
+        args: { Path: '.office/tasks/task-1/pr.md' }
+      },
+      '',
+      'sonnet',
+      'release'
+    );
+
+    assert.equal(act.role, 'sonnet');
+    assert.equal(act.phase, 'release');
+    assert.equal(act.message, 'Drafting PR description');
+    assert.deepEqual(act.propHandoff, ['sonnet', 'github', 'Draft PR']);
+  });
 });
 
 describe('Untruncated Conversation Chat & Full Transcript Resolution', () => {
