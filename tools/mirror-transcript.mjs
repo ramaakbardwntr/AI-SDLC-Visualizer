@@ -325,7 +325,7 @@ export function inferToolAction(tc, genericContent = '', currentRole = 'flash', 
   if ((name === 'run_command' && /\bgh\s+pr\b/i.test(cmd)) || /create_pull_request/i.test(name)) {
     return { role: active, phase: 'release', message: 'Create Pull Request on GitHub', propHandoff: [active, 'github', 'Create PR'] };
   }
-  if (/pr\.html|pull_request_template/i.test(filePath)) {
+  if (/pr\.(md|html)|pull_request_template/i.test(filePath)) {
     return { role: active, phase: 'release', message: isRead ? 'Reading PR template' : isEdit ? 'Editing PR description' : 'Drafting PR description', propHandoff: isRead ? null : [active, 'github', 'Draft PR'] };
   }
   if (/jira/i.test(name) || /jira\.md$/i.test(filePath)) {

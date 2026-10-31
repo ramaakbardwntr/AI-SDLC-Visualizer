@@ -84,7 +84,7 @@ Agent menyusun `docs-draft.md` (Tech Doc dan/atau RFC) dalam Bahasa Inggris.
 Review diff, hasil test, dan draft docs bersama user. Setelah disetujui, agent menulis ke Strand Docmost MCP.
 
 ### Fase 8 - Release (`phase release`)
-Agent menyusun draft Jira Task (`jira.md`) dan PR Description (`pr.html`).
+Agent menyusun draft Jira Task (`jira.md`) dan PR Description (`pr.md`).
 
 ### Gate 3 - Push & PR (`gate 3`)
 Minta izin eksplisit untuk push ke GitHub dan create Pull Request.

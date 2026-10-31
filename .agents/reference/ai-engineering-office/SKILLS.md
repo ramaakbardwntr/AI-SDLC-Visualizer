@@ -71,7 +71,7 @@ status: confirmed
 | `.office/chat.json` | Mirrored conversation feed: `{ seq, messages: Array<{ n, role, agent?, at, text, md }> }`. |
 | `.office/config.json` | Persistent user preferences across restarts: `{ userName }`. |
 | `.office/usage.json` | Custom quota configuration per AI model (`Gemini 4 Argon`, `Gemini 3.8 Flash`, `Claude Opus 5.5`, `Claude Sonnet 5.5`). |
-| `.office/tasks/<task-id>/` | Per-task SDLC artifacts: `brief.md`, `plan.md`, `test-report.md`, `docs-draft.md`, `jira.md`, `pr.html`. |
+| `.office/tasks/<task-id>/` | Per-task SDLC artifacts: `brief.md`, `plan.md`, `test-report.md`, `docs-draft.md`, `jira.md`, `pr.md`. |
 
 ---
 
@@ -82,7 +82,7 @@ status: confirmed
 | **Antigravity IDE / CLI** | Reads `~/.gemini/antigravity/brain/<convId>/.system_generated/logs/transcript.jsonl` & `~/.gemini/antigravity/annotations/<convId>.pbtxt`; hooks registered in `.agents/hooks.json` & `~/.gemini/config/hooks.json`. | `tools/mirror-transcript.mjs`, `tools/setup-antigravity.mjs` |
 | **Claude Code CLI** | Lifecycle hooks configured in `.agents/settings.json`. | `.agents/settings.json`, `tools/office-hook.mjs` |
 | **Strand / Docmost MCP** | Configured via `.mcp.json` (template at `.mcp.json.example`); MCP tool calls trigger Docmost prop handoffs. | `office-config/platform-notes.md`, `tools/mirror-transcript.mjs` |
-| **GitHub & Jira Props** | Canvas props animate when `git checkout -b`, `git commit`, `git push`, `gh pr`, `pr.html`, or `jira.md` operations are detected. | `tools/mirror-transcript.mjs`, `visualizer/index.html` |
+| **GitHub & Jira Props** | Canvas props animate when `git checkout -b`, `git commit`, `git push`, `gh pr`, `pr.md`, `pr.html`, or `jira.md` operations are detected. | `tools/mirror-transcript.mjs`, `visualizer/index.html` |
 
 ---
 

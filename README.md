@@ -65,14 +65,14 @@ flowchart LR
     Q -->|"Tests Pass (Green)"| W["Phase 7 (docs): Draft docs-draft.md (English)"]
     W --> G2{"Gate 2: Review Results?"}
     G2 -->|"Approve"| DM["Push to Strand / Docmost MCP"]
-    DM --> J["Phase 8 (release): Draft jira.md & pr.html"]
+    DM --> J["Phase 8 (release): Draft jira.md & pr.md"]
     J --> G3{"Gate 3: Approve Push & PR?"}
     G3 -->|"Approve"| Z["Phase 9 (done): Push branch & create GitHub PR"]
 ```
 
 1. **Gate 1 (Plan Approval):** The user reviews `plan.md`. Not a single line of code may be written before Gate 1 is approved. If rejected or revision is requested, the visualizer displays an animated discussion loop between the User and the Architect.
 2. **Gate 2 (Result Review):** The user reviews code diffs, QA test execution reports (`test-report.md`), and draft documentation (`docs-draft.md`). Once approved, `scribe` publishes the changes to Strand/Docmost via MCP.
-3. **Gate 3 (Release Approval):** The user reviews the draft Jira issue (`jira.md`) and Pull Request description (`pr.html`). No remote `git push` or PR creation may occur without explicit user consent.
+3. **Gate 3 (Release Approval):** The user reviews the draft Jira issue (`jira.md`) and Pull Request description (`pr.md`). No remote `git push` or PR creation may occur without explicit user consent.
 
 ---
 
