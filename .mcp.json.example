@@ -7,9 +7,11 @@
       }
     },
     "jira": {
-      "serverUrl": "https://mcp.atlassian.com/v2/mcp",
+      "serverUrl": "https://<your-subdomain>.atlassian.net",
+      "email": "<user.email@company.com>",
+      "apiToken": "<isi-atlassian-api-token-jangan-di-commit>",
       "headers": {
-        "Authorization": "Bearer <isi-api-key-atlassian-jangan-di-commit>"
+        "Authorization": "Basic <base64(email:apiToken)>"
       }
     }
   }

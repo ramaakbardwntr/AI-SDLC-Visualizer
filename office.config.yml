@@ -21,7 +21,12 @@ docmost:                        # Strand / Docmost MCP integration
 
 jira:
   base_url: "https://klgtech.atlassian.net"     # Jira instance Base URL
-  default_project_key: ""
+  default_project_key: "BOWP"
+  defaults:
+    application: "Superapps"                    # Application (Global) [customfield_12291]
+    tribe: "Back Office & E-Commerce"          # Tribe/Department (Global) [customfield_12290]
+    sdlc: "Development Iteration:develop"      # SDLC Evidences [customfield_12370] (Parent:Child)
+    business_units: ["FBI"]                    # Business Unit (Global) [customfield_12289] (Array)
 
 testing:
   mock: [external_client, third_party_client]   # mock external clients only
