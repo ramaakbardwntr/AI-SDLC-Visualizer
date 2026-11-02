@@ -5,6 +5,9 @@ description: Use this skill whenever generating, updating, or auditing a compone
 
 # Tech Doc Generator Skill
 
+> [!NOTE]
+> **Optional Workflow:** Pembuatan atau pembaruan Tech Doc di Strand (Docmost) bersifat **opsional**. Skill ini hanya dieksekusi jika user memberikan konfirmasi eksplisit dan wajib menyediakan **nama Space** serta **nama dokumen (atau link URL Strand)** target.
+
 > [!IMPORTANT]
 > **Mandatory Language Requirement:** All Technical Documentation pages, entries, summaries, ERD descriptions, and changelogs generated or updated in Strand (Docmost) via MCP **MUST be written in English**.
 

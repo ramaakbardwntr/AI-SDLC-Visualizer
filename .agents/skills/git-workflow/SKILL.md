@@ -1,6 +1,6 @@
 ---
 name: git-workflow
-description: Branching, committing, and pushing rules for this office - branch names always come from the user, existing branches are reused, new branches are created from main/master, no direct commits to protected branches, push only after explicit approval. Use when preparing branches, committing, or pushing.
+description: Branching, committing, and pushing rules for this office - branch names always come from the user, existing branches are reused, new branches are created from main/master, no direct commits to protected branches, push only after explicit approval, and check existing PRs before offering/creating PR.
 ---
 
 # Git Workflow
@@ -33,7 +33,14 @@ If the branch already exists, **do not create a new branch** and do not reset it
 - Never `--amend` or rebase commits that have already been pushed.
 
 ## 3. Pushing and Creating PR (Only After Gate 3 Approval)
-Execute from inside the repository folder to ensure permissions apply:
+Sebelum menawarkan atau membuat PR baru, **wajib periksa apakah branch sudah memiliki Pull Request aktif di GitHub**:
+```bash
+gh pr list --head <branch> --state open
+```
+- Jika **belum ada PR**: tawarkan kepada user apakah ingin dibuatkan Pull Request ke GitHub.
+- Jika **sudah ada PR**: tampilkan link URL dan nomor PR yang sudah ada, jangan membuat PR baru yang duplikat.
+
+Eksekusi pembuatan PR (hanya setelah izin eksplisit user di Gate 3):
 ```bash
 cd workspace/<repo> && git push -u origin <branch>
 gh pr create --base <base> --title "<title>" --body-file <pr.md> [--draft]

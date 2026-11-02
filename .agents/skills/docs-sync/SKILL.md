@@ -1,41 +1,52 @@
 ---
 name: docs-sync
-description: Mandatory documentation workflow for every task in this office - searching for existing RFCs in Strand/Docmost, deciding whether to create an RFC (new features only and with explicit user approval), and updating Tech Docs (draft, review at Gate 2, then write via MCP). Use as a wrapper for tech-doc-generator and docmost-rfc-generator skills.
+description: Optional documentation workflow - handles on-demand Tech Doc and RFC updates in Strand/Docmost via MCP only when requested by the user with specified Space and target doc/URL.
 ---
 
-# Docs Sync
+# Docs Sync (Optional / On-Demand)
 
-This skill governs **when and in what order** documentation is created. The content format adheres strictly to `tech-doc-generator` (Tech Docs) and `docmost-rfc-generator` (RFCs).
+This skill governs **when and how** documentation is created or updated in Strand / Docmost. The content format adheres strictly to `tech-doc-generator` (Tech Docs) and `docmost-rfc-generator` (RFCs).
+
+> [!NOTE]
+> **Optional Workflow:** Dokumentasi ke Strand / Docmost bersifat **opsional**. Agent tidak boleh memaksakan atau menjalankan pembaruan dokumentasi secara otomatis tanpa persetujuan eksplisit dari user.
 
 > [!IMPORTANT]
-> **Language Mandate:** All documentation (Tech Docs, RFCs, and Changelogs) drafted and published to Strand/Docmost via MCP **MUST be written in English**.
+> **User Input Required:** Ketika user memilih untuk memperbarui dokumentasi, user **WAJIB memberikan**:
+> 1. **Nama Space** di Strand / Docmost.
+> 2. **Nama dokumen** atau **link URL Strand** dari dokumen yang ingin di-update.
+> 
+> **Language Mandate:** Seluruh penulisan dokumentasi (Tech Docs, RFCs, dan Changelogs) yang dipublikasikan ke Strand/Docmost via MCP **wajib ditulis dalam Bahasa Inggris (English)**.
 
-## A. RFC (Only when task = new feature)
-1. Search first via MCP (`search_pages`): feature name, service name, "RFC". Retrieve title, status, and URL link.
-2. The Office Manager asks the user (in a single message, including search results):
-   - Is an RFC needed or not?
-   - Does an existing RFC already cover this? (show candidates from search results)
-3. Decision outcomes:
-   | User Decision | Action |
-   |---|---|
-   | RFC already exists | Link it in the plan and Changelog. If implementation design deviates from the RFC, propose updating the RFC and await approval. |
-   | None exists & needed | After Gate 1, create a `DRAFT` RFC following `docmost-rfc-generator` in English (Mermaid diagrams mandatory, GFM tables). RFC number format `RFC-YYYY-NNN`: find the latest RFC number and increment by +1. Save under `rfc_parent_page_id`. |
-   | Not needed | Record "RFC skipped per user decision" in `brief.md`. |
-4. Never create an RFC without an explicit "yes" from the user. Any RFC content that cannot be deduced from the plan/code must be written as `Needs confirmation`, never fabricated.
+## A. Post-Plan Offer & Decision Flow
+Pada setiap akhir penyusunan Implementation Plan atau sebelum fase rilis, tawarkan ke user:
+> *"Apakah Tech Doc atau RFC terkait pada Strand Docmost MCP mau di-update? Jika ya, mohon berikan nama Space dan nama dokumen (atau link URL Strand) yang ingin di-update."*
 
-## B. Tech Doc (Mandatory for every task)
-1. **Determine scope** (Step 1 and 1b of Tech Doc skill): identify which service, check if the Service Tech Doc page exists (`search_pages`).
-   - If no Service Tech Doc page exists yet for this service: do not generate the entire Tech Doc silently. Ask the user: generate full tech doc (separate task) or only pages for affected components.
-2. **Classify changes** from `git diff <merge-base>..HEAD --name-only` to component types using Step 2 signals (Controller -> API Contract, `*Business.cs` -> Business Logic, `*Consumer/Handler` -> Kafka/Queue, `EventHelper` -> RabbitMQ/Queue, `HangfireJobScheduler` -> Background Process, Entity/Migration -> Data Model, Refit/HttpClient -> Integration, `appsettings`/`AppConfig` -> Config, UI routes -> Frontend/UI).
-3. **Fetch templates** for entries (`get_template`) for each affected component. Template IDs are listed in `office-config/platform-notes.md`.
-4. **Draft** into `.office/tasks/<id>/docs-draft.md` in English: new/modified entries using the template field structure, mandatory Source (path + line range), and real schema in code blocks (no placeholders). Data Model: ERD and table descriptions must match. Add one **Changelog** row (date, version from csproj `<Version>` or `git describe --tags --abbrev=0`, change summary, touched pages, RFC/PR link if applicable; leave version blank if no git tag exists, do not fabricate).
-5. **Gate 2**: present the draft to the user alongside the diff and test results.
-6. **Write** after approval: call `get_page` to obtain UUID, then `update_page`/`create_page`/`create_page_from_template`. Patch only modified entries; never overwrite manually edited content. Entry-type: append/modify entries; Bulk-type (Data Model, Config): edit only relevant tables/rows.
-7. **Cross-link** to other services' Tech Docs instead of duplicating details (Step 5 of Tech Doc skill).
+| Keputusan User | Tindakan |
+|---|---|
+| **Tidak / Skip / Ga Perlu** | Lewati seluruh proses pembuatan/update Docmost. Catat di brief/report: `Docs skipped per user decision`. Lanjutkan langsung ke fase berikutnya. |
+| **Ya (beserta Space & Doc/URL)** | Lanjutkan proses draft Tech Doc atau RFC sesuai spesifikasi di bawah. |
+| **Ya, tapi belum sebut Space/Doc** | Minta user menyebutkan nama Space dan nama dokumen/URL Strand sebelum memanggil MCP. Dilarang menebak Space atau dokumen secara acak. |
 
-## C. Failure Conditions & Guardrails
-- MCP unreachable or rejected: set status to `blocked`, report to user. Do not mark documentation as complete; keep the PR checklist item "updated the documentation" as `[ ]`.
-- Target page not found or ID differs from notes: re-search via `search_pages`/`list_pages`, do not guess IDs.
-- No components affected (e.g. test-only changes or internal refactoring): still add a Changelog row and explain the reason to the user.
-- Documentation must never contain secrets, connection strings, passwords, or personal data (PII).
-- **All drafted and published pages in Docmost must be in English.**
+---
+
+## B. RFC (Opsional - Desain Inisiatif Baru)
+1. Dilakukan hanya jika disetujui user dan mencakup fitur baru.
+2. Gunakan `search_pages` pada Space yang diinformasikan user untuk memeriksa apakah RFC serupa sudah pernah dibuat.
+3. Jika membuat RFC baru: ikuti `docmost-rfc-generator` dalam Bahasa Inggris (Mermaid code blocks, tabel GFM, format `RFC-YYYY-NNN`).
+4. Dilarang mengarang detail RFC; tulis `Needs confirmation` bila terdapat parameter yang belum diketahui.
+
+---
+
+## C. Tech Doc (Opsional - Living Technical Reference)
+1. **Verifikasi Target:** Pastikan target Space dan ID halaman induk telah diverifikasi berdasarkan input Space dan URL/nama doc dari user.
+2. **Klasifikasi Perubahan:** Petakan perubahan dari `git diff` ke tipe komponen (Controller -> API Contract, Business Logic, Kafka, RabbitMQ, Hangfire -> Background Process, Entity/Migration -> Data Model, Refit -> Integration, AppConfig -> Config).
+3. **Drafting:** Tulis draft entri dalam Bahasa Inggris ke `.office/tasks/<id>/docs-draft.md` mengikuti template komponen terkait.
+4. **Review (Gate 2):** Tampilkan draft bersama review diff dan test report.
+5. **Write ke MCP:** Setelah disetujui, update dokumen target di Strand MCP menggunakan `update_page` atau `create_page_from_template`.
+
+---
+
+## D. Failure Conditions & Guardrails
+- Jika MCP tidak dapat diakses atau gagal terhubung: catat status blocked dan laporkan ke user tanpa menghentikan penyelesaian task kode.
+- Dilarang mempublikasikan secret, connection string, password, token, atau data personal (PII) ke Docmost.
+- Seluruh konten halaman di Strand Docmost tetap wajib ditulis dalam Bahasa Inggris.

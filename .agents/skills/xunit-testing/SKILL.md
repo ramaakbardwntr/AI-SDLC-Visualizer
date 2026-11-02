@@ -1,6 +1,6 @@
 ---
 name: xunit-testing
-description: Authoring and executing xUnit test suites for this office - mock only external/third-party clients, never mock Repositories or Databases, enforce per-test seeder and cleanup, assert on impacted database fields and API responses. Use whenever writing, adjusting, or executing C# unit tests.
+description: Authoring and executing xUnit test suites for this office - audit test cases in relevant namespaces, consolidate redundant tests, maintain 100% meaningful business flow coverage (except mocks), mock only external/third-party clients, never mock Repositories or Databases, enforce per-test seeder and cleanup, and strictly adhere to existing project test styles.
 ---
 
 # xUnit Testing
@@ -13,16 +13,20 @@ description: Authoring and executing xUnit test suites for this office - mock on
 ## Core Rules
 | Rule | Specification |
 |---|---|
-| Mock | Only external/3rd-party clients (payment gateways, SAP, Refit APIs, S3, email, outbound message producers). |
-| Do NOT mock | **Repository** and **Database**. Use real implementations backed by a local/test database. InMemory/SQLite only if that is the established project convention. |
-| Seeder | Each test seeds its own isolated test data. Use unique identifiers (`Guid.NewGuid()`) to eliminate test collisions. |
-| Cleanup | Each test cleans up its seeded records (based on tracked IDs), including dependent records generated during execution. Never `TRUNCATE` shared tables. |
-| Table Assertions | Query the database using a **new** DbContext instance with `AsNoTracking()` to avoid reading tracked entities. Assert modified fields (status, amount, `updated_by`, `updated_at`, foreign keys, etc.) and assert fields that **must remain unchanged**. |
-| Response Assertions | Assert all significant response/return value fields, including HTTP status codes or `Result<T>` wrapper states. |
-| Mock Verifications | Verify calls to external clients (`Times.Once`, `Times.Never` for scenarios where external calls are forbidden, verifying key arguments). |
-| Scenarios | Per function under test: happy path, validation/negative cases, edge cases (empty data, duplicates, final state guards, concurrency where applicable). |
-| Naming | `Method_Condition_ExpectedResult`; test class `<ClassUnderTest>Tests` (or `<Class><Method>Tests`). |
-| Database | Connection string must target a dedicated test/local database. If in doubt, do not execute; ask user first. |
+| **Namespace Audit** | Sebelum menyusun atau mengubah test, **wajib membaca seluruh test case** yang berada di bawah namespace/class terkait dengan function yang diubah. |
+| **Eliminasi Redundansi** | Hapus atau gabungkan (*consolidate*) test case yang redundant, tumpang tindih (*overlapping*), atau tidak lagi relevan agar test suite tetap ramping dan cepat. |
+| **100% Meaningful Coverage** | Seluruh jalur eksekusi/branch pada logic yang diubah wajib ter-cover 100% (**kecuali dependensi eksternal yang di-mock**). Test case wajib **meaningful untuk business flow**—dilarang *over-testing* (membuat banyak test untuk variasi data trivial yang tidak relevan) dan dilarang *over-engineering*. |
+| **Project Code Style** | Wajib mengikuti struktur folder, konvensi penamaan (`<ClassUnderTest>Tests`), pola helper, dan style unit test yang sudah ada di repositori. Jangan memaksakan template bawaan bila repositori sudah memiliki pola sendiri. |
+| Mock | Hanya external/3rd-party clients (payment gateways, SAP, Refit APIs, S3, email, outbound message producers). |
+| Do NOT mock | **Repository** dan **Database**. Gunakan implementasi nyata yang terhubung ke local/test database. InMemory/SQLite hanya bila itu konvensi resmi proyek tersebut. |
+| Seeder | Setiap test membuat data isolasi sendiri menggunakan ID unik (`Guid.NewGuid()`). |
+| Cleanup | Setiap test membersihkan data yang di-seed (berdasarkan daftar ID yang di-track) termasuk data relasional yang tercipta. Dilarang `TRUNCATE` tabel bersama. |
+| Table Assertions | Query database menggunakan instance DbContext **baru** dengan `AsNoTracking()`. Assert kolom-kolom yang terdampak (status, amount, `updated_by`, dll.) dan pastikan kolom yang **seharusnya tidak berubah** tetap terjaga nilainya. |
+| Response Assertions | Assert seluruh field penting pada response/return value, termasuk HTTP status code atau state wrapper `Result<T>`. |
+| Mock Verifications | Verifikasi panggilan ke external client (`Times.Once`, `Times.Never` untuk skenario kegagalan, serta periksa argumen penting). |
+| Scenarios | Per function yang diuji: happy path, validation/negative cases, edge cases krusial (data kosong, idempotency/duplikasi, status guard). |
+| Naming | `Method_Condition_ExpectedResult`; test class `<ClassUnderTest>Tests` (atau `<Class><Method>Tests`). |
+| Database | Connection string wajib mengarah ke database test/lokal. Jika ragu, tanyakan user sebelum menjalankan test. |
 
 ## Baseline Template (Adapt mock library and factory names to project)
 ```csharp
@@ -84,7 +88,7 @@ public class OrderServiceCancelTests : IAsyncLifetime
     }
 }
 ```
-*Note: This skeleton is an example structure. Replace fictional class/helper names with the real ones in your project.*
+*Note: Skeleton di atas adalah contoh referensi. Sesuaikan nama class, DbContext, dan helper dengan yang ada di repositori.*
 
 ## Test Execution (Impacted Tests Only)
 ```bash
@@ -97,9 +101,9 @@ dotnet test <Project.Tests.csproj> --list-tests --filter "FullyQualifiedName~Ord
 # 3. Execute filtered tests
 dotnet test <Project.Tests.csproj> --filter "FullyQualifiedName~OrderServiceCancelTests"
 ```
-- Never run `dotnet test` without `--filter` unless explicitly requested by the user.
-- If no related tests exist: do not fall back to running all tests. Document the gap in `test-report.md`.
-- If a test fails due to code bugs: fix the implementation (via `developer`); do not weaken assertions.
+- Dilarang menjalankan `dotnet test` tanpa `--filter` kecuali secara eksplisit diminta oleh user.
+- Jika tidak ditemukan test terkait: jangan berpindah menjalankan seluruh test suite. Catat gap tersebut di `test-report.md`.
+- Jika test gagal karena bug implementasi: perbaiki kodenya; dilarang melemahkan assertion.
 
 ## test-report.md
-Document: executed filter, passed/failed counts, scenario list, asserted tables and fields, mocked clients, and uncovered edge cases.
+Document: executed filter, passed/failed counts, test cases audited/consolidated/removed, scenario list, asserted tables and fields, mocked clients, and uncovered edge cases.
