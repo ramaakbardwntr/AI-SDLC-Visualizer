@@ -33,14 +33,14 @@ If the branch already exists, **do not create a new branch** and do not reset it
 - Never `--amend` or rebase commits that have already been pushed.
 
 ## 3. Pushing and Creating PR (Only After Gate 3 Approval)
-Sebelum menawarkan atau membuat PR baru, **wajib periksa apakah branch sudah memiliki Pull Request aktif di GitHub**:
+Before offering or creating a new PR, **verify whether the branch already has an active Pull Request on GitHub**:
 ```bash
 gh pr list --head <branch> --state open
 ```
-- Jika **belum ada PR**: tawarkan kepada user apakah ingin dibuatkan Pull Request ke GitHub.
-- Jika **sudah ada PR**: tampilkan link URL dan nomor PR yang sudah ada, jangan membuat PR baru yang duplikat.
+- If **no open PR exists**: offer to create a Pull Request on GitHub to the user after Gate 3 approval.
+- If an **open PR already exists**: report the existing PR URL and issue number; do not create duplicate PRs.
 
-Eksekusi pembuatan PR (hanya setelah izin eksplisit user di Gate 3):
+Executing PR creation (strictly only after explicit user approval at Gate 3):
 ```bash
 cd workspace/<repo> && git push -u origin <branch>
 gh pr create --base <base> --title "<title>" --body-file <pr.md> [--draft]

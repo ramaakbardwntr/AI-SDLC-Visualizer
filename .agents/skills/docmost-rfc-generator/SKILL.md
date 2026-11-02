@@ -10,7 +10,7 @@ platform: Docmost (Rich-Text / Markdown / TipTap Editor)
 This document serves as the standard instruction (*Skill Guide* & *System Prompt*) for AI Assistants and Engineers when authoring **RFC (Request for Comments)** documents that are structured, comprehensive, and **100% natively compatible with Docmost** (both via direct *Paste Markdown* in the editor and *Import Markdown/ZIP*).
 
 > [!NOTE]
-> **Optional Workflow:** Pembuatan RFC di Strand (Docmost) bersifat **opsional**. Skill ini hanya dijalankan atas permintaan/konfirmasi eksplisit user dan memerlukan informasi **nama Space** serta **nama dokumen (atau link URL Strand)** target.
+> **Optional Workflow:** RFC creation in Strand (Docmost) is **optional**. This skill is only executed upon explicit user request/approval and requires the **target Space name** and **target document name (or Strand URL link)**.
 
 > [!IMPORTANT]
 > **Mandatory Language Requirement:** All RFC documents, diagrams, table specifications, and notes generated for or pushed to Strand / Docmost via MCP **MUST be written in English**.

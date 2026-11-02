@@ -1,22 +1,15 @@
 {
   "mcpServers": {
-    "strand": {
-      "_comment": "Konfigurasi Strand/Docmost MCP. Salin file ini menjadi .mcp.json",
-      "command": "npx",
-      "args": ["-y", "<paket-strand-docmost-mcp>"],
-      "env": {
-        "DOCMOST_URL": "https://docmost.perusahaanmu.com",
-        "DOCMOST_TOKEN": "<isi-token-jangan-di-commit>"
+    "docmost": {
+      "serverUrl": "https://strand.perusahaanmu.com/mcp",
+      "headers": {
+        "Authorization": "Bearer <isi-token-docmost-jangan-di-commit>"
       }
     },
     "jira": {
-      "_comment": "Konfigurasi Jira MCP (Atlassian) untuk https://klgtech.atlassian.net. Masukkan email dan API Key akun kamu di .mcp.json",
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-atlassian"],
-      "env": {
-        "JIRA_URL": "https://klgtech.atlassian.net",
-        "JIRA_EMAIL": "your-email@klgtech.com",
-        "JIRA_API_TOKEN": "<isi-api-key-atlassian-jangan-di-commit>"
+      "serverUrl": "https://mcp.atlassian.com/v2/mcp",
+      "headers": {
+        "Authorization": "Bearer <isi-api-key-atlassian-jangan-di-commit>"
       }
     }
   }

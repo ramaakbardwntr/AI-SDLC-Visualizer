@@ -5,10 +5,10 @@ description: Author an Implementation Plan for .NET engineering tasks in standar
 
 # Implementation Plan
 
-The plan is a basis for discussion and decision-making, not a mere formality. The user makes decisions based on this document, so it must be honest, specific, and traceable to the codebase. Use `templates/implementation-plan.md` as the skeleton and persist it at `.office/tasks/<id>/plan.md`.
+The implementation plan is a basis for discussion and decision-making, not a mere formality. The user makes decisions based on this document, so it must be honest, specific, and traceable to the codebase. Use `templates/implementation-plan.md` as the skeleton and persist it at `.office/tasks/<id>/plan.md`.
 
 > [!IMPORTANT]
-> **Language Mandate:** Seluruh hasil dokumen Implementation Plan (`plan.md` / `implementation_plan.md`) **wajib ditulis dalam Bahasa Indonesia secara default**. Istilah teknis software engineering tetap dipertahankan dalam Bahasa Inggris (mis. Controller, Service, Repository, Migration, DbContext, Mock, Seeder, DTO, Payload, Event Consumer, dll.).
+> **Output Language Mandate:** All generated Implementation Plan documents (`plan.md` / `implementation_plan.md`) **MUST be written in Indonesian (Bahasa Indonesia) by default**. Standard software engineering technical terms remain in English (e.g. Controller, Service, Repository, Migration, DbContext, Mock, Seeder, DTO, Payload, Event Consumer, etc.).
 
 ## Known Files Approach (Mode A)
 1. Read the files referenced by the user. Trace callers and dependencies (`grep` class/method names) to surface unmentioned impacts.
@@ -21,70 +21,70 @@ The plan is a basis for discussion and decision-making, not a mere formality. Th
 
 ## Plan Structure (Fixed Order)
 
-1. **Ringkasan Task (Task Summary):** Satu paragraf deskriptif dalam kata-kata sendiri mengenai tujuan, konteks masalah, dan batasan scope.
-2. **Temuan (Findings):** Alur kerja saat ini, root cause atau architectural gap, bukti konkret file dan baris kode (`path/File.cs:123`), pemisahan fakta vs hipotesis.
-3. **Scope Perubahan (Scope of Changes):** Tabel terstruktur `File | Class/Method | Jenis (ubah/tambah/hapus) | Alasan`.
-4. **Opsi Solusi (Solution Options - Multi-Options):**
-   - Sajikan beberapa alternatif pendekatan teknis (`Opsi A`, `Opsi B`, `Opsi C`, dst.) apabila terdapat variasi desain arsitektur yang valid.
-   - Setiap opsi wajib memuat: **Pendekatan Teknis**, **Pros**, **Cons**, **Risiko**, dan **Estimasi Manday** (kelipatan 0.25; 1 manday = 9 jam kerja, selaras dengan `jira-task-generator`).
-   - Wajib menyertakan **Rekomendasi** yang tegas (menunjuk 1 opsi terbaik beserta alasan pertimbangan bisnis & teknisnya).
-5. **Dampak (Impacts):**
-   - Database: entitas, kolom, index, migrasi (apakah perlu *Database Changes Query* di PR), kompatibilitas data existing.
-   - API contract (breaking change?), messaging (Kafka/RabbitMQ), background job, configuration / environment variable, performa, backward compatibility.
-6. **Dampak Unit Test (Unit Test Impact):**
-   - **Audit Test Namespace Terkait:** Sebelum merancang skenario, wajib membaca seluruh test case existing yang berada di namespace/class terkait dengan function yang diubah.
-   - **Konsolidasi & Eliminasi Redundansi:** Periksa test case existing; jika ditemukan test case yang redundant, tumpang tindih (*overlapping*), atau tidak relevan, rencanakan untuk dihapus atau disatukan agar test suite tetap ramping.
-   - **100% Meaningful Coverage (Except Mocks):** Pastikan test case yang ada tetap meng-cover 100% branch/logic dari function yang diubah (**kecuali dependensi eksternal yang di-mock**). Test case wajib **meaningful untuk business flow nyata**—dilarang membuat test yang *over-tested* (banyak test untuk hal trivial yang sama) atau *over-engineering*.
-   - **Patuhi Struktur Proyek Existing:** Ikuti struktur test project, pola seeder, cleanup, factory, helper, naming convention, dan code style unit test yang sudah berlaku di repositori tersebut.
-   - Jika belum ada test project: informasikan secara eksplisit dan tanyakan apakah ingin disiapkan.
-7. **Dampak Dokumentasi (Opsional):**
-   - Bersifat **opsional**. Dokumentasi Tech Doc / RFC hanya diperbarui jika user mengonfirmasi kebutuhan update docs.
-8. **Branch:** Nama branch (wajib dari user), status (baru / sudah ada), base branch (`main` / `master`).
-9. **Pertanyaan Terbuka & Asumsi:** Catat detail yang belum pasti atau asumsi yang digunakan (`Perlu konfirmasi: ...`).
-10. **Penawaran Lanjutan (Post-Plan Offers - Wajib Ditawarkan):**
-    Setiap selesai menyusun implementation plan, tawarkan dua hal berikut kepada user:
-    - **a. Update Strand Docmost MCP (Opsional):**
-      Tawarkan apakah Tech Doc atau RFC terkait pada Strand Docmost MCP mau di-update. Tegaskan bahwa user wajib memberikan **nama Space** dan **nama dokumen (atau link URL Strand)** yang ingin di-update.
-    - **b. Pembuatan Pull Request ke GitHub:**
-      Tawarkan pembuatan PR ke GitHub, namun **wajib cek terlebih dahulu** apakah branch aktif sudah memiliki Pull Request terbuka (`gh pr list --head <branch>`). Jika belum ada PR, baru tawarkan kepada user; jika sudah ada, tampilkan info PR existing tersebut.
-11. **Keputusan yang Dibutuhkan:** Prompt keputusan aksi yang jelas, misalnya: `Balas: "approve opsi A" / minta revisi / batal`.
+1. **Task Summary (Ringkasan Task):** One concise descriptive paragraph in Indonesian stating the goal, problem background, and scope boundaries.
+2. **Findings (Temuan):** Current workflow, root cause or architectural gap, concrete file citations (`path/File.cs:123`), separating facts from hypotheses.
+3. **Scope of Changes (Scope Perubahan):** Structured table `File | Class/Method | Action (modify/add/delete) | Rationale`.
+4. **Solution Options (Opsi Solusi - Multi-Options):**
+   - Present multiple technical approaches (`Opsi A`, `Opsi B`, `Opsi C`, etc.) whenever valid architectural alternatives exist.
+   - Each option must detail: **Technical Approach**, **Pros**, **Cons**, **Risks**, and **Mandays Estimate** (increments of 0.25; 1 manday = 9 work hours, aligned with `jira-task-generator`).
+   - Conclude with a definitive **Recommendation** indicating the single best option along with technical and business rationales.
+5. **Impacts (Dampak):**
+   - Database: entities, columns, indexes, migrations (whether a *Database Changes Query* is needed in the PR), existing data compatibility.
+   - API contract (breaking changes?), messaging (Kafka/RabbitMQ), background jobs, configuration/environment variables, performance, backward compatibility.
+6. **Unit Test Impact (Dampak Unit Test):**
+   - **Namespace Test Audit:** Prior to designing scenarios, the agent **MUST read all existing test cases** in the namespace or test class related to the modified function.
+   - **Consolidation & Eliminating Redundancy:** Inspect existing test cases. If redundant, overlapping, or obsolete tests exist, explicitly plan to delete or consolidate them to keep the test suite lean and fast.
+   - **100% Meaningful Coverage (Except Mocks):** Ensure tests maintain 100% branch/logic coverage of the modified function (**except external/third-party dependencies that are mocked**). Tests must be **meaningful for real business flows**—avoid over-testing (generating repetitive tests for trivial variations) and avoid over-engineering.
+   - **Adhere to Existing Project Structure & Style:** Mirror the existing test project conventions, folder layout, seeder/cleanup patterns, factories, helpers, naming conventions, and code style.
+   - If no test project exists: explicitly record the gap and ask if the user wants test projects set up.
+7. **Documentation Impact (Dampak Dokumentasi - Optional):**
+   - Documentation is **optional**. Tech Doc or RFC updates in Strand/Docmost are only planned if the user explicitly confirms the need to update documentation.
+8. **Branch:** User-provided branch name, status (new / existing), base branch (`main` / `master`).
+9. **Open Questions & Assumptions:** State unconfirmed details or assumptions explicitly (`Perlu konfirmasi: ...`).
+10. **Post-Plan Offers (Mandatory Follow-up Prompts):**
+    At the conclusion of every implementation plan, offer two follow-up actions to the user:
+    - **a. Strand Docmost MCP Update (Optional):**
+      Ask whether the related Tech Doc or RFC on Strand Docmost MCP should be updated. Emphasize that the user **MUST provide the Space name and document name (or Strand URL link)**.
+    - **b. GitHub Pull Request Creation:**
+      Ask whether to create a Pull Request to GitHub. **The agent MUST first verify** whether the active branch already has an open PR via `gh pr list --head <branch>`. Only offer PR creation if no PR exists yet; if one already exists, display the existing PR link.
+11. **Decision Required (Keputusan yang Dibutuhkan):** Clear call to action, e.g. `Balas: "approve opsi A" / minta revisi / batal`.
 
 ---
 
 ## Quality Guidelines (Merged from CLAUDE.md)
 
-Pedoman perilaku berikut wajib dipatuhi selama penyusunan rencana dan eksekusi untuk mencegah kesalahan implementasi:
+The following behavioral guidelines must be strictly obeyed during planning and execution to prevent common LLM mistakes:
 
 ### 1. Think Before Coding
-- **Jangan berasumsi dan jangan sembunyikan keraguan.**
-- Nyatakan asumsi secara eksplisit. Jika ada hal yang belum pasti, berhenti dan tanyakan ke user (`Perlu konfirmasi: ...`).
-- Jika terdapat beberapa interpretasi atau alternatif solusi, sajikan seluruhnya—jangan memilih secara diam-diam.
-- Jika terdapat pendekatan yang lebih sederhana, sampaikan secara terbuka dan berikan masukan (*push back*) bila rencana yang diminta terlalu kompleks.
+- **Do not assume. Do not hide confusion. Surface tradeoffs.**
+- State your assumptions explicitly. If uncertain, stop and ask (`Perlu konfirmasi: ...`).
+- If multiple interpretations or alternatives exist, present them all—never pick silently.
+- If a simpler approach exists, propose it openly and push back when the requested plan is overly complicated.
 
 ### 2. Simplicity First
-- **Kode minimum yang menyelesaikan masalah. Tanpa kode spekulatif.**
-- Tidak merencanakan fitur di luar yang diminta.
-- Tidak membuat abstraksi untuk kode sekali pakai (*single-use code*).
-- Tidak menambahkan fleksibilitas, konfigurasi berlebihan, atau penanganan error untuk skenario yang mustahil terjadi.
-- Tanyakan pada diri sendiri: *"Apakah senior engineer akan menilai solusi ini overcomplicated?"* Jika ya, sederhanakan.
+- **Minimum code that solves the problem. Nothing speculative.**
+- Do not plan features beyond what was requested.
+- Do not introduce abstractions for single-use code.
+- Do not add speculative configurability, flexibility, or error handling for impossible scenarios.
+- Ask yourself: *"Would a senior engineer say this is overcomplicated?"* If yes, simplify.
 
 ### 3. Surgical Changes
-- **Sentuh hanya yang wajib. Bersihkan hanya jejak sendiri.**
-- Jangan "memperbaiki" kode, komentar, atau formatting di sekitar area perubahan yang tidak rusak.
-- Jangan merefaktor kode yang berfungsi normal.
-- Ikuti *style* dan struktur kode existing proyek, meskipun kamu memiliki preferensi berbeda.
-- Jika menemukan *dead code* yang tidak terkait dengan task, sebutkan sebagai temuan—jangan dihapus kecuali diminta.
-- Bersihkan *orphan code* (import, variabel, method) yang menjadi tidak terpakai akibat perubahan yang kamu buat sendiri. Setiap baris perubahan harus dapat ditelusuri langsung ke permintaan user.
+- **Touch only what you must. Clean up only your own mess.**
+- Do not "improve" adjacent code, comments, or formatting in areas that are not broken.
+- Do not refactor functional code.
+- Match existing project style and structure, even if you would do it differently.
+- If you notice unrelated dead code, mention it as a finding—do not delete it unless asked.
+- Remove orphaned imports, variables, or methods caused by your own changes. Every changed line must trace directly to the user's request.
 
 ### 4. Goal-Driven Execution
-- **Definisikan kriteria sukses yang dapat diverifikasi secara mandiri.**
-- Ubah task menjadi tujuan yang terukur:
-  - *"Tambah validasi"* $\rightarrow$ *"Tulis test case untuk input tidak valid, lalu buat test lulus."*
-  - *"Perbaiki bug"* $\rightarrow$ *"Tulis test yang mereproduksi bug, lalu buat lulus."*
-- Untuk langkah berurutan, nyatakan verifikasinya:
+- **Define verifiable success criteria.**
+- Transform tasks into measurable goals:
+  - *"Add validation"* $\rightarrow$ *"Write test for invalid inputs, then make it pass."*
+  - *"Fix bug"* $\rightarrow$ *"Write a test reproducing the bug, then make it pass."*
+- For sequential steps, define explicit verification:
   ```
-  1. [Langkah] -> verify: [cara verifikasi / filter test]
-  2. [Langkah] -> verify: [cara verifikasi / filter test]
+  1. [Step] -> verify: [check / test filter]
+  2. [Step] -> verify: [check / test filter]
   ```
-- Rincikan **Cons** secara jujur, termasuk untuk opsi yang direkomendasikan.
-- **Dilarang mulai memodifikasi kode sumber sebelum rencana disetujui (Gate 1).** Rencana adalah satu-satunya output pada fase ini.
+- Rigorously detail Cons, including for the recommended option.
+- **Never modify source code before the plan is approved (Gate 1).** The plan is the sole output of this phase.

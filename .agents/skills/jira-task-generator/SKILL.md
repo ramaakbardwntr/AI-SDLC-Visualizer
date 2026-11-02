@@ -11,48 +11,50 @@ This skill generates accurate Jira tasks by **directly inspecting branch and com
 
 ## Core Rules
 
-1. **Wajib Buat Jira Implementation Plan Terlebih Dahulu:**
-   Dilarang langsung membuat atau mem-push issue ke Jira tanpa mempresentasikan rencana breakdown tiket terlebih dahulu untuk direview dan disetujui user.
-2. **Kategorisasi Kanban Board (Epic / Story / Task):**
-   Jira menggunakan style **Kanban Board**. Setiap item pekerjaan wajib diklasifikasikan ke dalam kategori yang tepat:
-   - **`Epic`**: Inisiatif besar atau modul fitur baru yang menaungi beberapa Story/Task lintas komponen.
-   - **`Story`**: Kapabilitas fungsional atau enhancement yang memberikan *business value* langsung kepada pengguna/sistem.
-   - **`Task`**: Pekerjaan teknis spesifik, chore, bug fix, refactoring, atau setup unit test/konfigurasi.
-3. **Jira Base URL & Board Verification:**
-   - Base URL: `https://klgtech.atlassian.net/`
-   - Agent wajib mengetahui atau mengonfirmasi **URL Jira Board / Project Key** target (misal `https://klgtech.atlassian.net/jira/software/c/projects/<KEY>/boards/<BOARD_ID>` atau Project Key terkait) sebelum dispatch.
-4. **Direct Push ke MCP Jira:**
-   Setelah user menyetujui Jira Implementation Plan, agent langsung memanggil MCP tool Jira untuk membuat issue dan menyajikan link tiket `https://klgtech.atlassian.net/browse/<KEY>`.
+1. **Mandatory Upfront Jira Implementation Plan:**
+   Never create or push issues directly to Jira without first authoring a structured Jira Implementation Plan for user review and explicit approval.
+2. **Kanban Board Categorization (Epic / Story / Task):**
+   The Jira project operates on a **Kanban Board** style. Every unit of work must be accurately classified:
+   - **`Epic`**: Major initiatives or new feature modules spanning multiple components or cross-service flows.
+   - **`Story`**: End-user capability or functional enhancement delivering direct business value.
+   - **`Task`**: Technical chores, bug fixes, refactoring, unit test setups, or configuration changes.
+3. **Jira Base URL & Board URL Verification:**
+   - Official Base URL: `https://klgtech.atlassian.net/`
+   - The agent must verify or confirm the target **Kanban Board URL or Project Key** (e.g., `https://klgtech.atlassian.net/jira/software/c/projects/<KEY>/boards/<BOARD_ID>` or Project Key `KEY`) prior to dispatching issues.
+4. **Direct Push to MCP Jira:**
+   Immediately after the user approves the Jira Implementation Plan, the agent invokes the MCP Jira tool to create the issues and reports active ticket links formatted as `https://klgtech.atlassian.net/browse/<KEY>`.
+5. **Language Mandate:**
+   The upfront **Jira Implementation Plan review document MUST be written in Indonesian by default** for presentation to the user, while technical engineering terms remain in English.
 
 ---
 
 ## Workflow Steps
 
-### Step 1 — Identifikasi Target Branch & Git Evidence
-1. Periksa branch aktif dan status git:
+### Step 1 — Target Branch & Git Evidence Inspection
+1. Inspect current branch and git status:
    ```bash
    git rev-parse --abbrev-ref HEAD
    git status --short
    ```
-2. Tentukan base branch (`main` / `master` / `develop`):
+2. Determine base branch (`main` / `master` / `develop`):
    ```bash
    git merge-base <base-branch> HEAD
    ```
-3. Kumpulkan commit log dan diff lengkap:
+3. Extract commit logs and detailed diff:
    ```bash
    git log <merge-base>..HEAD --reverse --pretty=format:"%h | %an | %ad | %s" --date=iso
    git diff <merge-base>..HEAD --stat
    git diff <merge-base>..HEAD
    ```
 
-### Step 2 — Verifikasi URL Jira Board / Project Target
-Pastikan tujuan Jira diketahui:
-- Base URL resmi: `https://klgtech.atlassian.net/`
-- Periksa apakah URL Board atau Project Key sudah disebutkan user (misal `https://klgtech.atlassian.net/jira/software/c/projects/ABC/boards/12` $\rightarrow$ Project Key: `ABC`).
-- Jika belum diketahui, tanyakan kepada user sekali: *"Mohon informasikan URL Jira Kanban Board atau Project Key target di https://klgtech.atlassian.net/"*.
+### Step 2 — Verify Jira Board URL / Target Project Key
+Confirm target Jira destination:
+- Base URL: `https://klgtech.atlassian.net/`
+- Check whether the board URL or project key was provided by the user (e.g. `https://klgtech.atlassian.net/jira/software/c/projects/ABC/boards/12` $\rightarrow$ Project Key: `ABC`).
+- If unknown, ask the user once: *"Please confirm the target Jira Kanban Board URL or Project Key at https://klgtech.atlassian.net/"*.
 
-### Step 3 — Susun Jira Implementation Plan (Upfront Review)
-Sebelum mengeksekusi MCP, agent menyusun **Implementation Plan Jira** dalam format berikut:
+### Step 3 — Author Upfront Jira Implementation Plan (Indonesian Default)
+Before calling MCP tools, author a **Jira Implementation Plan** in Indonesian for user review:
 
 ```markdown
 ### 📋 Jira Implementation Plan (Kanban Review)
@@ -87,32 +89,32 @@ Sebelum mengeksekusi MCP, agent menyusun **Implementation Plan Jira** dalam form
   ...
 ```
 
-### Step 4 — Standar Rincian Field per Tiket
+### Step 4 — Standard Field Guidelines per Ticket
 
 1. **Title / Summary:**
    - Format: `[Service Name] - [Work Performed]`
-   - Maksimal ~80 karakter, diawali kata kerja aksi (Fix, Add, Improve, Refactor, Implement).
+   - Maximum ~80 characters, prefixed with an action verb (Fix, Add, Improve, Refactor, Implement).
 2. **Description:**
-   - **Root Cause**: Latar belakang requirement atau akar penyebab masalah berdasarkan bukti diff.
-   - **Changes**: Poin-poin perubahan spesifik (menyebutkan Controller, Service, Entity, Table, Migration, Unit Test).
-   - **Expected**: Perilaku sistem yang terverifikasi dan dapat diuji.
+   - **Root Cause**: Business context or technical origin based on git diff evidence.
+   - **Changes**: Concrete bullets citing modified Controllers, Services, Entities, Tables, Migrations, or Unit Tests.
+   - **Expected**: Observable and verifiable system behavior.
 3. **Start Date & End Date:**
-   - Format: `YYYY-MM-DD`. Berasal dari commit pertama dan terakhir pada branch (atau ditentukan user).
+   - Format: `YYYY-MM-DD`. Derived from the first and latest commit author dates on the branch.
 4. **Mandays Estimate:**
-   - Unit: **1 manday = 9 jam kerja** (kelipatan 0.25).
-   - Minor change: 0.25 (~2.25 jam)
-   - 1 method logic + unit test: 0.5 (~4.5 jam)
-   - Feature Controller + Service + Model + tests: 0.75 - 1.0 (~6.75 - 9 jam)
-   - Multi-layer + DB migration: 1.5 - 2.0 mandays
+   - Standard Unit: **1 manday = 9 working hours** (increments of 0.25).
+   - Minor change (1-2 files, config, no new test): 0.25 (~2.25 hours)
+   - 1 method logic + unit test: 0.5 (~4.5 hours)
+   - Small feature (Controller + Service + Model + tests): 0.75 - 1.0 (~6.75 - 9 hours)
+   - Multi-layer feature + DB migration: 1.5 - 2.0 mandays
 
-### Step 5 — Direct Push ke MCP Jira (Setelah Approval)
-1. Setelah user memberikan persetujuan (`"approve plan jira"` / `"approve push"`), agent memanggil tool MCP Jira untuk membuat tiket ke `https://klgtech.atlassian.net/`.
-2. Urutan pembuatan:
-   - Jika ada **Epic**: buat Epic terlebih dahulu untuk mendapatkan Epic Key.
-   - Buat **Story** atau **Task** dan tautkan `parent` ke Epic terkait.
-3. Laporkan hasil pembuatan:
+### Step 5 — Direct Push to MCP Jira (Upon Approval)
+1. After the user approves the Jira Implementation Plan (`"approve plan jira"` / `"approve push"`), call the MCP Jira tools to create issues at `https://klgtech.atlassian.net/`.
+2. Creation Sequence:
+   - If an **Epic** is present: create the Epic first to obtain its Epic Key.
+   - Create subsequent **Stories** or **Tasks** and link their `parent` to the corresponding Epic.
+3. Report the result back to the user:
    ```markdown
-   ✅ Berhasil membuat issue di Jira:
+   ✅ Successfully created issues in Jira:
    - Epic : [ABC-101](https://klgtech.atlassian.net/browse/ABC-101) - [Service] Initiative
    - Story: [ABC-102](https://klgtech.atlassian.net/browse/ABC-102) - [Service] Feature
    - Task : [ABC-103](https://klgtech.atlassian.net/browse/ABC-103) - [Service] Technical Task
