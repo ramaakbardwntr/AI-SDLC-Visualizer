@@ -9,11 +9,14 @@ const stateFile = path.join(dir, 'state.json');
 const chatFile = path.join(dir, 'chat.json');
 const configFile = path.join(dir, 'config.json');
 
+export const DEFAULT_AGENT = 'hydrogen';
+
 export const MODEL_META = {
-  argon:  { id: 'argon',  name: 'Gemini 4 Argon',    pattern: /argon|gemini\s*4/i },
-  flash:  { id: 'flash',  name: 'Gemini 3.8 Flash',  pattern: /flash|3\.8/i },
-  opus:   { id: 'opus',   name: 'Claude Opus 5.5',   pattern: /opus/i },
-  sonnet: { id: 'sonnet', name: 'Claude Sonnet 5.5', pattern: /sonnet/i },
+  argon:        { id: 'argon',        name: 'Gemini 4 Argon',        pattern: /\bargon\b|gemini[-_\s]*4[-_\s]*argon/i },
+  hydrogen:     { id: 'hydrogen',     name: 'Gemini 4 Hydrogen',     pattern: /hydrogen|flash|3\.8/i },
+  orchestrator: { id: 'orchestrator', name: 'Gemini 4 Orchestrator', pattern: /orchestrat/i },
+  opus:         { id: 'opus',         name: 'Claude Opus 5.5',       pattern: /opus/i },
+  sonnet:       { id: 'sonnet',       name: 'Claude Sonnet 5.5',     pattern: /sonnet/i },
 };
 
 export const MODEL_AGENTS = Object.keys(MODEL_META);
@@ -45,11 +48,15 @@ export function writeJsonSafe(target, obj) {
   }
 }
 
-export function canonAgent(raw, fallback = 'flash') {
+export function canonAgent(raw, fallback = DEFAULT_AGENT) {
   const s = String(raw || '').trim().toLowerCase();
   if (!s) return fallback;
   if (s === 'argon' || s === 'gemini-4-argon' || s === 'gemini 4 argon') return 'argon';
-  if (s === 'flash' || s === 'gemini-3-8-flash' || s === 'gemini-3.8-flash' || s === 'gemini 3.8 flash' || s === 'flash_lite') return 'flash';
+  if (
+    s === 'hydrogen' || s === 'gemini-4-hydrogen' || s === 'gemini 4 hydrogen'
+    || s === 'flash' || s === 'gemini-3-8-flash' || s === 'gemini-3.8-flash' || s === 'gemini 3.8 flash' || s === 'flash_lite'
+  ) return 'hydrogen';
+  if (s === 'orchestrator' || s === 'gemini-4-orchestrator' || s === 'gemini 4 orchestrator') return 'orchestrator';
   if (s === 'opus' || s === 'claude-opus-5-5' || s === 'claude-opus-5.5' || s === 'claude opus 5.5') return 'opus';
   if (s === 'sonnet' || s === 'claude-sonnet-5-5' || s === 'claude-sonnet-5.5' || s === 'claude sonnet 5.5') return 'sonnet';
   for (const [id, m] of Object.entries(MODEL_META)) {
@@ -70,7 +77,7 @@ export function modelIdFromName(name) {
   for (const [id, m] of Object.entries(MODEL_META)) {
     if (m.name.toLowerCase() === String(name || '').toLowerCase() || m.pattern.test(name)) return id;
   }
-  return 'flash';
+  return DEFAULT_AGENT;
 }
 
 export function getUserName() {
@@ -246,7 +253,7 @@ const IGNORE_TOOLS = /^(manage_task|schedule|ask_question|send_message|manage_su
  * Fixes Requirement 2: in-place edits (edit_file / Edit / MultiEdit) on implementation_plan.md
  * display "Editing implementation_plan.md" and do NOT regress the active phase back to 'plan'.
  */
-export function inferToolAction(tc, genericContent = '', currentRole = 'flash', currentPhase = 'code') {
+export function inferToolAction(tc, genericContent = '', currentRole = DEFAULT_AGENT, currentPhase = 'code') {
   const name = tc.name || '';
   if (IGNORE_TOOLS.test(name)) return null;
 
@@ -267,15 +274,30 @@ export function inferToolAction(tc, genericContent = '', currentRole = 'flash', 
     return null;
   }
 
-  // 1. Docmost / Strand MCP tools
-  const isDocmostTool = /strand|docmost/i.test(name) || /^(search_pages|list_pages|get_page|create_page|update_page|create_page_from_template|list_templates|get_template|delete_page|move_page)$/i.test(name);
+  // Unwrap lazy MCP wrapper (`call_mcp_tool`) and namespaced MCP names (`mcp__srv__tool`, `srv:tool`).
+  let mcpServer = '';
+  let bareTool = name;
+  if (name === 'call_mcp_tool') {
+    mcpServer = String(unquote(a.ServerName || a.serverName || '')).toLowerCase();
+    bareTool = String(unquote(a.ToolName || a.toolName || '') || name);
+  } else {
+    const mNs = name.match(/^(?:mcp_+([a-z0-9-]+)_+|([a-z0-9-]+):)(.+)$/i);
+    if (mNs) {
+      mcpServer = (mNs[1] || mNs[2] || '').toLowerCase();
+      bareTool = mNs[3];
+    }
+  }
+
+  // Docmost / Strand MCP tools
+  const docmostToolRe = /^(search_pages|list_pages|get_page|create_page|update_page|create_page_from_template|list_templates|get_template|delete_page|move_page|insert_artifact|list_workspace_members)$/i;
+  const isDocmostTool = /strand|docmost/i.test(mcpServer) || /strand|docmost/i.test(name) || docmostToolRe.test(bareTool);
   if (isDocmostTool) {
-    const tool = name.replace(/^mcp_[^_]+_/, '');
-    const isWritingDocmost = /create|update|write|edit|append|publish|move/i.test(tool);
+    const isWritingDocmost = /^(create|update|write|edit|append|publish|move|insert|delete)/i.test(bareTool)
+      || /(create|update|write|edit|append|publish|move|insert_artifact)/i.test(bareTool);
     return {
       role: active,
       phase: 'docs',
-      message: isWritingDocmost ? `Publishing doc: ${clip(tool, 30)}` : `Reading Docmost: ${clip(tool, 30)}`,
+      message: isWritingDocmost ? `Publishing doc: ${clip(bareTool, 30)}` : `Reading Docmost: ${clip(bareTool, 30)}`,
       propHandoff: isWritingDocmost ? [active, 'docmost', 'Push Doc'] : null
     };
   }
@@ -288,7 +310,7 @@ export function inferToolAction(tc, genericContent = '', currentRole = 'flash', 
     };
   }
 
-  // 2. Unit test execution
+  // Unit test execution
   if (name === 'run_command' && /\b(dotnet\s+test|npm\s+(run\s+)?test|npx\s+(jest|vitest|mocha)|yarn\s+test|pnpm\s+test|pytest|node\s+--test)\b/i.test(cmd)) {
     const failed = /Command exited with code [^0]|FAIL\s|Failed!|Test Run Failed/i.test(genericContent);
     let errMsg = '';
@@ -312,23 +334,44 @@ export function inferToolAction(tc, genericContent = '', currentRole = 'flash', 
     };
   }
 
-  // 3. Git, PR & Jira operations
+  // Git, PR & Jira operations
   if (name === 'run_command' && /\bgit\s+commit\b/i.test(cmd)) {
     return { role: active, phase: 'code', message: `Commit to Git: ${clip(cmd, 36)}`, propHandoff: [active, 'github', 'Commit'] };
   }
   if (name === 'run_command' && /\bgit\s+(checkout\s+-b|switch\s+-c)\b/i.test(cmd)) {
     return { role: active, phase: 'branch', message: `Create branch: ${clip(cmd, 36)}`, propHandoff: [active, 'github', 'Branch'] };
   }
-  if (name === 'run_command' && /\bgit\s+push\b/i.test(cmd)) {
+  if ((name === 'run_command' && /\bgit\s+push\b/i.test(cmd)) || /^(push_files|create_or_update_file)$/i.test(bareTool)) {
     return { role: active, phase: 'release', message: 'Push branch to GitHub', propHandoff: [active, 'github', 'Push Branch'] };
   }
-  if ((name === 'run_command' && /\bgh\s+pr\b/i.test(cmd)) || /create_pull_request/i.test(name)) {
+  if (name === 'run_command' && /\bgh\s+pr\s+(list|view|status|checks|diff)\b/i.test(cmd)) {
+    return { role: active, phase: currentPhase || 'code', message: 'Checking GitHub PRs', propHandoff: null };
+  }
+  if ((name === 'run_command' && /\bgh\s+pr\s+(create|edit|merge|ready|reopen)\b/i.test(cmd)) || /^(create_pull_request|update_pull_request|merge_pull_request)$/i.test(bareTool)) {
     return { role: active, phase: 'release', message: 'Create Pull Request on GitHub', propHandoff: [active, 'github', 'Create PR'] };
   }
   if (/pr\.(md|html)|pull_request_template/i.test(filePath)) {
     return { role: active, phase: 'release', message: isRead ? 'Reading PR template' : isEdit ? 'Editing PR description' : 'Drafting PR description', propHandoff: isRead ? null : [active, 'github', 'Draft PR'] };
   }
-  if (/jira/i.test(name) || /jira\.md$/i.test(filePath)) {
+  if (name === 'run_command' && /\bjira-client\.mjs\s+create\b/i.test(cmd)) {
+    return { role: active, phase: 'release', message: 'Pushing issue to Jira', propHandoff: [active, 'jira', 'Push Jira'] };
+  }
+  if (name === 'run_command' && /\bjira-client\.mjs\s+(whoami|projects|options|search|list-done)\b/i.test(cmd)) {
+    return { role: active, phase: currentPhase || 'release', message: 'Checking Jira', propHandoff: null };
+  }
+  const jiraToolRe = /^(create_issue|update_issue|edit_issue|transition_issue|add_comment|get_issue|search_issues)$/i;
+  const isJiraMcpTool = /jira/i.test(mcpServer) || /jira/i.test(name) || jiraToolRe.test(bareTool);
+  if (isJiraMcpTool && name !== 'run_command') {
+    const isJiraWrite = /^(create|update|edit|transition|add|comment|assign|link|delete)/i.test(bareTool)
+      || /(create|update|edit|transition|add_comment|assign|link)/i.test(bareTool);
+    return {
+      role: active,
+      phase: 'release',
+      message: isJiraWrite ? `Pushing to Jira: ${clip(bareTool, 30)}` : `Reading Jira: ${clip(bareTool, 30)}`,
+      propHandoff: isJiraWrite ? [active, 'jira', 'Push Jira'] : null
+    };
+  }
+  if (/jira\.md$/i.test(filePath)) {
     return { role: active, phase: 'release', message: isRead ? 'Reading Jira task' : isEdit ? 'Editing Jira task' : 'Drafting Jira task', propHandoff: isRead ? null : [active, 'jira', 'Write Jira'] };
   }
 
@@ -407,8 +450,8 @@ export function inferToolAction(tc, genericContent = '', currentRole = 'flash', 
 
 export function getLastSelectedModel() {
   const brainDir = path.join(os.homedir(), '.gemini', 'antigravity', 'brain');
-  if (!fs.existsSync(brainDir)) return 'flash';
-  let candidate = 'flash';
+  if (!fs.existsSync(brainDir)) return DEFAULT_AGENT;
+  let candidate = DEFAULT_AGENT;
 
   try {
     const entries = [];
@@ -433,7 +476,7 @@ export function getLastSelectedModel() {
   return candidate;
 }
 
-export function parseTranscriptFile(filePath, minTime, defaultAgent = 'flash', visited = new Set()) {
+export function parseTranscriptFile(filePath, minTime, defaultAgent = DEFAULT_AGENT, visited = new Set()) {
   if (!filePath || !fs.existsSync(filePath) || visited.has(filePath)) return [];
   visited.add(filePath);
 
@@ -570,7 +613,7 @@ export function findLatestAntigravityTranscript() {
   return bestFile;
 }
 
-export function getModelsStatus(currentActive = 'flash') {
+export function getModelsStatus(currentActive = DEFAULT_AGENT) {
   const active = canonAgent(currentActive);
   return {
     models: MODEL_AGENTS.map(id => ({
@@ -586,7 +629,7 @@ export function resetVisualizer() {
   try { s = JSON.parse(fs.readFileSync(stateFile, 'utf8')); } catch {}
   const fresh = {
     task: null, phase: 'intake', gate: null,
-    activeAgent: 'flash',
+    activeAgent: DEFAULT_AGENT,
     agents: Object.fromEntries(MODEL_AGENTS.map(a => [a, { status: 'idle', message: '' }])),
     handoffs: [], handoffSeq: Number(s.handoffSeq || 0), log: [],
     clearedAt: new Date().toISOString(),
@@ -894,7 +937,7 @@ export function buildMirroredChat() {
   } catch {}
 
   const latestTranscript = findLatestAntigravityTranscript();
-  const transcriptMsgs = latestTranscript ? parseTranscriptFile(latestTranscript, minTime, 'flash') : [];
+  const transcriptMsgs = latestTranscript ? parseTranscriptFile(latestTranscript, minTime, DEFAULT_AGENT) : [];
 
   if (transcriptMsgs.length === 0) {
     const clean = fileMsgs.map((m, idx) => ({ ...m, n: idx + 1 }));
