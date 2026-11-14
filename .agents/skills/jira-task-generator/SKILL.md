@@ -1,218 +1,199 @@
 ---
 name: jira-task-generator
-description: Generate Jira tasks (title, description containing root cause/changes/expected, start date, end date, and mandays estimate) based on inspection of git branches or commits. Use this skill whenever the user requests "create Jira task", "generate Jira", "make a ticket", "log task", "fill Jira from commit/branch", "estimate mandays", or requests a summary of work from branches/commits for reporting, even if the user does not explicitly mention the words "skill" or "Jira".
+description: Generate Jira tasks for Kanban Boards (with upfront Implementation Plan categorized by Epic/Task/Story, Jira Board URL verification, governance custom fields mapping, and direct push to Jira at https://klgtech.atlassian.net/) based on git branch or commit inspection.
 ---
 
-# Jira Task Generator
+# Jira Task Generator (Kanban & Jira Cloud)
 
-This skill generates accurate Jira tasks by **directly inspecting branch and commit contents** (never guessing from branch names or memory). All task details must be traceable back to git evidence.
+This skill generates accurate Jira tasks by **directly inspecting branch and commit contents**, authoring an **upfront Jira Implementation Plan** categorized by **Epic / Story / Task** suited for a **Kanban Board**, confirming the Jira Board URL, Project Key, and governance custom fields, and pushing directly to **Jira Cloud (`https://klgtech.atlassian.net/`)** via `tools/jira-client.mjs` upon user approval.
 
-## Expected Output
+---
 
-Every generated task must contain:
+## Core Rules
 
-1. **Title** formatted as `[Service Name] - [Work Performed]`
-2. **Description** structured in three distinct sections: Root Cause, Changes, Expected
-3. **Start Date** and **End Date**
-4. **Mandays Estimate** (1 = 1 day, 0.5 = 1/2 day, 0.25 = 1/4 day; 1 day = 9 working hours)
+1. **Mandatory Upfront Jira Implementation Plan:**
+   Never create or push issues directly to Jira without first authoring a structured Jira Implementation Plan for user review and explicit approval.
+2. **Kanban Board Categorization (Epic / Story / Task / Sub-task):**
+   The Jira project operates on a **Kanban Board** style. Every unit of work must be accurately classified:
+   - **`Epic`**: Major initiatives or new feature modules spanning multiple components or cross-service flows.
+   - **`Story`**: End-user capability or functional enhancement delivering direct business value.
+   - **`Task`**: Technical chores, bug fixes, refactoring, unit test setups, or configuration changes.
+   - **`sub-task`**: Granular breakdown child items attached to a parent Story or Task.
+3. **Jira Base URL & Project Key Verification:**
+   - Official Base URL: `https://klgtech.atlassian.net/`
+   - Default / Target Project Keys: Verify the project key (e.g., `BOWP`, `FNBAPI`, `FNBMOB`, `STECO`, `LIV`) from the user, branch name, or `office.config.yml`.
+   - If unknown, ask the user once: *"Please confirm the target Jira Kanban Board URL or Project Key at https://klgtech.atlassian.net/"*.
+4. **Governance Custom Fields (Mandatory 4 Parameters):**
+   Every issue created in KLG Jira requires or benefits from standard enterprise governance metadata. The agent must specify these 4 fields in the plan and push payload:
+   - **`Application (Global)`** (`customfield_12291`): The primary system or client app (e.g., `Superapps`, `MyLiving`, `POS Phoenix FnB`, `CMS`, etc.).
+   - **`Tribe/Department (Global)`** (`customfield_12290`): The owning department. **Default**: `Back Office & E-Commerce`.
+   - **`SDLC Evidences`** (`customfield_12370`): Cascading Select (`Parent` $\rightarrow$ `Child`).
+     - Example standard development task: `Development Iteration:develop` (Parent: `Development Iteration`, Child: `develop`).
+     - Example bugfix/support task: `Support:Fixing` (Parent: `Support`, Child: `Fixing`).
+     - Example RFC task: `Development Iteration:RFC`.
+     - Example TD task: `Release:Technical Document (TD)`.
+   - **`Business Unit (Global)`** (`customfield_12289`): Multi-select (array of options). Can accept multiple BUs separated by comma (e.g., `FBI`, or `FBI,AHI`, `HCI`, `Property`, etc.).
+5. **Authentication & Credential Management:**
+   - Jira Cloud REST API uses **HTTP Basic Authentication** (`Authorization: Basic base64(email:api_token)`).
+   - Credentials are read automatically from `.mcp.json` under `mcpServers.jira` (`serverUrl`, `email`, `apiToken`, and `headers.Authorization`).
+   - The CLI helper `node tools/jira-client.mjs` handles this authentication seamlessly.
+6. **Direct Push Execution (Upon Approval):**
+   - Push occurs only after Gate 3 approval (`"approve plan jira"`, `"approve push"`, or `"create jira"`).
+   - Use `node tools/jira-client.mjs create` to create tickets, ensuring correct hierarchy: create parent **Epics** first, then link child **Stories** or **Tasks** via `--parent <EPIC_KEY>`.
+   - Pass the custom field flags: `--app`, `--tribe`, `--sdlc`, `--bu`.
+   - Issue creation automatically triggers visualizer handoff to Jira (`node tools/office-state.mjs handoff sonnet jira "Write Jira"`).
+7. **Review Plan Language Mandate:**
+   The upfront **Jira Implementation Plan review document MUST be written in Indonesian by default** for presentation to the user, while technical engineering terms remain in English.
 
 ---
 
 ## Workflow Steps
 
-### Step 1 — Identify the Target (Branch / Commits)
+### Step 1 — Target Branch & Git Evidence Inspection
+1. Inspect current branch and git status:
+   ```bash
+   git rev-parse --abbrev-ref HEAD
+   git status --short
+   ```
+2. Determine base branch (`main` / `master` / `develop`):
+   ```bash
+   git merge-base <base-branch> HEAD
+   ```
+3. Extract commit logs and detailed diff:
+   ```bash
+   git log <merge-base>..HEAD --reverse --pretty=format:"%h | %an | %ad | %s" --date=iso
+   git diff <merge-base>..HEAD --stat
+   git diff <merge-base>..HEAD
+   ```
 
-Priority hierarchy:
-1. If the user explicitly mentions a branch or commit hash/range → use that.
-2. If omitted → use the currently active branch.
+### Step 2 — Verify Jira Board URL, Project Key & Governance Fields
+1. Confirm target Jira destination:
+   - Base URL: `https://klgtech.atlassian.net/`
+   - Default project key from `office.config.yml` (e.g., `BOWP`) or ask the user.
+2. Inspect or confirm available options if needed:
+   ```bash
+   node tools/jira-client.mjs options --project <KEY>
+   ```
+3. Resolve governance custom field mapping:
+   - **Application (Global)**: e.g., `Superapps` (or `MyLiving` for Living World repos)
+   - **Tribe/Department (Global)**: `Back Office & E-Commerce` (default)
+   - **SDLC Evidences**: `Development Iteration:develop` (or `Support:Fixing` for fixes)
+   - **Business Unit (Global)**: `FBI` (or multiple: `FBI,AHI`, etc.)
 
-Execute:
-```bash
-git rev-parse --abbrev-ref HEAD        # active branch
-git status --short                     # check uncommitted changes
-```
+### Step 3 — Author Upfront Jira Implementation Plan (Indonesian Default)
+Before calling creation commands, author a **Jira Implementation Plan** in Indonesian for user review:
 
-Determine the **base branch** (evaluation order: `develop`, `main`, `master`, or user-specified):
-```bash
-git merge-base <base-branch> HEAD
-```
-If the base branch is ambiguous or multiple candidates exist, **ask the user once** before continuing. Never guess.
+```markdown
+### 📋 Jira Implementation Plan (Kanban Review)
 
-### Step 2 — Gather Git Evidence
+**Target Board / Project:** <URL Board atau Project Key, misal: BOWP>
+**Base URL:** `https://klgtech.atlassian.net/`
 
-Extract the list of commits belonging specifically to this branch (excluding base commits):
-```bash
-git log <merge-base>..HEAD --reverse --pretty=format:"%h | %an | %ad | %s" --date=iso
-```
-
-Collect diff summaries and changes:
-```bash
-git diff <merge-base>..HEAD --stat
-git diff <merge-base>..HEAD
-```
-
-If the diff is large, focus on critical files (Services, Controllers, Handlers, Repositories, Entities/Models, Migrations, and Unit Tests), ignoring generated files like `*.Designer.cs`, `*.snapshot`, lock files, and `bin/obj`.
-
-If the user targets **a single commit**:
-```bash
-git show <hash> --stat --patch
-```
-
-If there are **uncommitted changes**, note in the output that they are not included unless the user specifically asks to inspect `git diff HEAD`.
-
-Inspect commit bodies (`git log --format=%B`), ticket keys in branch names (e.g. `feature/ABC-123-...`), and `// TODO` / `// FIX` comments in the diff to capture the intent behind changes.
-
-### Step 3 — Determine the Service Name
-
-Identify the service name by checking in order:
-1. The .NET project or solution with the most changes (`*.csproj`, folder `src/<ServiceName>`).
-2. The repository root name (`git rev-parse --show-toplevel`).
-3. Root namespaces of modified files.
-
-Use standard team naming conventions (e.g. `Payment Service`, `Order API`), not raw filesystem paths. If changes span multiple distinct services, generate **one task per service**.
-
-### Step 4 — Author the Title
-
-Format:
-```
-[Service Name] - [Work Performed]
-```
-
-Rules:
-- Begin with an action verb (Fix, Add, Improve, Refactor, Implement, Remove).
-- Be concise and specific, maximum ~80 characters.
-- Describe the business outcome or capability, not internal file names.
-
-Examples:
-- `Payment Service - Fix transaction duplication during callback retry`
-- `Order Service - Add customer order cancellation endpoint`
-
-### Step 5 — Author the Description
-
-Use this exact structure:
-
-```
-**Root Cause**
-<Problem cause or business requirement background>
-
-**Changes**
-- <Change 1 (affected class/method/endpoint/table)>
-- <Change 2>
-
-**Expected**
-<Expected behavior and verifiable outcomes after changes>
-```
-
-Section guidelines:
-- **Root Cause**
-  - For bugs: explain *why* the bug occurred (state, data, flow) supported by diff evidence. Example: query omitted `IsDeleted` filter, returning soft-deleted records.
-  - For features/improvements: explain previous limitations or business driver.
-  - If root cause **cannot be deduced from commits**, write `Needs confirmation: <unclear detail>` rather than inventing explanations.
-- **Changes**
-  - One bullet per significant change, citing modified classes, methods, endpoints, tables, or migrations.
-  - Cite added or updated unit tests (e.g. `OrderServiceTests`).
-  - Do not copy raw commit messages verbatim; summarize clearly for PM and QA reviewers.
-- **Expected**
-  - Describe observable, verifiable behaviors (input → output, state changes, persistent records).
-  - Explicitly mention handled edge cases or negative scenarios.
-
-### Step 6 — Determine Start and End Dates
-
-Date format: `YYYY-MM-DD`.
-
-- **Start Date** = author date of the **first** commit on the branch (`%ad` from Step 2).
-- **End Date** = author date of the **latest** commit on the branch.
-- If only one commit exists, Start Date = End Date.
-- User-provided dates always override git dates.
-- If commit dates span long gaps with no activity (> 2 business days), append a note: `Notice: commit inactivity gap observed on <dates>, please confirm if date range is accurate.`
-
-### Step 7 — Calculate Mandays Estimate
-
-Unit: **1 manday = 9 working hours**.
-
-| Value | Work Hours |
-|---|---|
-| 0.25 | ~2.25 hours |
-| 0.5 | ~4.5 hours |
-| 0.75 | ~6.75 hours |
-| 1.0 | 9 hours |
-
-Calculate using **two methods**, then select the most rational value:
-
-**A. Based on Change Complexity (Primary Benchmark)**
-
-| Scope of Change | Estimate |
-|---|---|
-| Minor change: 1-2 files, simple fix, config/constant tweak, no new tests | 0.25 |
-| Logic fix/update in 1 method + unit test adjustments or additions | 0.5 |
-| Small endpoint/feature: Controller + Service + Model + unit tests | 0.75 - 1.0 |
-| Medium feature: multiple layers, database migration/table update, extensive test scenarios | 1.5 - 2.0 |
-| Large feature or external client integration | 2.0+ (recommend splitting into multiple tasks) |
-
-Increment factors (+0.25 per factor): database migrations, 3rd-party external integrations, cross-cutting refactoring, complex test setups (seeders and cleanups), and difficult root cause investigations.
-
-**B. Based on Commit Time Span (Comparison Benchmark)**
-Group commits into working sessions (intervals ≤ 3 hours belong to one session). Sum session durations plus ~30 minutes buffer for initial setup. Do not count overnight hours or weekends as full work periods.
-
-**Final Determination Rules:**
-- Round to the nearest **0.25** increment. Minimum estimate is 0.25.
-- If A and B diverge significantly (> 0.5), use A and state the justification in one sentence.
-- If the estimate exceeds 2.0 mandays, advise splitting the work into smaller Jira tasks.
-- Include the estimate rationale in the output, e.g. `0.75 (1 new endpoint + unit tests, ~6.75 hours)`.
-
-### Step 8 — Pre-Submission Validation Checklist
-
-- [ ] Title adheres to `[Service Name] - [Work Performed]`.
-- [ ] Every bullet in Changes points to verifiable files/commits in the git diff.
-- [ ] Root Cause contains no unverified assumptions.
-- [ ] Start Date ≤ End Date, both formatted as `YYYY-MM-DD`.
-- [ ] Mandays are in increments of 0.25 adhering to the benchmark table.
-- [ ] Description is free of secrets, credentials, tokens, or PII.
-
-### Step 9 — Dispatch to Jira or Format Output
-
-1. **If Jira MCP/tooling is available**: present the draft to the user first, then **request confirmation** before creating the issue. Never create issues without explicit user authorization.
-   - Field mappings: Summary = Title, Description = Step 5 text, Start Date, Due Date = End Date, Original Estimate = mandays × 9h (e.g. 0.5 → `4h 30m`).
-   - Project key, issue type, and assignee: derive from branch name or ask user if unconfirmed.
-2. **If no Jira tooling is present**: render the output in copy-paste format.
+#### Governance & Custom Field Mapping:
+- **Application (Global):** `Superapps`
+- **Tribe/Department (Global):** `Back Office & E-Commerce` *(Default)*
+- **SDLC Evidences:** `Development Iteration - develop`
+- **Business Unit (Global):** `FBI` *(Multiple allowed)*
 
 ---
 
-## Output Format
+#### Daftar Item yang Akan Dibuat:
 
-```
-### Title
-[Service Name] - [Work Performed]
-
-### Description
-**Root Cause**
-...
-
-**Changes**
-- ...
-
-**Expected**
-- ...
-
-### Dates
-- Start Date : YYYY-MM-DD
-- End Date   : YYYY-MM-DD
-
-### Mandays Estimate
-X (short rationale)
-
-### Source Reference
-- Branch : <branch-name>
-- Range  : <merge-base>..<head> (N commits)
-- Notes  : <items needing confirmation, if any>
-```
+| No | Tipe (Epic / Story / Task) | Summary / Title | Parent Epic | Estimasi Manday | Deskripsi Singkat |
+|---|---|---|---|---|---|
+| 1 | `Epic` (jika inisiatif baru) | [Service] - [Initiative Title] | - | X manday | Ringkasan inisiatif |
+| 2 | `Story` | [Service] - [Capability / Feature] | <Epic Key / No> | X manday | Ringkasan flow bisnis |
+| 3 | `Task` | [Service] - [Technical Chore / Fix] | <Epic/Story Key> | X manday | Detail perubahan teknis |
 
 ---
 
-## Important Rules
+#### Rincian Tiket:
 
-- **Always inspect git first.** Never generate tasks purely from branch names or unverified memory.
-- **Never fabricate information.** State gaps as `Needs confirmation`.
-- **One task = one service and one primary objective.** Recommend splitting unrelated changes.
-- **Language:** Default to user preference for conversational responses; Technical terms remain English (Controller, Service, Migration, etc.).
-- **Consistent Estimates:** 1 manday is always strictly defined as 9 working hours.
+##### Tiket 1: [Tipe] [Summary]
+- **Issue Type:** `Epic` | `Story` | `Task` | `sub-task`
+- **Parent:** <Parent Link bila ada>
+- **Start Date:** YYYY-MM-DD
+- **End Date:** YYYY-MM-DD
+- **Estimate:** X manday (~X jam kerja; 1 manday = 9 jam kerja)
+- **Application:** Superapps
+- **Tribe/Department:** Back Office & E-Commerce
+- **SDLC Evidences:** Development Iteration - develop
+- **Business Unit:** FBI
+- **Description:**
+  **Root Cause**
+  ...
+  **Changes**
+  - ...
+  **Expected**
+  ...
+```
+
+### Step 4 — Standard Field Guidelines per Ticket
+
+1. **Title / Summary:**
+   - Format: `[Service Name] - [Work Performed]`
+   - Maximum ~80 characters, prefixed with an action verb (Fix, Add, Improve, Refactor, Implement).
+2. **Description:**
+   - **Root Cause**: Business context or technical origin based on git diff evidence.
+   - **Changes**: Concrete bullets citing modified Controllers, Services, Entities, Tables, Migrations, or Unit Tests.
+   - **Expected**: Observable and verifiable system behavior.
+3. **Start Date & End Date:**
+   - Format: `YYYY-MM-DD`. Derived from the first and latest commit author dates on the branch.
+4. **Mandays Estimate:**
+   - Standard Unit: **1 manday = 9 working hours** (increments of 0.25).
+   - Minor change (1-2 files, config, no new test): 0.25 (~2.25 hours)
+   - 1 method logic + unit test: 0.5 (~4.5 hours)
+   - Small feature (Controller + Service + Model + tests): 0.75 - 1.0 (~6.75 - 9 hours)
+   - Multi-layer feature + DB migration: 1.5 - 2.0 mandays
+
+### Step 5 — Direct Push to Jira (Upon Approval)
+
+1. Verify connection and current user identity:
+   ```bash
+   node tools/jira-client.mjs whoami
+   ```
+2. Create issues in topological order with all governance fields:
+   - **Step 5a (If an Epic is present):**
+     ```bash
+     node tools/jira-client.mjs create \
+       --project BOWP \
+       --type Epic \
+       --summary "[Service] - Initiative Name" \
+       --desc "Description text..." \
+       --app "Superapps" \
+       --tribe "Back Office & E-Commerce" \
+       --sdlc "Development Iteration:develop" \
+       --bu "FBI"
+     ```
+     Take note of the created Epic key (e.g., `BOWP-5001`).
+   - **Step 5b (Create Stories or Tasks linked to the Epic):**
+     ```bash
+     node tools/jira-client.mjs create \
+       --project BOWP \
+       --type Story \
+       --summary "[Service] - Feature Name" \
+       --desc "Description text..." \
+       --parent BOWP-5001 \
+       --app "Superapps" \
+       --tribe "Back Office & E-Commerce" \
+       --sdlc "Development Iteration:develop" \
+       --bu "FBI"
+
+     node tools/jira-client.mjs create \
+       --project BOWP \
+       --type Task \
+       --summary "[Service] - Technical Task" \
+       --desc "Description text..." \
+       --parent BOWP-5001 \
+       --app "Superapps" \
+       --tribe "Back Office & E-Commerce" \
+       --sdlc "Development Iteration:develop" \
+       --bu "FBI"
+     ```
+3. Report the result back to the user with clickable URLs:
+   ```markdown
+   ✅ Successfully created issues in Jira:
+   - Epic : [BOWP-5001](https://klgtech.atlassian.net/browse/BOWP-5001) - [Service] Initiative
+   - Story: [BOWP-5002](https://klgtech.atlassian.net/browse/BOWP-5002) - [Service] Feature
+   - Task : [BOWP-5003](https://klgtech.atlassian.net/browse/BOWP-5003) - [Service] Technical Task
+   ```

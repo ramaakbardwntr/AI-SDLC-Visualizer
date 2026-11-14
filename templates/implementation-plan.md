@@ -4,7 +4,7 @@
 - Estimasi total (rekomendasi): <x> manday (1 manday = 9 jam)
 
 ## 1. Ringkasan task
-<satu paragraf, kata-kata sendiri>
+<satu paragraf deskriptif dalam kata-kata sendiri>
 
 ## 2. Temuan
 **Alur saat ini**
@@ -34,6 +34,13 @@
 - Risiko:
 - Estimasi: <x> manday
 
+### Opsi C - <nama> (alternatif lain jika ada)
+- Pendekatan:
+- Pros:
+- Cons:
+- Risiko:
+- Estimasi: <x> manday
+
 **Rekomendasi:** Opsi <A> karena ...
 
 ## 5. Dampak
@@ -47,21 +54,31 @@
 | Performa / backward compat | |
 
 ## 6. Dampak Unit Test
-**Test existing terdampak**
-| Test class | Penyesuaian |
-|---|---|
+**Audit & Evaluasi Test Namespace Terkait**
+*(Wajib membaca seluruh test case dalam namespace/class terkait sebelum menyusun rencana test)*
+| Test Class / Method | Aksi (Pertahankan / Gabungkan / Hapus) | Alasan / Eliminasi Redundansi |
+|---|---|---|
+| | | |
 
-**Skenario test baru**
-| Function | Skenario | Data seed | Tabel.field yang di-assert | Response | Mock (external client) |
+**Skenario Test (100% Meaningful Coverage - Tanpa Over-Engineering)**
+| Function | Skenario Business Flow | Data Seed | Tabel.Field yang Di-assert | Response | Mock (External Client Saja) |
 |---|---|---|---|---|---|
+| | | | | | |
 
-## 7. Dampak Dokumentasi
+*Catatan: Pastikan struktur, seeder, cleanup, dan code style unit test mengikuti konvensi test project existing.*
+
+## 7. Dampak Dokumentasi (Opsional)
 | Halaman Tech Doc | Entri | Perubahan |
 |---|---|---|
 Feature baru: ya/tidak -> RFC: <status>
+*(Dokumentasi Strand Docmost bersifat opsional berdasarkan persetujuan user).*
 
 ## 8. Pertanyaan terbuka dan asumsi
-- 
+- Perlu konfirmasi: ...
 
-## 9. Keputusan yang dibutuhkan
-Balas: `approve opsi A` / `approve opsi B` / minta revisi (sebutkan bagian) / batal.
+## 9. Penawaran Lanjutan (Post-Plan Offers - Wajib Ditawarkan)
+- **a. Update Strand Docmost MCP (Opsional):** Apakah Tech Doc atau RFC terkait pada Strand Docmost MCP ingin sekalian di-update? Jika ya, mohon sebutkan **nama Space** dan **nama dokumen (atau link URL Strand)** yang ingin di-update.
+- **b. Pembuatan Pull Request ke GitHub:** *(Cek terlebih dahulu via `gh pr list --head <branch>`)* Apakah branch `<branch>` ingin sekalian dibuatkan Pull Request ke GitHub?
+
+## 10. Keputusan yang dibutuhkan
+Balas: `approve opsi A` / `approve opsi B` / `approve opsi C` / minta revisi (sebutkan bagian) / batal.

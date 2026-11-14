@@ -1,6 +1,6 @@
 ---
 name: xunit-testing
-description: Authoring and executing xUnit test suites for this office - mock only external/third-party clients, never mock Repositories or Databases, enforce per-test seeder and cleanup, assert on impacted database fields and API responses. Use whenever writing, adjusting, or executing C# unit tests.
+description: Authoring and executing xUnit test suites for this office - audit test cases in relevant namespaces, consolidate redundant tests, maintain 100% meaningful business flow coverage (except mocks), mock only external/third-party clients, never mock Repositories or Databases, enforce per-test seeder and cleanup, and strictly adhere to existing project test styles.
 ---
 
 # xUnit Testing
@@ -13,6 +13,10 @@ description: Authoring and executing xUnit test suites for this office - mock on
 ## Core Rules
 | Rule | Specification |
 |---|---|
+| **Namespace Audit** | Before writing or modifying tests, **read all existing test cases** residing under the namespace/class related to the function under change. |
+| **Eliminating Redundancy** | Delete or consolidate redundant, overlapping, or obsolete test cases to keep the test suite lean, fast, and maintainable. |
+| **100% Meaningful Coverage** | All execution paths/branches of the modified business logic must maintain 100% coverage (**excluding external/third-party dependencies that are mocked**). Test cases must be **meaningful for real business flows**—avoid over-testing (generating multiple tests for trivial variations) and avoid over-engineering. |
+| **Project Code Style** | Strictly mirror the existing test project conventions, folder structure, test naming (`<ClassUnderTest>Tests`), helper patterns, seeders, cleanups, and code style. Do not force generic templates if the project already has established conventions. |
 | Mock | Only external/3rd-party clients (payment gateways, SAP, Refit APIs, S3, email, outbound message producers). |
 | Do NOT mock | **Repository** and **Database**. Use real implementations backed by a local/test database. InMemory/SQLite only if that is the established project convention. |
 | Seeder | Each test seeds its own isolated test data. Use unique identifiers (`Guid.NewGuid()`) to eliminate test collisions. |
@@ -20,7 +24,7 @@ description: Authoring and executing xUnit test suites for this office - mock on
 | Table Assertions | Query the database using a **new** DbContext instance with `AsNoTracking()` to avoid reading tracked entities. Assert modified fields (status, amount, `updated_by`, `updated_at`, foreign keys, etc.) and assert fields that **must remain unchanged**. |
 | Response Assertions | Assert all significant response/return value fields, including HTTP status codes or `Result<T>` wrapper states. |
 | Mock Verifications | Verify calls to external clients (`Times.Once`, `Times.Never` for scenarios where external calls are forbidden, verifying key arguments). |
-| Scenarios | Per function under test: happy path, validation/negative cases, edge cases (empty data, duplicates, final state guards, concurrency where applicable). |
+| Scenarios | Per function under test: happy path, validation/negative cases, crucial edge cases (empty data, duplicates/idempotency, final state guards, concurrency where applicable). |
 | Naming | `Method_Condition_ExpectedResult`; test class `<ClassUnderTest>Tests` (or `<Class><Method>Tests`). |
 | Database | Connection string must target a dedicated test/local database. If in doubt, do not execute; ask user first. |
 
@@ -99,7 +103,7 @@ dotnet test <Project.Tests.csproj> --filter "FullyQualifiedName~OrderServiceCanc
 ```
 - Never run `dotnet test` without `--filter` unless explicitly requested by the user.
 - If no related tests exist: do not fall back to running all tests. Document the gap in `test-report.md`.
-- If a test fails due to code bugs: fix the implementation (via `developer`); do not weaken assertions.
+- If a test fails due to code bugs: fix the implementation; do not weaken assertions.
 
 ## test-report.md
-Document: executed filter, passed/failed counts, scenario list, asserted tables and fields, mocked clients, and uncovered edge cases.
+Document: executed filter, passed/failed counts, test cases audited/consolidated/removed, scenario list, asserted tables and fields, mocked clients, and uncovered edge cases.
