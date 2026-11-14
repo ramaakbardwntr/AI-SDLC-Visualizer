@@ -1,185 +1,204 @@
 # AI SDLC Visualizer
 
-An **AI Software Development Life Cycle (SDLC) & 2D Office Visualizer** platform designed to orchestrate a team of specialized AI agents working on software engineering tasks (primarily **.NET 6 / 8 / 10** projects as well as **Node.js / TypeScript** services) on GitHub. Running within **Antigravity** (or Claude Code): the primary session operates as the **Office Manager**, 5 centralized AI Model agents (**Gemini 4 Argon**, **Gemini 4 Hydrogen**, **Gemini 4 Orchestrator**, **Claude Opus 5.5**, and **Claude Sonnet 5.5**) execute workflow phases according to their specialized capabilities, and you maintain complete oversight through **three approval gates (Gates)**.
+A workflow system and 2D pixel-art office visualizer for coordinating software engineering tasks (primarily .NET 6 / 8 / 10 and Node.js / TypeScript repositories) on GitHub. Your main Antigravity or Claude Code session acts as the Office Manager, five centralized AI model agents (Gemini 4 Argon, Gemini 4 Hydrogen, Gemini 4 Orchestrator, Claude Opus 5.5, and Claude Sonnet 5.5) execute workflow phases by role, and three approval gates require your explicit sign-off before coding, publishing documentation, or pushing to GitHub.
 
-All configurations, agent definitions, slash commands, system rules, and skills are centrally consolidated within the [`.agents/`](file:///D:/Project/Local/ai-engineering-office/.agents) directory and the primary operational guide [`AGENTS.md`](file:///D:/Project/Local/ai-engineering-office/AGENTS.md) as the *Single Source of Truth*.
+Workspace rules, agent personas, slash commands, and templates live under [`.agents/`](.agents/), [`AGENTS.md`](AGENTS.md), and [`templates/`](templates/), alongside workspace settings in [`office.config.yml`](office.config.yml).
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
-| Directory / File | Description & Purpose |
+| Path | Purpose |
 |---|---|
-| [`AGENTS.md`](file:///D:/Project/Local/ai-engineering-office/AGENTS.md) | Core AI office operating rules, 9 golden rules, 3 Gate definitions, 9-phase workflow, and CLI state reference. |
-| [`office.config.yml`](file:///D:/Project/Local/ai-engineering-office/office.config.yml) | Office configuration: project repository list (with TFMs, base branches, and `docmost_service_page_id`), Git policies, Strand/Docmost MCP credentials, Jira settings, and testing rules. |
-| [`office-config/platform-notes.md`](file:///D:/Project/Local/ai-engineering-office/office-config/platform-notes.md) | Reference parent page IDs and template UUIDs for Strand / Docmost MCP documentation. |
-| [`.agents/agents/`](file:///D:/Project/Local/ai-engineering-office/.agents/agents) | Definitions for 5 centralized AI Model agents: [`argon.md`](file:///D:/Project/Local/ai-engineering-office/.agents/agents/argon.md) (Gemini 4 Argon), [`hydrogen.md`](file:///D:/Project/Local/ai-engineering-office/.agents/agents/hydrogen.md) (Gemini 4 Hydrogen), [`orchestrator.md`](file:///D:/Project/Local/ai-engineering-office/.agents/agents/orchestrator.md) (Gemini 4 Orchestrator), [`opus.md`](file:///D:/Project/Local/ai-engineering-office/.agents/agents/opus.md) (Claude Opus 5.5), and [`sonnet.md`](file:///D:/Project/Local/ai-engineering-office/.agents/agents/sonnet.md) (Claude Sonnet 5.5). |
-| [`.agents/commands/`](file:///D:/Project/Local/ai-engineering-office/.agents/commands) | Custom slash commands: [`/scan-project`](file:///D:/Project/Local/ai-engineering-office/.agents/commands/scan-project.md), [`/new-task`](file:///D:/Project/Local/ai-engineering-office/.agents/commands/new-task.md), [`/resume-task`](file:///D:/Project/Local/ai-engineering-office/.agents/commands/resume-task.md), and [`/office-status`](file:///D:/Project/Local/ai-engineering-office/.agents/commands/office-status.md). |
-| [`.agents/skills/`](file:///D:/Project/Local/ai-engineering-office/.agents/skills) | 10 Standard skills (all authored in **English**):<br>• `project-scanner`<br>• `implementation-plan`<br>• `dotnet-standards`<br>• `xunit-testing`<br>• `git-workflow`<br>• `docs-sync`<br>• `tech-doc-generator`<br>• `docmost-rfc-generator`<br>• `jira-task-generator`<br>• `pr-description-generator` |
-| [`.agents/rules/`](file:///D:/Project/Local/ai-engineering-office/.agents/rules) | Always-active system rules, including mandatory visualizer state synchronization ([`office-visualizer.md`](file:///D:/Project/Local/ai-engineering-office/.agents/rules/office-visualizer.md)). |
-| [`.agents/settings.json`](file:///D:/Project/Local/ai-engineering-office/.agents/settings.json) & [`.agents/hooks.json`](file:///D:/Project/Local/ai-engineering-office/.agents/hooks.json) | Command execution permissions (`allow` / `ask` / `deny`) and lifecycle hook configurations for Antigravity and Claude Code. |
-| [`.agents/reference/`](file:///D:/Project/Local/ai-engineering-office/.agents/reference) | Per-project architectural profiles & conventions (`SKILLS.md`), along with standard template ([`_template/SKILLS.md`](file:///D:/Project/Local/ai-engineering-office/.agents/reference/_template/SKILLS.md)). |
-| [`templates/`](file:///D:/Project/Local/ai-engineering-office/templates) | Standard templates for [`task-brief.md`](file:///D:/Project/Local/ai-engineering-office/templates/task-brief.md) and [`implementation-plan.md`](file:///D:/Project/Local/ai-engineering-office/templates/implementation-plan.md). |
-| [`tools/`](file:///D:/Project/Local/ai-engineering-office/tools) | Synchronization engine & visualizer server (Node.js 18+, zero external dependencies):<br>• [`serve-visualizer.mjs`](file:///D:/Project/Local/ai-engineering-office/tools/serve-visualizer.mjs): Local web server (`http://localhost:4177`) & background transcript poller.<br>• [`mirror-transcript.mjs`](file:///D:/Project/Local/ai-engineering-office/tools/mirror-transcript.mjs): Live Antigravity transcript parser (main agent & subagents), role/phase/project/conversation title detector, and active AI model tracker.<br>• [`office-hook.mjs`](file:///D:/Project/Local/ai-engineering-office/tools/office-hook.mjs): Automatic lifecycle hook handler (`PreInvocation`, `PostToolUse`, `PostInvocation`, `Stop`, etc.).<br>• [`office-state.mjs`](file:///D:/Project/Local/ai-engineering-office/tools/office-state.mjs): Manual state management CLI (`.office/state.json` & `.office/chat.json`).<br>• [`setup-antigravity.mjs`](file:///D:/Project/Local/ai-engineering-office/tools/setup-antigravity.mjs): Hook installer for `.agents/hooks.json` and `~/.gemini/config/hooks.json`. |
-| [`visualizer/index.html`](file:///D:/Project/Local/ai-engineering-office/visualizer/index.html) | Interactive 2D pixel-art web visualizer interface rendered on an HTML5 Canvas. |
-| [`workspace/`](file:///D:/Project/Local/ai-engineering-office/workspace) | Working directory where target Git repositories are cloned and modified. |
-| `.office/` | Runtime directory storing `state.json`, `chat.json`, `config.json`, and per-task artifacts under `.office/tasks/<task-id>/`. |
+| [`AGENTS.md`](AGENTS.md) | Core operating guide: 5 AI model agents, 10 Core Rules, 3 approval gates, 9-phase workflow, and visualizer state sync instructions. |
+| [`office.config.yml`](office.config.yml) | Office settings: UI language, Git base and protected branch policies, Docmost server name and parent page placeholders, Jira defaults (`BOWP` and custom fields), testing rules, and registered projects. |
+| [`office-config/platform-notes.md`](office-config/platform-notes.md) | Strand / Docmost MCP tool reference, parent page ID placeholders, and template UUIDs. |
+| [`.mcp.json.example`](.mcp.json.example) | Example MCP configuration for `docmost` and `jira` credentials (copy to gitignored `.mcp.json`). |
+| [`.agents/agents/`](.agents/agents/) | Personas for the 5 AI model agents: [`argon.md`](.agents/agents/argon.md), [`hydrogen.md`](.agents/agents/hydrogen.md), [`orchestrator.md`](.agents/agents/orchestrator.md), [`opus.md`](.agents/agents/opus.md), and [`sonnet.md`](.agents/agents/sonnet.md). |
+| [`.agents/commands/`](.agents/commands/) | Custom slash commands: [`/scan-project`](.agents/commands/scan-project.md), [`/new-task`](.agents/commands/new-task.md), [`/resume-task`](.agents/commands/resume-task.md), and [`/office-status`](.agents/commands/office-status.md). |
+| [`.agents/rules/`](.agents/rules/) | Always-on rule definitions, including [`office-visualizer.md`](.agents/rules/office-visualizer.md). |
+| [`.agents/settings.json`](.agents/settings.json) | Claude Code tool permissions (`allow`, `ask`, `deny`) and lifecycle hook bindings. |
+| `.agents/hooks.json` *(gitignored)* | Local Antigravity lifecycle hooks generated by `node tools/setup-antigravity.mjs`. |
+| `.agents/skills/` *(gitignored)* | Optional local skill overrides. Shared skills live in your global agent skills directory (for example `~/.gemini/config/skills/`). |
+| [`.agents/reference/`](.agents/reference/) | Per-project architectural profiles (`SKILLS.md`), including [`ai-engineering-office/SKILLS.md`](.agents/reference/ai-engineering-office/SKILLS.md) and [`_template/SKILLS.md`](.agents/reference/_template/SKILLS.md). |
+| [`templates/`](templates/) | Standard Markdown templates for [`task-brief.md`](templates/task-brief.md) and [`implementation-plan.md`](templates/implementation-plan.md). |
+| [`tools/`](tools/) | Zero-dependency Node.js 18+ CLI, HTTP server, hook, and test scripts (`node:` built-ins only; detailed below). |
+| [`visualizer/index.html`](visualizer/index.html) | Single-file HTML5 + CSS3 + 2D `<canvas>` visualizer dashboard with autonomous Demo mode. |
+| [`workspace/`](workspace/) | Clone directory for target repositories (contents gitignored except `.gitkeep`). |
+| `.office/` *(gitignored)* | Runtime files: `state.json`, `chat.json`, `config.json`, and per-task artifacts under `.office/tasks/<task-id>/`. |
+
+### Scripts in `tools/`
+
+| Script | Role |
+|---|---|
+| [`serve-visualizer.mjs`](tools/serve-visualizer.mjs) | Local HTTP server (default port `4177`) and `1000ms` transcript poller. |
+| [`mirror-transcript.mjs`](tools/mirror-transcript.mjs) | Antigravity transcript parser, subagent tracker, title/project extractor, 5-model mapper, and tool/prop action engine. |
+| [`office-hook.mjs`](tools/office-hook.mjs) | Lifecycle hook bridge for Antigravity (`--source antigravity`) and Claude Code. |
+| [`office-state.mjs`](tools/office-state.mjs) | CLI for manual updates to `.office/state.json` and `.office/chat.json`. |
+| [`setup-antigravity.mjs`](tools/setup-antigravity.mjs) | Writes Antigravity hook definitions to `.agents/hooks.json` and `~/.gemini/config/hooks.json`. |
+| [`jira-client.mjs`](tools/jira-client.mjs) | Zero-dependency Jira Cloud REST API v3 CLI with custom governance field mapping and visualizer handoffs. |
+| [`mirror-transcript.test.mjs`](tools/mirror-transcript.test.mjs) | Built-in `node:test` unit and HTTP route test suite. |
 
 ---
 
-## 👥 Agent Team & Visualizer Role Mapping
+## Agent Team and Canvas Mapping
 
-[`AGENTS.md`](file:///D:/Project/Local/ai-engineering-office/AGENTS.md) defines a centralized workflow orchestrated across **5 AI Model Agents**, mapped across **6 character desks** (1 user + 5 models) and **3 external service props** on the visualizer canvas:
+The 2D office canvas in [`visualizer/index.html`](visualizer/index.html) renders 6 character desks (1 user + 5 AI model desks) and 3 external service props.
 
-| Agent / Entity | Visualizer Desk | Primary Responsibility |
+| Entity | Canvas Desk | Primary Responsibility |
 |---|---|---|
-| **User** (`you`) | **User Role** (default: **Rama**, dark navy shirt `#162d50`, natural skin `#f1c8a0`, sleek dark hair `#1b1b24`) | Submits tasks/prompts, clarifies intake questions, and retains final authority on **Gate 1, Gate 2, and Gate 3**. Name is customizable directly from the visualizer header. |
-| `argon` | **Gemini 4 Argon** (Deep royal indigo shirt `#4c3bcf`, desk widened to 156px) | Deep project scanning, architectural analysis, and multi-option implementation planning. |
-| `hydrogen` | **Gemini 4 Hydrogen** (Google Blue shirt `#1a73e8`, desk widened to 156px; legacy `flash` alias) | Rapid diagnostics, fast codebase search, low-latency execution, and concurrent subagent execution. |
-| `orchestrator` | **Gemini 4 Orchestrator** (Google Green shirt `#188038`, desk widened to 156px) | Intake triage, cross-model delegation, gate transitions, and workflow synchronization. |
-| `opus` | **Claude Opus 5.5** (Deep burnt terracotta shirt `#b54526`, desk widened to 156px) | Deep reasoning, complex business logic evaluation, Technical Documentation, and Docmost RFC authoring. |
-| `sonnet` | **Claude Sonnet 5.5** (Warm light coral shirt `#f09067`, desk widened to 156px) | Source code implementation, xUnit testing, Git branch management, Jira tasks, and Pull Request releases. |
+| User (`you`) | Default name `Rama`, dark navy shirt (`#162d50`), `112px` desk | Submits prompts, answers intake questions, and approves or revises Gates 1, 2, and 3. Display name is editable from the header. |
+| `argon` | Gemini 4 Argon, indigo shirt (`#4c3bcf`), `156px` desk | Deep project scanning, architecture analysis, and multi-option implementation planning. |
+| `hydrogen` | Gemini 4 Hydrogen, Google Blue shirt (`#1a73e8`), `156px` desk | Default active agent (`DEFAULT_AGENT`). Rapid diagnostics, codebase search, targeted edits, and concurrent subagents. Accepts legacy `flash` aliases. |
+| `orchestrator` | Gemini 4 Orchestrator, Google Green shirt (`#188038`), `156px` desk | Intake triage, cross-model delegation, gate tracking, and workflow sync. |
+| `opus` | Claude Opus 5.5, terracotta shirt (`#b54526`), `156px` desk | Complex domain logic review, Technical Documentation, and Docmost RFC authoring. |
+| `sonnet` | Claude Sonnet 5.5, coral shirt (`#f09067`), `156px` desk | Source implementation, xUnit testing, Git branches, Jira tasks, and Pull Requests. |
 
-**3 External Service Props on Canvas (with Push Animations):**
-- **Jira** (Kanban Board): Receives draft animations (`Write Jira`) and animated MCP push card drops with `Pushing MCP...` / `Synced Jira` status chips (`Push Jira`).
-- **Docmost** (Bookshelf): Receives emerald book-slide landing animations with `Publishing...` / `Published` status chips when pushing docs via Strand / Docmost MCP (`Push Doc`).
-- **GitHub** (Mailbox): Receives flag raise and badge landing animations during branch creation (`Branch`), commits (`Commit`), branch pushes (`Push Branch`, `GIT ↑`), and PR creation (`Create PR`, `PR`).
+### External Service Props
+
+| Prop | Local Flights | Push Animations and Status Chips |
+|---|---|---|
+| Jira (Kanban board) | Drafting `jira.md` emits a `Write Jira` flight. | Jira MCP writes (`create_issue`, `update_issue`, `transition_issue`, `add_comment`, `edit_issue`) and `jira-client.mjs create` emit `Push Jira` (`Pushing MCP...` / `Synced Jira`). |
+| Docmost (Bookshelf) | None (local `docs-draft.md` updates stay on the active desk). | Strand / Docmost MCP writes (`create_page`, `update_page`, `create_page_from_template`, `insert_artifact`, `move_page`, `delete_page`) emit `Push Doc` (`Publishing...` / `Published`). |
+| GitHub (Mailbox) | Branch creation (`Branch`), commits (`Commit`), and `pr.md` drafts (`Draft PR`) emit paper flights. | `git push` and MCP file pushes emit `Push Branch` (`GIT ↑`, `Pushing...` / `Branch pushed`); `gh pr create` and PR MCP calls emit `Create PR` (`PR`, `Opening PR...` / `PR opened`). |
+
+Read-only checks such as `gh pr list`, `get_issue`, and `list_workspace_members` do not trigger push animations.
 
 ---
 
-## 🔄 9-Phase Workflow & 3 Approval Gates
+## 9-Phase Workflow and 3 Approval Gates
 
 ```mermaid
 flowchart LR
-    U["User: Input Task"] --> M["Phase 1 (intake): Active Model creates brief.md"]
-    M --> P{"Project profile exists?"}
-    P -->|"No"| S["Phase 2 (profile): Scan repository into .agents/reference/"]
-    P -->|"Yes"| A["Phase 3 (plan): Author implementation plan.md"]
-    S --> A
-    A --> G1{"Gate 1: Approve Plan?"}
-    G1 -->|"Reject / Revise"| REV["Active Model: Editing implementation_plan.md"]
-    REV --> A
-    G1 -->|"Approve"| R["Phase 4 (branch): Prepare feature branch"]
-    R --> D["Phase 5 (code): Implement code & commit locally"]
-    D --> Q["Phase 6 (test): Run affected unit tests"]
-    Q -->|"Tests Fail (Blocked)"| D
-    Q -->|"Tests Pass (Green)"| W["Phase 7 (docs): Draft docs-draft.md (English)"]
-    W --> G2{"Gate 2: Review Results?"}
-    G2 -->|"Approve"| DM["Push to Strand / Docmost MCP"]
-    DM --> J["Phase 8 (release): Draft jira.md & pr.md"]
-    J --> G3{"Gate 3: Approve Push & PR?"}
-    G3 -->|"Approve"| Z["Phase 9 (done): Push branch & create GitHub PR"]
+    U["User Prompt"] --> P1["Phase 1 (intake): Create brief.md"]
+    P1 --> CHK{"Project profile exists?"}
+    CHK -->|"No"| P2["Phase 2 (profile): Scan repo to .agents/reference/"]
+    CHK -->|"Yes"| P3["Phase 3 (plan): Author plan.md / implementation_plan.md"]
+    P2 --> P3
+    P3 --> G1{"Gate 1: Approve plan?"}
+    G1 -->|"Revise"| REV["Active Model: Editing implementation_plan.md"]
+    REV --> P3
+    G1 -->|"Approve"| P4["Phase 4 (branch): Prepare feature branch"]
+    P4 --> P5["Phase 5 (code): Implement & commit locally"]
+    P5 --> P6["Phase 6 (test): Run filtered unit tests"]
+    P6 -->|"Fail (blocked)"| P5
+    P6 -->|"Pass"| OPT{"Docs requested?"}
+    OPT -->|"Skip"| P8["Phase 8 (release): Draft jira.md & pr.md"]
+    OPT -->|"Yes"| P7["Phase 7 (docs): Draft docs-draft.md (English)"]
+    P7 --> G2{"Gate 2: Approve results & docs?"}
+    G2 -->|"Approve"| PUB["Publish to Strand / Docmost MCP"]
+    PUB --> P8
+    P8 --> G3{"Gate 3: Approve push & PR?"}
+    G3 -->|"Approve"| P9["Phase 9 (done): Push branch, open PR & report"]
 ```
 
-1. **Gate 1 (Plan Approval):** The user reviews `plan.md`. Not a single line of code may be written before Gate 1 is approved. If rejected or revision is requested, the visualizer displays an animated discussion loop between the User and the Architect.
-2. **Gate 2 (Result Review):** The user reviews code diffs, QA test execution reports (`test-report.md`), and draft documentation (`docs-draft.md`). Once approved, `scribe` publishes the changes to Strand/Docmost via MCP.
-3. **Gate 3 (Release Approval):** The user reviews the draft Jira issue (`jira.md`) and Pull Request description (`pr.md`). No remote `git push` or PR creation may occur without explicit user consent.
+1. Gate 1 (Plan Approval): You review `plan.md` / `implementation_plan.md`. No repository code is modified before Gate 1 approval. Revision requests trigger a back-and-forth discussion animation between `you` and the active AI model agent before returning to `plan`.
+2. Gate 2 (Results and Docs Review): You review code diffs, test results, and optional `docs-draft.md`. When documentation updates are requested, the active agent publishes them to Strand / Docmost via MCP after approval.
+3. Gate 3 (Push and PR Approval): Under `phase release` with `gate 3`, you approve pushing the feature branch and creating the GitHub Pull Request after reviewing `pr.md` (and verifying no active PR already exists).
 
 ---
 
-## 🎨 Key Features of AI SDLC Visualizer
+## Visualizer Architecture and Features
 
-The web interface [`visualizer/index.html`](file:///D:/Project/Local/ai-engineering-office/visualizer/index.html) operates autonomously through the combination of **Live Transcript Mirroring** ([`mirror-transcript.mjs`](file:///D:/Project/Local/ai-engineering-office/tools/mirror-transcript.mjs)) and **Lifecycle Hooks** ([`office-hook.mjs`](file:///D:/Project/Local/ai-engineering-office/tools/office-hook.mjs)):
+The web dashboard ([`visualizer/index.html`](visualizer/index.html)) stays synchronized through [`mirror-transcript.mjs`](tools/mirror-transcript.mjs), [`office-hook.mjs`](tools/office-hook.mjs), and [`serve-visualizer.mjs`](tools/serve-visualizer.mjs).
 
-- **Automatic Live Transcript Mirroring (Main Agent & Subagents):**
-  - Reads the active transcript file at `~/.gemini/antigravity/brain/<convId>/.system_generated/logs/transcript.jsonl` every second, automatically recursing into subagent transcripts launched via `invoke_subagent`.
-  - Every incoming user prompt consistently routes from **User → Architect** first before being delegated to specialist roles (`developer`, `qa`, or `scribe`).
-- **Dynamic Task Titles & Precise Project Detection:**
-  - **Task Title** automatically adopts the official conversation title from `~/.gemini/antigravity/annotations/<convId>.pbtxt` (with graceful fallback to headings in `implementation_plan.md` / `task.md`).
-  - **Project Name** is extracted with high fidelity from active file paths, `workspace/<repo>` subdirectories, known projects in `office.config.yml`, or active document metadata.
-- **Centralized Workflow Execution on 5 AI Model Avatars:**
-  - Every workflow phase executes on whichever AI model agent is active (`Gemini 4 Argon`, `Gemini 4 Hydrogen`, `Gemini 4 Orchestrator`, `Claude Opus 5.5`, `Claude Sonnet 5.5`).
-  - Multi-model transitions or subagent delegations animate smooth handoffs across model desks.
-  - Event-driven MCP/Git push animations (`Push Jira`, `Push Doc`, `Push Branch`, `Create PR`) display transfer arcs and prop-specific landing effects while ignoring read-only lookups (`gh pr list`, `get_issue`, `get_page`).
-- **1:1 Activity-Synced Speech Bubbles (Auto-Fit 2-Line Stroked Bubbles):**
-  - Canvas speech bubbles strictly mirror the latest `Activity` log 1:1, rendering a continuous stroked rounded-rect and pointer-tail path with pixel-measured 2-line word wrapping (`maxWidth: 236px`).
-  - Eliminates hook race conditions (`PostInvocation` / `PreInvocation`) that previously caused bubbles to display generic `Working...` or repeat raw prompt text.
-- **Accurate Action Bubbles on Plan Edits:**
-  - In-place edits to `implementation_plan.md` display `Editing implementation_plan.md` on the avatar without resetting the active workflow phase.
-- **Real-Time Active AI Model Indicator:**
-  - The **Agents** card in the right-hand panel reflects model availability (`Gemini 4 Argon`, `Gemini 4 Hydrogen`, `Gemini 4 Orchestrator`, `Claude Opus 5.5`, `Claude Sonnet 5.5`) with live dot swatches and an **Active** vs **Standby** status indicator.
-- **Unit Test Error Visualization (Non-Green Flow):**
-  - If a test execution fails, the active model agent automatically switches to `blocked`, rendering a distinct red error bubble listing failed test cases on canvas and in the Chat panel, followed by corrective execution.
-- **Interactive User Identity & One-Click Reset:**
-  - The user avatar sports a dark navy shirt (`#162d50`) with an editable name badge (**`Role: <Name> ✏️`**) in the header (persisted across sessions via `localStorage` and `.office/config.json`), sharing uniform sleek hair and skin tone (`#f1c8a0`) with the agent team.
-  - Includes a dedicated **Reset Visualizer** header button to wipe state and chat history on demand.
-- **Rich-Text Conversation & Chronological Activity Log:**
-  - **Conversation:** Renders safe Markdown & HTML (bold, italic, `inline code`, code blocks, tables, lists, blockquotes, links) without third-party dependencies, completely untruncated within an elongated, neatly scrollable card container (`max-height: 480px`).
-  - **Activity:** Displays up to 100 recent activity entries in reverse-chronological order with precise timestamps (`DD MMM YYYY HH:mm:ss`).
-- **Dual-Stack Localhost Server & Clean Footprint:**
-  - [`serve-visualizer.mjs`](file:///D:/Project/Local/ai-engineering-office/tools/serve-visualizer.mjs) binds both IPv4 (`127.0.0.1`) and IPv6 loopback (`::1`) on port `4177`, ensuring seamless browser access on Windows.
-  - Obsolete `Mode: A / B` fields and ~280 lines of dead code have been completely eradicated from UI, state, CLI, and docs.
-- **Autonomous Demo Mode:**
-  - When opened independently or enabled via the **Demo mode** toggle, the visualizer simulates a complete SDLC lifecycle (including Gate 1 plan revision loops and failed unit test recovery).
+Every `1000ms`, `serve-visualizer.mjs` polls the newest `~/.gemini/antigravity/brain/<convId>/.system_generated/logs/transcript.jsonl` file, resolving `transcript_full.jsonl` when `truncated_fields` includes `content` and recursing into `invoke_subagent` transcripts. User prompts route directly to the active model agent and switch automatically when Antigravity model selection changes.
+
+Conversation titles come from `~/.gemini/antigravity/annotations/<convId>.pbtxt` (falling back to headings in `implementation_plan.md`, `plan.md`, `task.md`, or `walkthrough.md`), and project names are extracted from `workspace/<repo>` paths, `office.config.yml`, and active document metadata. On the canvas, agent speech bubbles mirror the latest `Activity` log entry with pixel-measured wrapping (`maxWidth: 212px`, up to 2 lines for agents and 1 line for the user). In-place edits to `implementation_plan.md` show `Editing implementation_plan.md` without resetting the active phase, while failing test runs (`dotnet test`, `node --test`, `npm test`, `jest`, `vitest`, `pytest`) switch the active agent to `blocked` and show up to 4 failing test names inside a red `Test case error:` bubble and in the Conversation panel.
+
+### Header Controls, Side Panels, and HTTP Routes
+
+| UI / Server Component | Behavior |
+|---|---|
+| `Role:` display name button | Editable via an inline pencil SVG button in the header and persisted in `localStorage` and `.office/config.json` via `POST /user`. |
+| `Reset Visualizer` button | Clears `.office/state.json` and `.office/chat.json` via `POST /reset`. |
+| `Demo mode` toggle | Auto-starts if `/state.json` fails on initial load and cycles through a 21-step sample workflow every `2400ms`. |
+| Agents panel | Lists the 5 AI model agents with live dot colors and statuses (`Working`, `Waiting`, `Blocked`, `Done`, `Active`, `Standby`). |
+| Conversation panel | Scrollable Markdown feed (`max-height: 480px`) rendered through `renderRich` after HTML escaping, preserving full mirrored responses without truncation. |
+| Activity panel | Retains up to 100 recent entries in reverse-chronological order with `DD MMM YYYY HH:mm:ss` timestamps. |
+| HTTP server ([`serve-visualizer.mjs`](tools/serve-visualizer.mjs)) | Binds `127.0.0.1` and `::1` on port `4177` (override via `PORT`) and serves `GET /`, `GET /index.html`, `GET /state.json`, `GET /chat.json`, `GET /favicon.ico` (`204`), `POST /reset`, and `POST /user`. |
 
 ---
 
-## 🛠️ CLI & Slash Command Reference
+## CLI and Slash Command Reference
 
-### Custom Slash Commands (`.agents/commands/`)
-- `/scan-project <project-name or owner/repo>` — Scans a repository and creates or updates its architectural profile in `.agents/reference/<project>/SKILLS.md`.
-- `/new-task [short description]` — Initiates a new task from Phase 1 (Intake), generates `brief.md`, drafts `plan.md`, and halts at Gate 1.
-- `/resume-task <task-id> [decision]` — Resumes a task paused at a Gate (e.g. `approve option A`, `revise`, or `cancel`).
-- `/office-status` — Displays a summary of the active task, current phase, agent statuses, and pending Gates.
+### Slash Commands (`.agents/commands/`)
 
-### State Controller CLI (`tools/office-state.mjs`)
-In addition to automated transcript syncing, the visualizer state can be updated manually via CLI:
+- `/scan-project <project-name or owner/repo>`: Scans a repository and creates or updates `.agents/reference/<project>/SKILLS.md`.
+- `/new-task [short description]`: Starts Phase 1 (`intake`), drafts `brief.md`, authors the implementation plan, and pauses at Gate 1.
+- `/resume-task <task-id> [decision]`: Resumes a task paused at a gate (for example `approve option A`, `revise`, or `cancel`).
+- `/office-status`: Prints a summary of the active task, phase, model statuses, and pending gate.
+
+### Manual State CLI (`tools/office-state.mjs`)
 
 ```bash
 node tools/office-state.mjs task <id> "<title>" <project> <branch>
 node tools/office-state.mjs phase <intake|profile|plan|gate1|branch|code|test|docs|gate2|release|done>
 node tools/office-state.mjs agent <argon|hydrogen|orchestrator|opus|sonnet> <idle|working|waiting|done|blocked> "<short message>"
-node tools/office-state.mjs handoff <from> <to> "<label>"      # target: agent, you, docmost, github, jira
+node tools/office-state.mjs handoff <from> <to> "<label>"      # targets: model ID, you, docmost, github, jira
 node tools/office-state.mjs gate <1|2|3|none> "<question for user>"
 node tools/office-state.mjs log "<activity entry>"
 node tools/office-state.mjs say <user|assistant> "<message text>" [agent]
-node tools/office-state.mjs reset                              # clears state.json & chat.json
-node tools/office-state.mjs dispose [all|<task-id>]            # reset + deletes .office/tasks/<id|all>
+node tools/office-state.mjs reset                              # clears state.json and chat.json
+node tools/office-state.mjs dispose [all|<task-id>]            # reset + removes .office/tasks/<id|all>
+```
+
+### Jira Cloud CLI (`tools/jira-client.mjs`)
+
+Reads Jira credentials from `.mcp.json` or `~/.gemini/config/mcp_config.json` (`mcpServers.jira`):
+
+```bash
+node tools/jira-client.mjs whoami
+node tools/jira-client.mjs projects
+node tools/jira-client.mjs options [--project <KEY>] [--typeId <ID>]
+node tools/jira-client.mjs search "<JQL>" [--limit N]
+node tools/jira-client.mjs list-done [--limit N]
+node tools/jira-client.mjs create --project <KEY> --type <Epic|Story|Task|sub-task> --summary "<title>" [--desc "<desc>"] [--parent <KEY>] [--app "<app>"] [--tribe "<tribe>"] [--sdlc "<parent:child>"] [--bu "<bu1,bu2>"]
 ```
 
 ---
 
-## 📝 Documentation & Language Standards
+## Documentation and Language Standards
 
-- **Strand / Docmost Documentation:** All Technical Documentation (Tech Docs), RFCs, and Changelogs created or updated in Strand/Docmost MCP **must be written in English**.
-- **Skill Documents (`.agents/skills/`):** All 10 skill guides are authored in formal technical English.
-- **Day-to-day Working Communication:** Session communications with the user can be conducted flexibly in Indonesian or English, retaining standard technical terms in English.
+Canvas labels, status badges, activity logs, Demo mode, `tools/*.mjs` output, and external Strand / Docmost documentation (Tech Docs, RFCs, and changelogs) are written in English. Day-to-day working conversations follow [`AGENTS.md`](AGENTS.md), allowing Indonesian or English (keeping English technical terms), while `plan.md` / `implementation_plan.md` documents default to Indonesian unless English is requested.
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
-- **Antigravity** (IDE / CLI) or **Claude Code CLI**
-- **Node.js 18+** (to run the visualizer web server, transcript mirror parser, and lifecycle hooks)
-- **Git** & **GitHub CLI** (`gh auth login`)
-- **.NET SDK** (.NET 6 / 8 / 10) and/or **Node.js** depending on target project
-- **Strand / Docmost MCP** configured and connected
 
-### Setup Instructions
+- Antigravity (IDE / CLI) or Claude Code CLI
+- Node.js 18+ (no external npm packages required)
+- Git and GitHub CLI (`gh auth login`, if opening Pull Requests from the terminal)
+- .NET SDK (.NET 6 / 8 / 10) and/or Node.js, depending on the target repository
+- Optional Docmost / Strand and Jira MCP or API credentials
 
-1. **Navigate to the Project Directory:**
+### Setup Steps
+
+1. Enter the repository root:
    ```bash
-   cd ai-engineering-office
+   cd AI-SDLC-Visualizer
    ```
 
-2. **Configure MCP:**
-   Copy [`.mcp.json.example`](file:///D:/Project/Local/ai-engineering-office/.mcp.json.example) to `.mcp.json` and adjust the Strand/Docmost MCP credentials:
+2. Configure MCP credentials (optional if running only the local visualizer). Copy [`.mcp.json.example`](.mcp.json.example) to `.mcp.json` and fill in your `docmost` and `jira` credentials (or configure `~/.gemini/config/mcp_config.json`). Never commit `.mcp.json`:
    ```bash
    cp .mcp.json.example .mcp.json
    ```
 
-3. **Configure Office & Target Projects:**
-   Verify and update target projects, Git branch rules, and Docmost parent IDs in [`office.config.yml`](file:///D:/Project/Local/ai-engineering-office/office.config.yml) and [`office-config/platform-notes.md`](file:///D:/Project/Local/ai-engineering-office/office-config/platform-notes.md).
+3. Review target repositories, Git branch policies, Docmost parent page IDs, and Jira defaults in [`office.config.yml`](office.config.yml) and [`office-config/platform-notes.md`](office-config/platform-notes.md).
 
-4. **Install Antigravity Lifecycle Hooks:**
-   Run the hook setup script (re-run whenever the project folder is moved):
+4. Install Antigravity lifecycle hooks (re-run whenever the repository directory moves):
    ```bash
    node tools/setup-antigravity.mjs
    ```
 
-5. **Start the AI SDLC Visualizer Server:**
+5. Run the unit test suite:
+   ```bash
+   node --test tools/mirror-transcript.test.mjs
+   ```
+
+6. Start the visualizer server and open `http://localhost:4177` in your browser (set `PORT` to override the port):
    ```bash
    node tools/serve-visualizer.mjs
    ```
-   Open your browser at **http://localhost:4177** (port can be customized via the `PORT` environment variable).
