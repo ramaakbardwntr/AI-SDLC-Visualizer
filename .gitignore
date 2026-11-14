@@ -4,3 +4,4 @@ workspace/*
 .mcp.json
 node_modules/
 .agents/hooks.json
+.agents/skills/*
