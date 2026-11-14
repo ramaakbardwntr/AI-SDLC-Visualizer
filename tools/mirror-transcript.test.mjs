@@ -19,27 +19,35 @@ import os from 'node:os';
 import http from 'node:http';
 import { handleVisualizerRequest } from './serve-visualizer.mjs';
 
-describe('4 AI Model Canonical Mapping', () => {
-  test('MODEL_AGENTS contains exactly the 4 target AI model IDs', () => {
-    assert.deepEqual(MODEL_AGENTS, ['argon', 'flash', 'opus', 'sonnet']);
+describe('5 AI Model Canonical Mapping', () => {
+  test('MODEL_AGENTS contains exactly the 5 target AI model IDs', () => {
+    assert.deepEqual(MODEL_AGENTS, ['argon', 'hydrogen', 'orchestrator', 'opus', 'sonnet']);
     assert.deepEqual(MODEL_NAMES, [
       'Gemini 4 Argon',
-      'Gemini 3.8 Flash',
+      'Gemini 4 Hydrogen',
+      'Gemini 4 Orchestrator',
       'Claude Opus 5.5',
       'Claude Sonnet 5.5'
     ]);
   });
 
-  test('canonAgent maps slugs and display names correctly', () => {
+  test('canonAgent maps slugs, display names, and legacy flash aliases correctly', () => {
     assert.equal(canonAgent('argon'), 'argon');
     assert.equal(canonAgent('gemini-4-argon'), 'argon');
     assert.equal(canonAgent('Gemini 4 Argon'), 'argon');
 
-    assert.equal(canonAgent('flash'), 'flash');
-    assert.equal(canonAgent('gemini-3.8-flash'), 'flash');
-    assert.equal(canonAgent('gemini-3-8-flash'), 'flash');
-    assert.equal(canonAgent('Gemini 3.8 Flash'), 'flash');
-    assert.equal(canonAgent('flash_lite'), 'flash');
+    assert.equal(canonAgent('hydrogen'), 'hydrogen');
+    assert.equal(canonAgent('gemini-4-hydrogen'), 'hydrogen');
+    assert.equal(canonAgent('Gemini 4 Hydrogen'), 'hydrogen');
+    assert.equal(canonAgent('flash'), 'hydrogen');
+    assert.equal(canonAgent('gemini-3.8-flash'), 'hydrogen');
+    assert.equal(canonAgent('gemini-3-8-flash'), 'hydrogen');
+    assert.equal(canonAgent('Gemini 3.8 Flash'), 'hydrogen');
+    assert.equal(canonAgent('flash_lite'), 'hydrogen');
+
+    assert.equal(canonAgent('orchestrator'), 'orchestrator');
+    assert.equal(canonAgent('gemini-4-orchestrator'), 'orchestrator');
+    assert.equal(canonAgent('Gemini 4 Orchestrator'), 'orchestrator');
 
     assert.equal(canonAgent('opus'), 'opus');
     assert.equal(canonAgent('claude-opus-5.5'), 'opus');
@@ -50,23 +58,136 @@ describe('4 AI Model Canonical Mapping', () => {
     assert.equal(canonAgent('Claude Sonnet 5.5'), 'sonnet');
   });
 
+  test('matchModelName does not misclassify Gemini 4 Hydrogen or Orchestrator as Argon', () => {
+    assert.equal(matchModelName('Gemini 4 Argon'), 'Gemini 4 Argon');
+    assert.equal(matchModelName('Gemini 4 Hydrogen'), 'Gemini 4 Hydrogen');
+    assert.equal(matchModelName('Gemini 4 Orchestrator'), 'Gemini 4 Orchestrator');
+    assert.equal(matchModelName('Gemini 3.8 Flash'), 'Gemini 4 Hydrogen');
+    assert.equal(modelIdFromName('Gemini 4 Hydrogen'), 'hydrogen');
+    assert.equal(modelIdFromName('Gemini 4 Orchestrator'), 'orchestrator');
+    assert.equal(modelIdFromName('Gemini 4 Argon'), 'argon');
+  });
+
   test('canonAgent gracefully falls back for unknown or legacy roles', () => {
     assert.equal(canonAgent('developer', 'sonnet'), 'sonnet');
     assert.equal(canonAgent('architect', 'argon'), 'argon');
     assert.equal(canonAgent('qa', 'sonnet'), 'sonnet');
-    assert.equal(canonAgent('unknown-role', 'flash'), 'flash');
+    assert.equal(canonAgent('unknown-role', 'orchestrator'), 'orchestrator');
   });
 
-  test('getModelsStatus correctly lists all 4 models and toggles active status', () => {
+  test('getModelsStatus correctly lists all 5 models and toggles active status', () => {
     const status = getModelsStatus('argon');
-    assert.equal(status.models.length, 4);
-    assert.deepEqual(status.models.map(m => m.id), ['argon', 'flash', 'opus', 'sonnet']);
+    assert.equal(status.models.length, 5);
+    assert.deepEqual(status.models.map(m => m.id), ['argon', 'hydrogen', 'orchestrator', 'opus', 'sonnet']);
     assert.equal(status.models.find(m => m.id === 'argon')?.active, true);
-    assert.equal(status.models.find(m => m.id === 'flash')?.active, false);
+    assert.equal(status.models.find(m => m.id === 'hydrogen')?.active, false);
 
-    const flashStatus = getModelsStatus('flash');
-    assert.equal(flashStatus.models.find(m => m.id === 'flash')?.active, true);
-    assert.equal(flashStatus.models.find(m => m.id === 'argon')?.active, false);
+    const hydroStatus = getModelsStatus('flash');
+    assert.equal(hydroStatus.models.find(m => m.id === 'hydrogen')?.active, true);
+    assert.equal(hydroStatus.models.find(m => m.id === 'argon')?.active, false);
+
+    const orchStatus = getModelsStatus('orchestrator');
+    assert.equal(orchStatus.models.find(m => m.id === 'orchestrator')?.active, true);
+    assert.equal(orchStatus.models.find(m => m.id === 'hydrogen')?.active, false);
+  });
+});
+
+describe('MCP Push & Read-Only Tool Action Inference', () => {
+  test('jira-client.mjs create emits Push Jira, while whoami emits no push handoff', () => {
+    const pushAct = inferToolAction(
+      { name: 'run_command', args: { CommandLine: 'node tools/jira-client.mjs create --summary "Test"' } },
+      '',
+      'sonnet',
+      'release'
+    );
+    assert.deepEqual(pushAct.propHandoff, ['sonnet', 'jira', 'Push Jira']);
+
+    const readAct = inferToolAction(
+      { name: 'run_command', args: { CommandLine: 'node tools/jira-client.mjs whoami' } },
+      '',
+      'sonnet',
+      'intake'
+    );
+    assert.equal(readAct.propHandoff, null);
+  });
+
+  test('Jira MCP call_mcp_tool distinguishes write vs read operations', () => {
+    const pushAct = inferToolAction(
+      { name: 'call_mcp_tool', args: { ServerName: 'jira', ToolName: 'create_issue', Arguments: {} } },
+      '',
+      'sonnet',
+      'release'
+    );
+    assert.deepEqual(pushAct.propHandoff, ['sonnet', 'jira', 'Push Jira']);
+
+    const readAct = inferToolAction(
+      { name: 'mcp__jira__get_issue', args: { key: 'KLG-10' } },
+      '',
+      'hydrogen',
+      'intake'
+    );
+    assert.equal(readAct.propHandoff, null);
+  });
+
+  test('Docmost MCP call_mcp_tool distinguishes insert_artifact push vs read operations', () => {
+    const pushAct = inferToolAction(
+      { name: 'call_mcp_tool', args: { ServerName: 'docmost', ToolName: 'insert_artifact', Arguments: {} } },
+      '',
+      'opus',
+      'docs'
+    );
+    assert.deepEqual(pushAct.propHandoff, ['opus', 'docmost', 'Push Doc']);
+
+    const readAct = inferToolAction(
+      { name: 'mcp__docmost__list_workspace_members', args: {} },
+      '',
+      'opus',
+      'docs'
+    );
+    assert.equal(readAct.propHandoff, null);
+  });
+
+  test('GitHub CLI/MCP separates read-only gh pr list from Push Branch and Create PR', () => {
+    const listAct = inferToolAction(
+      { name: 'run_command', args: { CommandLine: 'gh pr list --head feat/update-visualizer' } },
+      '',
+      'argon',
+      'plan'
+    );
+    assert.equal(listAct.phase, 'plan');
+    assert.equal(listAct.propHandoff, null);
+
+    const pushBranchAct = inferToolAction(
+      { name: 'run_command', args: { CommandLine: 'git push -u origin feat/update-visualizer' } },
+      '',
+      'sonnet',
+      'release'
+    );
+    assert.deepEqual(pushBranchAct.propHandoff, ['sonnet', 'github', 'Push Branch']);
+
+    const mcpPushAct = inferToolAction(
+      { name: 'push_files', args: { branch: 'feat/update-visualizer' } },
+      '',
+      'sonnet',
+      'release'
+    );
+    assert.deepEqual(mcpPushAct.propHandoff, ['sonnet', 'github', 'Push Branch']);
+
+    const createPrAct = inferToolAction(
+      { name: 'run_command', args: { CommandLine: 'gh pr create --title "feat: visualizer"' } },
+      '',
+      'sonnet',
+      'release'
+    );
+    assert.deepEqual(createPrAct.propHandoff, ['sonnet', 'github', 'Create PR']);
+
+    const mcpPrAct = inferToolAction(
+      { name: 'create_pull_request', args: { title: 'feat: visualizer' } },
+      '',
+      'sonnet',
+      'release'
+    );
+    assert.deepEqual(mcpPrAct.propHandoff, ['sonnet', 'github', 'Create PR']);
   });
 });
 
@@ -321,7 +442,7 @@ describe('Visualizer HTTP Server Routes', () => {
       assert.equal(stateRes.status, 200);
       const stateJson = await stateRes.json();
       assert.ok(Array.isArray(stateJson.models?.models));
-      assert.equal(stateJson.models.models.length, 4);
+      assert.equal(stateJson.models.models.length, 5);
 
       const chatRes = await fetch(`${baseUrl}/chat.json`);
       assert.equal(chatRes.status, 200);
@@ -430,7 +551,7 @@ describe('Avatar Bubble <-> Activity 1:1 Parity & Project Guard', () => {
       fs.writeFileSync(transcriptPath, steps.map(x => JSON.stringify(x)).join('\n') + '\n');
 
       const s = syncStateFromTranscript({ transcriptPath, stateFilePath });
-      assert.equal(s.task.project, 'ai-engineering-office', 'CommandLine must never corrupt task.project');
+      assert.equal(s.task.project, path.basename(path.resolve('.')), 'CommandLine must never corrupt task.project');
       const active = s.activeAgent;
       assert.equal(s.agents[active].message, 'Check git diff on serve-visualizer.mjs');
       assert.ok(s.log.some(l => l.text.endsWith(': Check git diff on serve-visualizer.mjs')));

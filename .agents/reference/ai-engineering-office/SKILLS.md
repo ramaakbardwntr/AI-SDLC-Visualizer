@@ -22,7 +22,7 @@ status: confirmed
 | **Classification** | Standalone developer platform / tooling monolith | `README.md:L1-L6`, `visualizer/index.html`, `tools/*.mjs` |
 | **Backend / CLI Runtime** | Node.js `>= 18` (verified `v20.12.2`), native ES Modules (`.mjs`), **zero external npm dependencies** (no `package.json` / `node_modules`) | `tools/serve-visualizer.mjs:L1-L6`, `tools/office-state.mjs:L2` |
 | **Frontend Stack** | Single-file HTML5 + CSS3 Grid + 2D `<canvas>` + Vanilla JavaScript (`'use strict'`) | `visualizer/index.html` |
-| **Agent Customization Layer** | Antigravity & Claude Code rules, 4 centralized AI Model agents (`argon`, `flash`, `opus`, `sonnet`), slash commands, hooks, and skills | `AGENTS.md`, `.agents/**`, `office.config.yml` |
+| **Agent Customization Layer** | Antigravity & Claude Code rules, 5 centralized AI Model agents (`argon`, `hydrogen`, `orchestrator`, `opus`, `sonnet`), slash commands, hooks, and skills | `AGENTS.md`, `.agents/**`, `office.config.yml` |
 | **Default Local Port** | `http://127.0.0.1:4177` (configurable via `process.env.PORT`) | `tools/serve-visualizer.mjs:L19,L105` |
 
 ---
@@ -32,13 +32,13 @@ status: confirmed
 | Layer / Module | Path | Responsibility & Key Internals |
 |---|---|---|
 | **HTTP Server & Poller** | `tools/serve-visualizer.mjs` | Zero-dependency `node:http` server serving `visualizer/index.html` (`GET /`), live state (`GET /state.json`), chat feed (`GET /chat.json`), model usage (`GET /usage.json`), and mutation endpoints (`POST /reset`, `POST /user`, `POST /usage`). Runs a `1000ms` background `setInterval` calling `syncStateFromTranscript()`. |
-| **Transcript Mirror & Inference Engine** | `tools/mirror-transcript.mjs` | Discovers latest Antigravity transcript (`~/.gemini/antigravity/brain/<convId>/.system_generated/logs/transcript.jsonl`), recurses into subagent transcripts (`invoke_subagent`), resolves conversation titles (`~/.gemini/antigravity/annotations/<convId>.pbtxt` or `brain/<convId>/implementation_plan.md`), extracts active project names (`extractProjectFromPath`, `extractProjectFromMetadata`), centralizes workflow on 4 AI Model agents (`argon`, `flash`, `opus`, `sonnet`), accurately infers actions (`inferToolAction`: `Editing` vs `Drafting`/`Writing` vs `Reading` vs `Searching`), computes model usage (`computeModelUsage`), and persists `.office/state.json` & `.office/chat.json`. |
+| **Transcript Mirror & Inference Engine** | `tools/mirror-transcript.mjs` | Discovers latest Antigravity transcript (`~/.gemini/antigravity/brain/<convId>/.system_generated/logs/transcript.jsonl`), recurses into subagent transcripts (`invoke_subagent`), resolves conversation titles (`~/.gemini/antigravity/annotations/<convId>.pbtxt` or `brain/<convId>/implementation_plan.md`), extracts active project names (`extractProjectFromPath`, `extractProjectFromMetadata`), centralizes workflow on 5 AI Model agents (`argon`, `hydrogen`, `orchestrator`, `opus`, `sonnet`), accurately infers actions (`inferToolAction`: `Editing` vs `Drafting`/`Writing` vs `Reading` vs `Searching`, plus `Push Jira`, `Push Doc`, `Push Branch`, `Create PR` event handoffs), computes model usage (`computeModelUsage`), and persists `.office/state.json` & `.office/chat.json`. |
 | **IDE Lifecycle Hook Handler** | `tools/office-hook.mjs` | Bridges IDE lifecycle events to `.office/state.json` and `.office/chat.json`. Supports `--source antigravity` (`PreInvocation`, `PostToolUse`, `PostInvocation`) and Claude Code (`UserPromptSubmit`, `PostToolUse`, `SubagentStart`, `SubagentStop`, `Notification`, `Stop`). Dispatches directly to the active AI model agent in English. Wraps all logic in a silent top-level `try/catch` so IDE execution is never disrupted. |
-| **Manual State CLI** | `tools/office-state.mjs` | Command-line state controller (`reset`, `dispose`, `task`, `phase`, `agent`, `handoff`, `gate`, `log`, `say`) supporting `argon`, `flash`, `opus`, `sonnet` (with legacy role fallback) and English output. |
+| **Manual State CLI** | `tools/office-state.mjs` | Command-line state controller (`reset`, `dispose`, `task`, `phase`, `agent`, `handoff`, `gate`, `log`, `say`) supporting `argon`, `hydrogen`, `orchestrator`, `opus`, `sonnet` (with legacy `flash`/role fallback) and English output. |
 | **Hook Installer** | `tools/setup-antigravity.mjs` | Writes absolute-path Antigravity hook definitions (`ai-office-visualizer`) to both `.agents/hooks.json` and `~/.gemini/config/hooks.json`. |
-| **2D Canvas & Dashboard UI** | `visualizer/index.html` | Renders a `960x560` logical pixel-art office canvas with 4 AI Model avatars (`Gemini 4 Argon`, `Gemini 3.8 Flash`, `Claude Opus 5.5`, `Claude Sonnet 5.5`, `144px` widened desks, blocked test error bubbles on any avatar) alongside an English status sidebar (Active Task, Agents, Rich-Text Conversation, Activity log) plus an autonomous English `DEMO` simulation mode. |
-| **Core Office Rules** | `AGENTS.md`, `.agents/rules/office-visualizer.md` | Defines the 9 Golden Rules, 3 Approval Gates (Gate 1: Plan, Gate 2: Results & Docs, Gate 3: Push & PR), centralized 4-model SDLC workflow, and visualizer state synchronization rules. |
-| **Consolidated Agent Personas** | `.agents/agents/*.md` | Consolidated AI model personas: `argon.md`, `flash.md`, `opus.md`, `sonnet.md`. |
+| **2D Canvas & Dashboard UI** | `visualizer/index.html` | Renders a `960x560` logical pixel-art office canvas with 5 AI Model avatars (`Gemini 4 Argon`, `Gemini 4 Hydrogen`, `Gemini 4 Orchestrator`, `Claude Opus 5.5`, `Claude Sonnet 5.5`, `156px` widened desks in a 3+2 grid, blocked test error bubbles on any avatar, and prop-specific `Push Jira`, `Push Doc`, `Push Branch`, `Create PR` animations) alongside an English status sidebar (Active Task, Agents, Rich-Text Conversation, Activity log) plus an autonomous English `DEMO` simulation mode. |
+| **Core Office Rules** | `AGENTS.md`, `.agents/rules/office-visualizer.md` | Defines the 9 Golden Rules, 3 Approval Gates (Gate 1: Plan, Gate 2: Results & Docs, Gate 3: Push & PR), centralized 5-model SDLC workflow, and visualizer state synchronization rules. |
+| **Consolidated Agent Personas** | `.agents/agents/*.md` | Consolidated AI model personas: `argon.md`, `hydrogen.md`, `orchestrator.md`, `opus.md`, `sonnet.md`. |
 | **Reusable Engineering Skills** | `.agents/skills/*/SKILL.md` | 10 domain skills authored in English: `project-scanner`, `implementation-plan`, `dotnet-standards`, `xunit-testing`, `git-workflow`, `docs-sync`, `tech-doc-generator`, `docmost-rfc-generator`, `jira-task-generator`, `pr-description-generator`. |
 | **Unit Test Suite** | `tools/mirror-transcript.test.mjs` | Zero-dependency test suite using Node's built-in `node:test` and `node:assert/strict` validating canonical model mapping, `Editing implementation_plan.md` action bubbles without phase regression, and tool routing. |
 
@@ -67,10 +67,10 @@ status: confirmed
 
 | File / Path | Purpose & Key Fields |
 |---|---|
-| `.office/state.json` | Live visualizer state: `task` (`{ id, title, project, branch, mode }`), `phase` (`intake \| profile \| plan \| gate1 \| branch \| code \| test \| docs \| gate2 \| release \| done`), `gate` (`{ n, question } \| null`), `activeAgent` (`argon \| flash \| opus \| sonnet`), `agents` (`Record<'argon'|'flash'|'opus'|'sonnet', { status, message }>`), `handoffs` (`Array<{ n, from, to, label, at }>`), `handoffSeq`, `log` (`Array<{ at, text }>`), `turn`, `userName`, `clearedAt`, `transcriptSync`, `updatedAt`. |
+| `.office/state.json` | Live visualizer state: `task` (`{ id, title, project, branch, mode }`), `phase` (`intake \| profile \| plan \| gate1 \| branch \| code \| test \| docs \| gate2 \| release \| done`), `gate` (`{ n, question } \| null`), `activeAgent` (`argon \| hydrogen \| orchestrator \| opus \| sonnet`), `agents` (`Record<'argon'|'hydrogen'|'orchestrator'|'opus'|'sonnet', { status, message }>`), `handoffs` (`Array<{ n, from, to, label, at }>`), `handoffSeq`, `log` (`Array<{ at, text }>`), `turn`, `userName`, `clearedAt`, `transcriptSync`, `updatedAt`. |
 | `.office/chat.json` | Mirrored conversation feed: `{ seq, messages: Array<{ n, role, agent?, at, text, md }> }`. |
 | `.office/config.json` | Persistent user preferences across restarts: `{ userName }`. |
-| `.office/usage.json` | Custom quota configuration per AI model (`Gemini 4 Argon`, `Gemini 3.8 Flash`, `Claude Opus 5.5`, `Claude Sonnet 5.5`). |
+| `.office/usage.json` | Custom quota configuration per AI model (`Gemini 4 Argon`, `Gemini 4 Hydrogen`, `Gemini 4 Orchestrator`, `Claude Opus 5.5`, `Claude Sonnet 5.5`). |
 | `.office/tasks/<task-id>/` | Per-task SDLC artifacts: `brief.md`, `plan.md`, `test-report.md`, `docs-draft.md`, `jira.md`, `pr.md`. |
 
 ---
@@ -134,7 +134,7 @@ status: confirmed
 ## 9. Confirmed Architectural Decisions
 
 1. **Reference Folder Path**: Confirmed and renamed to `.agents/reference/ai-engineering-office/SKILLS.md`.
-2. **Centralized 4 AI Model Avatars**: `argon` (`Gemini 4 Argon`), `flash` (`Gemini 3.8 Flash`), `opus` (`Claude Opus 5.5`), and `sonnet` (`Claude Sonnet 5.5`) own all SDLC workflow phases.
+2. **Centralized 5 AI Model Avatars**: `argon` (`Gemini 4 Argon`), `hydrogen` (`Gemini 4 Hydrogen`), `orchestrator` (`Gemini 4 Orchestrator`), `opus` (`Claude Opus 5.5`), and `sonnet` (`Claude Sonnet 5.5`) own all SDLC workflow phases. Legacy `flash` IDs resolve to `hydrogen`.
 3. **Plan Editing Action Bubble**: In-place edits (`edit_file` / `replace`) to `implementation_plan.md` display `Editing implementation_plan.md` without regressing the workflow phase to `plan`.
 4. **Localization Scope**: Visualizer UI, canvas, status badges, activity logs, Demo Mode, and CLI tools are in 100% English; conversational interaction with the user remains in Indonesian.
 5. **Task History**: Old task folders from Oct 25 disposed per user instruction.
