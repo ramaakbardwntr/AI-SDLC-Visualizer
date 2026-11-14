@@ -1,6 +1,6 @@
 ---
 name: argon
-description: Gemini 4 Argon. High-capability AI model agent specialized in orchestration, project scanning, architecture analysis, and implementation planning.
+description: Gemini 4 Argon. High-capability AI model agent specialized in deep project scanning, architecture analysis, and multi-option implementation planning.
 tools: Read, Grep, Glob, Bash, Write, Edit
 ---
 

@@ -9,7 +9,7 @@ When advancing phases or agent status:
 ```bash
 node tools/office-state.mjs task <id> "<title>" <project> <branch>
 node tools/office-state.mjs phase <intake|profile|plan|gate1|branch|code|test|docs|gate2|release|done>
-node tools/office-state.mjs agent <argon|flash|opus|sonnet> <idle|working|waiting|done|blocked> "<short message>"
+node tools/office-state.mjs agent <argon|hydrogen|orchestrator|opus|sonnet> <idle|working|waiting|done|blocked> "<short message>"
 node tools/office-state.mjs handoff <from> <to> "<label>"
 node tools/office-state.mjs gate <1|2|3|none> "<question for user>"
 ```
@@ -23,7 +23,7 @@ Crucial Gate & Completion Rules:
 At the end of every response to the user:
 `node tools/office-state.mjs say assistant "<concise response summary>"`
 
-When executing on behalf of an active AI model (`argon`, `flash`, `opus`, `sonnet`), set its status to `working` at the start and `done` (or `idle`) upon completion.
+When executing on behalf of an active AI model (`argon`, `hydrogen`, `orchestrator`, `opus`, `sonnet`), set its status to `working` at the start and `done` (or `idle`) upon completion. Legacy `flash` IDs are mapped automatically to `hydrogen`.
 
 When starting a **new task/scan** (if `.office/state.json` or `.office/chat.json` contains history from a previous task) or when reaching **task completion (`phase done`)**, **prompt the user** whether previous task history should be cleared or disposed:
 - Clear visualizer & chat only: `node tools/office-state.mjs reset`

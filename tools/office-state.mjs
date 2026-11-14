@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import {
   syncChatFileToDisk,
   getUserName,
+  DEFAULT_AGENT,
   MODEL_AGENTS,
   MODEL_META,
   canonAgent,
@@ -24,7 +25,7 @@ const fresh = () => ({
   task: null,
   phase: 'intake',
   gate: null,
-  activeAgent: 'flash',
+  activeAgent: DEFAULT_AGENT,
   agents: Object.fromEntries(MODEL_AGENTS.map(a => [a, { status: 'idle', message: '' }])),
   handoffs: [],
   handoffSeq: 0,
@@ -115,7 +116,7 @@ switch (cmd) {
   case 'agent': {
     const [id, status, ...msg] = a;
     if (!STATUS.includes(status)) fail(`status must be one of: ${STATUS.join(', ')}`);
-    const canonicalId = canonAgent(id, s.activeAgent || 'flash');
+    const canonicalId = canonAgent(id, s.activeAgent || DEFAULT_AGENT);
     s.agents[canonicalId] = { status, message: msg.join(' ').slice(0, 80) };
     s.activeAgent = canonicalId;
     if (status === 'working' && s.gate) {
@@ -129,8 +130,8 @@ switch (cmd) {
   }
   case 'handoff': {
     const [from, to, ...label] = a;
-    const canFrom = ['you', 'docmost', 'github', 'jira'].includes(from) ? from : canonAgent(from, s.activeAgent || 'flash');
-    const canTo = ['you', 'docmost', 'github', 'jira'].includes(to) ? to : canonAgent(to, s.activeAgent || 'flash');
+    const canFrom = ['you', 'docmost', 'github', 'jira'].includes(from) ? from : canonAgent(from, s.activeAgent || DEFAULT_AGENT);
+    const canTo = ['you', 'docmost', 'github', 'jira'].includes(to) ? to : canonAgent(to, s.activeAgent || DEFAULT_AGENT);
     s.handoffSeq += 1;
     const l = (label.join(' ') || 'task').slice(0, 24);
     s.handoffs.push({ n: s.handoffSeq, from: canFrom, to: canTo, label: l, at: new Date().toISOString() });
@@ -166,7 +167,7 @@ switch (cmd) {
     let c; try { c = JSON.parse(fs.readFileSync(cf, 'utf8')); } catch { c = { seq: 0, messages: [] }; }
     c.seq = (c.seq || 0) + 1;
     const rawText = String(text || '').replace(/\r\n/g, '\n').trim();
-    const agentName = who ? (canonAgent(who, s.activeAgent || 'flash')) : undefined;
+    const agentName = who ? (canonAgent(who, s.activeAgent || DEFAULT_AGENT)) : undefined;
     c.messages = [
       ...(c.messages || []).filter(m => m.role === 'user' || m.role === 'assistant'),
       {

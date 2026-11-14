@@ -2,12 +2,16 @@
 // Jira Cloud CLI client for AI Engineering Office.
 // Reads credentials directly from .mcp.json (zero external dependencies, Node 18+).
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const mcpFile = path.join(root, '.mcp.json');
+const mcpPaths = [
+  path.join(root, '.mcp.json'),
+  path.join(os.homedir(), '.gemini', 'config', 'mcp_config.json'),
+];
 
 // KLG Jira Custom Field IDs
 export const JIRA_CUSTOM_FIELDS = {
@@ -19,14 +23,15 @@ export const JIRA_CUSTOM_FIELDS = {
 };
 
 function loadConfig() {
-  if (!fs.existsSync(mcpFile)) {
-    throw new Error(`MCP config file not found at ${mcpFile}. Please copy .mcp.json.example to .mcp.json.`);
+  const mcpFile = mcpPaths.find(p => fs.existsSync(p));
+  if (!mcpFile) {
+    throw new Error(`MCP config file not found at ${mcpPaths.join(' or ')}. Please copy .mcp.json.example to .mcp.json.`);
   }
 
   const mcp = JSON.parse(fs.readFileSync(mcpFile, 'utf8'));
   const jira = mcp.mcpServers?.jira;
   if (!jira) {
-    throw new Error('Jira configuration missing in .mcp.json under mcpServers.jira.');
+    throw new Error(`Jira configuration missing in ${mcpFile} under mcpServers.jira.`);
   }
 
   const baseUrl = (jira.serverUrl || jira.baseUrl || 'https://klgtech.atlassian.net').replace(/\/+$/, '');
@@ -114,9 +119,15 @@ function textToAdf(text) {
 function triggerVisualizerHandoff() {
   try {
     const script = path.join(root, 'tools', 'office-state.mjs');
-    if (fs.existsSync(script)) {
-      execSync(`node "${script}" handoff sonnet jira "Write Jira"`, { stdio: 'ignore' });
-    }
+    if (!fs.existsSync(script)) return;
+    let activeAgent = 'sonnet';
+    try {
+      const state = JSON.parse(fs.readFileSync(path.join(root, '.office', 'state.json'), 'utf8'));
+      if (state.activeAgent && /^[a-z0-9_-]+$/i.test(state.activeAgent)) {
+        activeAgent = state.activeAgent;
+      }
+    } catch {}
+    execFileSync(process.execPath, [script, 'handoff', activeAgent, 'jira', 'Push Jira'], { stdio: 'ignore' });
   } catch {}
 }
 

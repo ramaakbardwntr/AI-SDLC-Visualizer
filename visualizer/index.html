@@ -12,8 +12,8 @@
     --paper: #eef2f6;
     --panel: #ffffff;
     --line: #cdd7e0;
-    --work: #1b998b;
-    --wait: #d98e04;
+    --work: #14746a;
+    --wait: #9a5b00;
     --block: #c73e2a;
     --done: #3f6fa3;
     --idle: #8695a3;
@@ -26,41 +26,49 @@
     color: var(--ink);
     font: 14px/1.45 "Segoe UI", system-ui, -apple-system, sans-serif;
     display: flex; flex-direction: column;
+    overflow-x: hidden;
   }
+  button, input[type="checkbox"], header label { cursor: pointer; }
+  button:disabled { cursor: not-allowed; }
   header {
-    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
-    padding: 10px 20px; background: var(--ink); color: #fff; flex: none;
+    display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap;
+    padding: 8px 14px; background: var(--ink); color: #fff; flex: none;
   }
   header h1 { margin: 0; font-size: 17px; font-weight: 650; letter-spacing: .2px; }
-  header .spacer { flex: 1; }
-  #conn { font-size: 13px; opacity: .9; display: flex; align-items: center; gap: 8px; }
+  header .spacer { flex: 1; min-width: 12px; }
+  #conn { font-size: 13px; color: #f1f5f9; display: flex; align-items: center; gap: 8px; }
   #conn i { width: 9px; height: 9px; border-radius: 50%; background: var(--idle); display: inline-block; }
   #conn.live i { background: #5fe0c9; }
   #conn.demo i { background: #f2b84b; }
-  header label { font-size: 13px; display: flex; align-items: center; gap: 6px; cursor: pointer; }
-  header input:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
-  
+  #conn.err i { background: #f87171; }
+  header label { font-size: 13px; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 4px; }
+  header button:focus-visible, header input:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  .chat a:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; border-radius: 2px; }
+
   .user-badge {
-    display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,.12);
-    padding: 4px 10px; border-radius: 6px; font-size: 12.5px; border: 1px solid rgba(255,255,255,.25);
-    cursor: pointer; transition: background .15s;
+    appearance: none; font: inherit; color: #fff; min-height: 44px;
+    display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,.12);
+    padding: 6px 12px; border-radius: 6px; font-size: 12.5px; border: 1px solid rgba(255,255,255,.28);
+    transition: background .15s, border-color .15s;
   }
-  .user-badge:hover { background: rgba(255,255,255,.2); }
+  .user-badge:hover { background: rgba(255,255,255,.22); border-color: rgba(255,255,255,.45); }
+  .user-badge:active { transform: scale(.98); }
   .user-badge b { font-weight: 600; color: #fff; }
-  .user-badge span { font-size: 11px; opacity: .75; }
+  .user-badge span { font-size: 11px; color: #d6e2ee; }
 
   #resetBtn {
+    min-height: 44px; display: inline-flex; align-items: center;
     background: rgba(255,255,255,.14); color: #fff; border: 1px solid rgba(255,255,255,.3);
-    border-radius: 6px; padding: 5px 12px; font-size: 12px; font-weight: 600; cursor: pointer;
+    border-radius: 6px; padding: 6px 12px; font-size: 12px; font-weight: 600;
     transition: background .15s, border-color .15s;
   }
   #resetBtn:hover { background: rgba(255,255,255,.24); border-color: rgba(255,255,255,.5); }
   #resetBtn:active { transform: scale(.97); }
 
-  main { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 16px 20px 20px; }
+  main { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 12px; min-width: 0; }
   .stage {
     position: relative; min-width: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
-    padding: 10px; display: flex; align-items: center; justify-content: center; align-self: start;
+    padding: 8px; display: flex; align-items: center; justify-content: center; align-self: start;
   }
   .wrap { position: relative; width: 100%; aspect-ratio: 960 / 560; --u: 1; }
   canvas { display: block; width: 100%; height: 100%; border-radius: 4px; }
@@ -74,22 +82,22 @@
   .gate b { display: block; }
   .gate span { color: var(--ink-soft); }
 
-  aside { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
-  .card { flex: none; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
+  aside { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  .card { flex: none; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; min-width: 0; }
   .card h2 { margin: 0 0 8px; font-size: 13px; font-weight: 650; color: var(--ink-soft); }
-  #taskTitle { font-weight: 650; font-size: 15px; margin-bottom: 6px; }
+  #taskTitle { font-weight: 650; font-size: 15px; margin-bottom: 6px; overflow-wrap: anywhere; }
   dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; font-size: 13px; }
   dt { color: var(--ink-soft); }
   dd { margin: 0; overflow-wrap: anywhere; }
-#agentModels { display: grid; gap: 6px; font-size: 12.5px; }
-  .m-card { display: flex; align-items: center; justify-content: space-between; padding: 7px 10px; border-radius: 6px; background: #f8fafc; border: 1px solid #e2e8f0; transition: all .2s ease; }
+  #agentModels { display: grid; gap: 6px; font-size: 12.5px; }
+  .m-card { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 7px 10px; border-radius: 6px; background: #f8fafc; border: 1px solid #e2e8f0; transition: all .2s ease; }
   .m-card.active { background: #f0fdf4; border-color: #86efac; box-shadow: 0 0 0 1px #86efac; }
-  .m-card b { font-weight: 600; color: var(--ink); display: flex; align-items: center; gap: 8px; font-size: 12.5px; }
+  .m-card b { font-weight: 600; color: var(--ink); display: flex; align-items: center; gap: 8px; font-size: 12.5px; min-width: 0; }
   .m-card b i { width: 8px; height: 8px; border-radius: 50%; background: var(--idle); display: inline-block; flex: none; }
-  .m-card.active b i { background: var(--work); box-shadow: 0 0 0 3px rgba(27,153,139,.25); }
-  .m-card em { font-style: normal; font-size: 11px; font-weight: 650; padding: 2px 8px; border-radius: 99px; }
+  .m-card.active b i { background: var(--work); box-shadow: 0 0 0 3px rgba(20,116,106,.25); }
+  .m-card em { font-style: normal; font-size: 11px; font-weight: 650; padding: 2px 8px; border-radius: 99px; flex: none; }
   .m-card.active em { background: #dcfce7; color: #166534; }
-  .m-card:not(.active) em { color: var(--ink-soft); opacity: .7; }
+  .m-card:not(.active) em { color: var(--ink-soft); }
 
   #log {
     list-style: none; margin: 0; padding: 0; font-size: 12.5px;
@@ -124,7 +132,15 @@
   .chat .body kbd { font: 11px ui-monospace, Consolas, monospace; border: 1px solid var(--line); border-radius: 3px; padding: 0 3px; background: #fff; }
   .chat .user { background: #fbe9e3; justify-self: end; max-width: 92%; }
   .chat .assistant { background: #e6f5f2; justify-self: start; max-width: 96%; }
-@media (min-width: 961px) {
+@media (min-width: 600px) {
+    header { padding: 8px 20px; }
+    main { gap: 16px; padding: 16px 20px 20px; }
+    .stage { padding: 10px; }
+  }
+  @media (min-width: 600px) and (max-width: 960px) {
+    aside { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; }
+  }
+  @media (min-width: 961px) {
     html, body { height: 100%; }
     body { min-height: 0; overflow: hidden; }
     main {
@@ -134,9 +150,11 @@
     }
     .stage { align-self: stretch; min-height: 0; overflow: hidden; }
     .wrap { width: auto; }
-    aside { min-height: 0; overflow-y: auto; overflow-x: hidden; padding-right: 6px; scrollbar-width: thin; scrollbar-color: var(--line) transparent; overscroll-behavior: contain; }
+    aside { display: flex; flex-direction: column; gap: 14px; min-height: 0; overflow-y: auto; overflow-x: hidden; padding-right: 6px; scrollbar-width: thin; scrollbar-color: var(--line) transparent; overscroll-behavior: contain; }
   }
-  @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
+  }
 </style>
 </head>
 <body>
@@ -144,9 +162,10 @@
   <h1>AI SDLC Team</h1>
   <div id="conn" role="status"><i></i><span>Connecting...</span></div>
   <div class="spacer"></div>
-  <div class="user-badge" id="userBtn" title="Click to change your display name">
-    <span>Role:</span> <b id="userBadgeName">Rama</b> ✏️
-  </div>
+  <button type="button" class="user-badge" id="userBtn" aria-label="Change display name" title="Change your display name">
+    <span>Role:</span> <b id="userBadgeName">Rama</b>
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.5 2.5a1.5 1.5 0 0 1 2.1 2.1L5.2 13l-3 .8.8-3 8.5-8.3Z"/></svg>
+  </button>
   <button id="resetBtn" type="button" title="Clear visualizer & conversation history">Reset Visualizer</button>
   <label><input type="checkbox" id="demoToggle"> Demo mode</label>
 </header>
@@ -154,7 +173,7 @@
 <main>
   <section class="stage" id="stage">
     <div class="wrap" id="wrap">
-      <canvas id="c" role="img" aria-label="Office animation: four AI model agents working on tasks, documents moving across desks and external tools."></canvas>
+      <canvas id="c" role="img" aria-label="Office animation: five AI model agents working on tasks, documents moving across desks and external tools."></canvas>
       <div class="gate" id="gate" hidden aria-live="polite"><b id="gateTitle"></b><span id="gateText"></span></div>
     </div>
   </section>
@@ -182,40 +201,69 @@
 
 <script>
 'use strict';
-/* ---------- constants & user name ---------- */
 let USER_NAME = localStorage.getItem('office_user_name') || 'Rama';
 
+const DEFAULT_AGENT = 'hydrogen';
 const DEFAULT_MODELS = [
-  { id: 'argon',  name: 'Gemini 4 Argon',    active: false },
-  { id: 'flash',  name: 'Gemini 3.8 Flash',  active: true },
-  { id: 'opus',   name: 'Claude Opus 5.5',   active: false },
-  { id: 'sonnet', name: 'Claude Sonnet 5.5', active: false }
+  { id: 'argon',        name: 'Gemini 4 Argon',        active: false },
+  { id: 'hydrogen',     name: 'Gemini 4 Hydrogen',     active: true },
+  { id: 'orchestrator', name: 'Gemini 4 Orchestrator', active: false },
+  { id: 'opus',         name: 'Claude Opus 5.5',       active: false },
+  { id: 'sonnet',       name: 'Claude Sonnet 5.5',     active: false },
 ];
-const COLORS = { working: '#1b998b', waiting: '#d98e04', blocked: '#c73e2a', done: '#3f6fa3', idle: '#8695a3' };
+const COLORS = { working: '#14746a', waiting: '#9a5b00', blocked: '#c73e2a', done: '#3f6fa3', idle: '#8695a3' };
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const STAFF = {
-  you:    { x: 120, y: 112, name: USER_NAME,           shirt: '#162d50', hair: '#1b1b24', skin: '#f1c8a0' },
-  argon:  { x: 260, y: 290, name: 'Gemini 4 Argon',    shirt: '#4c3bcf', hair: '#1b1b24', skin: '#f1c8a0' },
-  flash:  { x: 610, y: 290, name: 'Gemini 3.8 Flash',  shirt: '#8b7cf6', hair: '#1b1b24', skin: '#f1c8a0' },
-  opus:   { x: 260, y: 456, name: 'Claude Opus 5.5',   shirt: '#b54526', hair: '#1b1b24', skin: '#f1c8a0' },
-  sonnet: { x: 610, y: 456, name: 'Claude Sonnet 5.5', shirt: '#f09067', hair: '#1b1b24', skin: '#f1c8a0' },
+  you:          { x: 120, y: 112, name: USER_NAME,               shirt: '#162d50', hair: '#1b1b24', skin: '#f1c8a0' },
+  argon:        { x: 180, y: 290, name: 'Gemini 4 Argon',        shirt: '#4c3bcf', hair: '#1b1b24', skin: '#f1c8a0' },
+  hydrogen:     { x: 480, y: 290, name: 'Gemini 4 Hydrogen',     shirt: '#1a73e8', hair: '#1b1b24', skin: '#f1c8a0' },
+  orchestrator: { x: 780, y: 290, name: 'Gemini 4 Orchestrator', shirt: '#188038', hair: '#1b1b24', skin: '#f1c8a0' },
+  opus:         { x: 310, y: 456, name: 'Claude Opus 5.5',       shirt: '#b54526', hair: '#1b1b24', skin: '#f1c8a0' },
+  sonnet:       { x: 650, y: 456, name: 'Claude Sonnet 5.5',     shirt: '#f09067', hair: '#1b1b24', skin: '#f1c8a0' },
 };
 
 const PROPS = {
-  jira:    { x: 600, y: 108, name: 'Jira' },
-  docmost: { x: 740, y: 112, name: 'Docmost' },
-  github:  { x: 880, y: 116, name: 'GitHub' },
+  jira:    { x: 600, y: 100, name: 'Jira' },
+  docmost: { x: 740, y: 102, name: 'Docmost' },
+  github:  { x: 880, y: 102, name: 'GitHub' },
 };
 
 const ALIAS = {
-  'gemini-4-argon': 'argon', 'gemini-3-8-flash': 'flash', 'gemini-3.8-flash': 'flash', 'flash_lite': 'flash',
-  'claude-opus-5-5': 'opus', 'claude-opus-5.5': 'opus',
-  'claude-sonnet-5-5': 'sonnet', 'claude-sonnet-5.5': 'sonnet'
+  'gemini-4-argon': 'argon',
+  'gemini-4-hydrogen': 'hydrogen',
+  'gemini-4-orchestrator': 'orchestrator',
+  'flash': 'hydrogen',
+  'gemini-3-8-flash': 'hydrogen',
+  'gemini-3.8-flash': 'hydrogen',
+  'flash_lite': 'hydrogen',
+  'claude-opus-5-5': 'opus',
+  'claude-opus-5.5': 'opus',
+  'claude-sonnet-5-5': 'sonnet',
+  'claude-sonnet-5.5': 'sonnet',
 };
-const canon = id => ALIAS[id] || (STAFF[id] || PROPS[id] ? id : 'flash');
+function canon(id) {
+  if (!id) return DEFAULT_AGENT;
+  const raw = String(id).trim();
+  if (STAFF[raw] || PROPS[raw]) return raw;
+  const low = raw.toLowerCase();
+  if (ALIAS[low]) return ALIAS[low];
+  if (low.includes('hydrogen') || low.includes('flash') || low.includes('3.8')) return 'hydrogen';
+  if (low.includes('orchestrat')) return 'orchestrator';
+  if (low.includes('argon')) return 'argon';
+  if (low.includes('opus')) return 'opus';
+  if (low.includes('sonnet')) return 'sonnet';
+  return DEFAULT_AGENT;
+}
 const POS = id => STAFF[canon(id)] || PROPS[id];
-const TEAM_ORDER = ['argon', 'flash', 'opus', 'sonnet'];
+const TEAM_ORDER = ['argon', 'hydrogen', 'orchestrator', 'opus', 'sonnet'];
+
+const PUSH_KIND = {
+  'Push Jira':   { prop: 'jira',    color: '#1a73e8', bg: '#e8f0fe', fg: '#1967d2', doneBg: '#e6f4ea', doneFg: '#137333', activeText: 'Pushing MCP...', doneText: 'Synced Jira' },
+  'Push Doc':    { prop: 'docmost', color: '#188038', bg: '#e6f4ea', fg: '#137333', doneBg: '#e6f4ea', doneFg: '#137333', activeText: 'Publishing...',  doneText: 'Published' },
+  'Push Branch': { prop: 'github',  color: '#1a73e8', bg: '#e8f0fe', fg: '#1967d2', doneBg: '#e6f4ea', doneFg: '#137333', activeText: 'Pushing...',     doneText: 'Branch pushed' },
+  'Create PR':   { prop: 'github',  color: '#4c3bcf', bg: '#eef2ff', fg: '#3730a3', doneBg: '#e6f4ea', doneFg: '#137333', activeText: 'Opening PR...',  doneText: 'PR opened' },
+};
 
 function updateUserName(newName) {
   if (!newName || !newName.trim()) return;
@@ -234,17 +282,18 @@ document.getElementById('userBtn').addEventListener('click', () => {
   if (n && n.trim() && n.trim() !== USER_NAME) updateUserName(n);
 });
 
-/* ---------- state ---------- */
 const emptyState = () => ({
-  task: null, phase: 'intake', gate: null, handoffs: [], log: [], activeAgent: 'flash',
+  task: null, phase: 'intake', gate: null, handoffs: [], log: [], activeAgent: DEFAULT_AGENT,
   agents: Object.fromEntries(TEAM_ORDER.map(a => [a, { status: 'idle', message: '' }]))
 });
 let S = emptyState();
 let seenHandoff = 0;
 let youActiveUntil = 0;
 const flights = [];
+const pushAnims = [];
 const talks = [];
 const pulses = {};
+const propState = {};
 
 /* ---------- canvas ---------- */
 const cv = document.getElementById('c');
@@ -291,8 +340,8 @@ function drawRoom(t) {
     ctx.fillStyle = ((tx + ty) / 40) % 2 ? '#dfe6ec' : '#d6dee6';
     ctx.fillRect(tx, ty, 40, 40);
   }
-  rrect(20, 52, 240, 124, 10, '#c7d4e3');
-  rrect(520, 56, 420, 130, 10, '#d3dde8');
+  rrect(20, 50, 240, 126, 10, '#c7d4e3');
+  rrect(520, 48, 420, 134, 10, '#d3dde8');
   ctx.fillStyle = '#f5f7f9'; ctx.fillRect(0, 0, W, 38);
   ctx.fillStyle = '#b9cbd9'; ctx.fillRect(0, 36, W, 3);
   for (let x = 40; x < W - 40; x += 150) {
@@ -313,29 +362,28 @@ function drawStaff(id, t) {
     : (S.agents[id] || { status: 'idle', message: '' });
   const x = st.x, y = st.y;
   const working = a.status === 'working';
+  const pushing = id !== 'you' && pushAnims.some(p => p.from === id && t >= p.t0 && t < p.t0 + p.dur * 0.58);
   const bob = REDUCED ? 0 : (a.status === 'idle' ? Math.sin(t / 900 + x) * 1.2 : working ? Math.sin(t / 130) * 0.9 : 0);
 
   ctx.fillStyle = 'rgba(23,49,77,.12)'; ctx.beginPath(); ctx.ellipse(x, y + 44, 46, 8, 0, 0, 7); ctx.fill();
   ctx.fillStyle = st.shirt; ctx.fillRect(x - 14, y - 20 + bob, 28, 30);
-const raised = a.status === 'waiting';
+  const raised = a.status === 'waiting' || (pushing && !REDUCED);
   const arm = (dx, swing) => {
     ctx.fillStyle = st.shirt;
     if (raised && dx > 0) {
       ctx.fillRect(x + 14, y - 46 + bob, 7, 28);
-ctx.fillStyle = st.skin; ctx.fillRect(x + 14, y - 52 + bob, 7, 7);
-    }
-    else if (working) {
+      ctx.fillStyle = st.skin; ctx.fillRect(x + 14, y - 52 + bob, 7, 7);
+    } else if (working) {
       ctx.fillRect(x + dx, y - 14 + bob, 7, 24 + swing);
-ctx.fillStyle = st.skin; ctx.fillRect(x + dx, y + 10 + swing + bob, 7, 5);
-    }
-    else {
+      ctx.fillStyle = st.skin; ctx.fillRect(x + dx, y + 10 + swing + bob, 7, 5);
+    } else {
       ctx.fillRect(x + dx, y - 16 + bob, 7, 26);
-ctx.fillStyle = st.skin; ctx.fillRect(x + dx, y + 10 + bob, 7, 5);
+      ctx.fillStyle = st.skin; ctx.fillRect(x + dx, y + 10 + bob, 7, 5);
     }
   };
   const sw = REDUCED ? 0 : Math.sin(t / 85) * 2.2;
   arm(-21, sw); arm(14, -sw);
-  
+
   ctx.fillStyle = st.skin; ctx.fillRect(x - 12, y - 46 + bob, 24, 24);
   ctx.fillStyle = st.hair; ctx.fillRect(x - 13, y - 49 + bob, 26, 9); ctx.fillRect(x - 13, y - 49 + bob, 4, 18);
   const open = REDUCED || ((t / 1000 + x * 0.01) % 4) > 0.16;
@@ -346,13 +394,13 @@ ctx.fillStyle = st.skin; ctx.fillRect(x + dx, y + 10 + bob, 7, 5);
   if (a.status === 'blocked') { ctx.fillRect(x - 4, y - 27 + bob, 8, 2); ctx.fillRect(x - 6, y - 28 + bob, 2, 2); ctx.fillRect(x + 4, y - 28 + bob, 2, 2); }
 
   const pulse = pulses[id] ? Math.max(0, 1 - (t - pulses[id]) / 700) : 0;
-  const dw = id === 'you' ? 112 : 144;
+  const dw = id === 'you' ? 112 : 156;
   const dx0 = x - dw / 2;
   ctx.fillStyle = '#b88a55'; ctx.fillRect(dx0, y + 8, dw, 36);
   ctx.fillStyle = '#cfa56e'; ctx.fillRect(dx0, y + 8, dw, 7);
   ctx.fillStyle = 'rgba(0,0,0,.12)'; ctx.fillRect(dx0, y + 40, dw, 4);
-  if (pulse) { ctx.strokeStyle = `rgba(27,153,139,${pulse})`; ctx.lineWidth = 3; ctx.strokeRect(dx0 - 2, y + 6, dw + 4, 40); }
-  ctx.fillStyle = '#e7ebef'; ctx.fillRect(x - 24, y + 17, 30, 7);
+  if (pulse) { ctx.strokeStyle = `rgba(20,116,106,${pulse})`; ctx.lineWidth = 3; ctx.strokeRect(dx0 - 2, y + 6, dw + 4, 40); }
+  ctx.fillStyle = '#e7ebef'; ctx.fillRect(x - 24, y + 14, 30, 6);
   ctx.fillStyle = '#4a5663'; ctx.fillRect(x + 22, y - 4, 32, 24);
   const scr = a.status === 'idle' ? '#2d3a48' : COLORS[a.status];
   ctx.fillStyle = scr; ctx.fillRect(x + 25, y - 1, 26, 17);
@@ -363,19 +411,29 @@ ctx.fillStyle = st.skin; ctx.fillRect(x + dx, y + 10 + bob, 7, 5);
       ctx.fillRect(x + 28, y + 2 + i * 3.6, wdt, 1.6);
     }
   }
-  ctx.fillStyle = COLORS[a.status]; ctx.beginPath(); ctx.arc(dx0 + 10, y + 20, 4, 0, 7); ctx.fill();
-  text(st.name, x, y + 36, id === 'you' ? 12 : 11.5, '#fff', 650, 'center');
+  ctx.fillStyle = COLORS[a.status]; ctx.beginPath(); ctx.arc(dx0 + 10, y + 15, 4, 0, 7); ctx.fill();
+  // Dark nameplate ensures >12:1 WCAG contrast for desk labels over wood tones.
+  rrect(dx0 + 6, y + 23, dw - 12, 16, 3, '#1e2f40');
+  text(clip(st.name, 22), x, y + 34.5, id === 'you' ? 11.5 : 10.5, '#fff', 650, 'center');
 
   if (a.status === 'done' && S.phase === 'done') drawBadge(x + 28, y - 52, COLORS.done, '\u2713');
   if (a.status === 'blocked') drawBadge(x + 28, y - 52, COLORS.blocked, '!');
   if (a.status === 'waiting' && id !== 'you') drawBadge(x + 28, y - 52, COLORS.waiting, '?');
 
-  // Red error bubble on ANY model avatar that is blocked by unit test errors
   if (id !== 'you' && a.status === 'blocked') {
     const lines = ['Test case error:'].concat(String(a.message || '').split(';').map(s => s.trim()).filter(Boolean).slice(0, 4).map(s => clip(s, 30)));
-    const bw = 220, bh = 12 + lines.length * 16, bx = x + 76, by = y - bh / 2 - 6;
+    const bw = 220, bh = 12 + lines.length * 16;
+    const flipLeft = x + 76 + bw > W - 10;
+    const bx = flipLeft ? x - 76 - bw : x + 76;
+    const by = Math.max(8, y - bh / 2 - 6);
     rrect(bx, by, bw, bh, 8, '#fdecea', COLORS.blocked, 2);
-    ctx.fillStyle = '#fdecea'; ctx.beginPath(); ctx.moveTo(bx, by + bh / 2 - 6); ctx.lineTo(bx, by + bh / 2 + 6); ctx.lineTo(bx - 8, by + bh / 2); ctx.fill();
+    ctx.fillStyle = '#fdecea'; ctx.beginPath();
+    if (flipLeft) {
+      ctx.moveTo(bx + bw, by + bh / 2 - 6); ctx.lineTo(bx + bw, by + bh / 2 + 6); ctx.lineTo(bx + bw + 8, by + bh / 2);
+    } else {
+      ctx.moveTo(bx, by + bh / 2 - 6); ctx.lineTo(bx, by + bh / 2 + 6); ctx.lineTo(bx - 8, by + bh / 2);
+    }
+    ctx.fill();
     lines.forEach((ln, i) => text(ln, bx + 12, by + 20 + i * 16, 11.5, i ? '#7a1f12' : COLORS.blocked, i ? 500 : 700, 'left'));
     return;
   }
@@ -516,33 +574,100 @@ function drawBell(t) {
   ctx.fillStyle = '#e8a317'; ctx.beginPath(); ctx.arc(s.x + 62, s.y - 26, 8, 0, 7); ctx.fill();
 }
 
+function drawPropChip(x, y, label, bg, fg, stroke, alpha) {
+  if (!label || alpha <= 0.02) return;
+  ctx.save();
+  ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
+  ctx.font = `650 10px ${FONT}`;
+  const w = Math.max(66, Math.ceil(ctx.measureText(label).width) + 14);
+  rrect(x - w / 2, y - 9, w, 17, 8, bg, stroke, 1.2);
+  text(label, x, y + 3, 10, fg, 650, 'center');
+  ctx.restore();
+}
+
+function getActivePropPush(propId, t) {
+  let latest = null;
+  for (let i = 0; i < pushAnims.length; i++) {
+    const p = pushAnims[i];
+    if (p.kind.prop !== propId || t < p.t0 || t > p.until) continue;
+    if (!latest || p.t0 >= latest.t0) latest = p;
+  }
+  return latest;
+}
+
 function drawProps(t) {
   const glow = id => pulses[id] ? Math.max(0, 1 - (t - pulses[id]) / 800) : 0;
-  // Jira board
-  let p = PROPS.jira, g = glow('jira');
-  rrect(p.x - 52, p.y - 36, 104, 70, 4, '#fff', g ? `rgba(27,153,139,${g})` : '#9fb2c4', g ? 3 : 1.5);
+
+  // Jira Kanban board
+  let p = PROPS.jira, g = glow('jira'), ps = getActivePropPush('jira', t);
+  const jiraLand = ps ? Math.max(0, Math.min(1, (t - (ps.t0 + (REDUCED ? 0 : ps.dur * 0.56))) / 420)) : 0;
+  rrect(p.x - 52, p.y - 36, 104, 70, 4, '#fff', g ? `rgba(26,115,232,${g})` : '#9fb2c4', g ? 3 : 1.5);
   ['#c9dcee', '#d9ead3', '#fde6bf'].forEach((c, i) => {
     ctx.fillStyle = '#eef2f6'; ctx.fillRect(p.x - 46 + i * 32, p.y - 30, 30, 58);
     ctx.fillStyle = c; ctx.fillRect(p.x - 43 + i * 32, p.y - 24, 24, 12); if (i < 2) ctx.fillRect(p.x - 43 + i * 32, p.y - 8, 24, 12);
   });
+  if (ps && jiraLand > 0) {
+    const dropY = REDUCED ? 0 : (1 - jiraLand) * -10;
+    rrect(p.x + 21, p.y - 8 + dropY, 24, 14, 2, '#d2e3fc', '#1a73e8', 1.4);
+    ctx.fillStyle = '#1a73e8'; ctx.fillRect(p.x + 21, p.y - 8 + dropY, 24, 3);
+    ctx.fillStyle = '#17314d'; ctx.fillRect(p.x + 24, p.y - 2 + dropY, 15, 1.5);
+  }
   text(p.name, p.x, p.y + 52, 12, '#17314d', 650);
+  if (ps) {
+    const landed = jiraLand > 0.05;
+    const alpha = Math.min(1, (ps.until - t) / 320);
+    drawPropChip(p.x, 171, landed ? ps.kind.doneText : ps.kind.activeText, landed ? ps.kind.doneBg : ps.kind.bg, landed ? ps.kind.doneFg : ps.kind.fg, ps.kind.color, alpha);
+  }
+
   // Docmost shelf
-  p = PROPS.docmost; g = glow('docmost');
-  rrect(p.x - 44, p.y - 40, 88, 78, 3, '#a47a4a', g ? `rgba(27,153,139,${g})` : null, 3);
+  p = PROPS.docmost; g = glow('docmost'); ps = getActivePropPush('docmost', t);
+  const docLand = ps ? Math.max(0, Math.min(1, (t - (ps.t0 + (REDUCED ? 0 : ps.dur * 0.56))) / 420)) : 0;
+  rrect(p.x - 44, p.y - 40, 88, 78, 3, '#a47a4a', g ? `rgba(24,128,56,${g})` : null, 3);
   [0, 1, 2].forEach(r => {
     ctx.fillStyle = '#7f5c35'; ctx.fillRect(p.x - 40, p.y - 34 + r * 24 + 18, 80, 3);
     ['#3f6fa3', '#b5485d', '#3d8361', '#d98e04', '#85589f', '#2f6fb3'].forEach((c, i) => {
-      ctx.fillStyle = c; ctx.fillRect(p.x - 38 + i * 13, p.y - 34 + r * 24 + (i % 2 ? 4 : 0), 10, 18 - (i % 2 ? 4 : 0));
+      const isNewBook = Boolean(ps && docLand > 0 && r === 0 && i === 5);
+      const lift = isNewBook && !REDUCED ? Math.sin(docLand * Math.PI) * -5 : 0;
+      ctx.fillStyle = isNewBook ? '#188038' : c;
+      ctx.fillRect(p.x - 38 + i * 13, p.y - 34 + r * 24 + (i % 2 ? 4 : 0) + lift, 10, 18 - (i % 2 ? 4 : 0));
+      if (isNewBook) {
+        ctx.fillStyle = '#e6f4ea';
+        ctx.fillRect(p.x - 36 + i * 13, p.y - 29 + lift, 6, 3);
+      }
     });
   });
   text(p.name, p.x, p.y + 56, 12, '#17314d', 650);
+  if (ps) {
+    const landed = docLand > 0.05;
+    const alpha = Math.min(1, (ps.until - t) / 320);
+    drawPropChip(p.x, 171, landed ? ps.kind.doneText : ps.kind.activeText, landed ? ps.kind.doneBg : ps.kind.bg, landed ? ps.kind.doneFg : ps.kind.fg, ps.kind.color, alpha);
+  }
+
   // GitHub mailbox
-  p = PROPS.github; g = glow('github');
+  p = PROPS.github; g = glow('github'); ps = getActivePropPush('github', t);
+  const ghLand = ps ? Math.max(0, Math.min(1, (t - (ps.t0 + (REDUCED ? 0 : ps.dur * 0.56))) / 420)) : 0;
+  const flagRaise = ps && ghLand > 0 ? ghLand * 10 : (g ? 8 : 0);
   ctx.fillStyle = '#6b7b8b'; ctx.fillRect(p.x - 3, p.y + 6, 6, 30);
-  rrect(p.x - 32, p.y - 26, 64, 36, 16, '#17314d', g ? `rgba(27,153,139,${g})` : null, 3);
+  rrect(p.x - 32, p.y - 26, 64, 36, 16, '#17314d', g ? (ps ? ps.kind.color : `rgba(20,116,106,${g})`) : null, 3);
   ctx.fillStyle = '#0f2236'; ctx.fillRect(p.x - 22, p.y - 6, 44, 3);
-  ctx.fillStyle = g ? '#e8a317' : '#d9694a'; ctx.fillRect(p.x + 30, p.y - 30 - (g ? 8 : 0), 5, 22 + (g ? 8 : 0));
+  ctx.fillStyle = ps && ghLand > 0 ? ps.kind.color : (g ? '#e8a317' : '#d9694a');
+  ctx.fillRect(p.x + 30, p.y - 30 - flagRaise, 5, 22 + flagRaise);
+  if (ps && ghLand > 0) {
+    const rise = REDUCED ? 0 : (1 - ghLand) * 8;
+    if (ps.label === 'Create PR') {
+      rrect(p.x - 16, p.y - 44 + rise, 32, 17, 4, '#4c3bcf', '#fff', 1.2);
+      text('PR', p.x, p.y - 32 + rise, 10, '#fff', 750, 'center');
+    } else {
+      rrect(p.x - 18, p.y - 44 + rise, 36, 17, 4, '#1558b0', '#fff', 1.2);
+      text('GIT \u2191', p.x, p.y - 32 + rise, 9.5, '#fff', 750, 'center');
+    }
+  }
   text(p.name, p.x, p.y + 56, 12, '#17314d', 650);
+  if (ps) {
+    const landed = ghLand > 0.05;
+    const alpha = Math.min(1, (ps.until - t) / 320);
+    drawPropChip(p.x, 171, landed ? ps.kind.doneText : ps.kind.activeText, landed ? ps.kind.doneBg : ps.kind.bg, landed ? ps.kind.doneFg : ps.kind.fg, ps.kind.color, alpha);
+  }
 }
 
 function drawTalks(t) {
@@ -553,8 +678,8 @@ function drawTalks(t) {
     const turn = Math.floor((t - k.t0) / 700) % 2;
     [[k.a, turn === 0], [k.b, turn === 1]].forEach(([id, speaking]) => {
       const s = STAFF[canon(id)]; if (!s) return;
-      const bx = id === 'you' ? s.x + 95 : s.x, by = id === 'you' ? s.y + 14 : s.y - 134;
-      const col = speaking ? '#d98e04' : '#9fb2c4';
+      const bx = id === 'you' ? s.x + 95 : s.x, by = id === 'you' ? s.y + 14 : Math.max(54, s.y - 118);
+      const col = speaking ? '#9a5b00' : '#9fb2c4';
       rrect(bx - 28, by - 13, 56, 26, 13, '#fff', col, 2);
       ctx.fillStyle = '#fff'; ctx.beginPath();
       if (id === 'you') { ctx.moveTo(bx - 20, by + 10); ctx.lineTo(bx - 10, by + 12); ctx.lineTo(bx - 30, by + 22); }
@@ -582,8 +707,86 @@ function drawFlights(t) {
     rrect(-9, -12, 18, 24, 2, '#fff', '#17314d', 1.5);
     ctx.fillStyle = '#9fb2c4'; for (let k = 0; k < 4; k++) ctx.fillRect(-6, -8 + k * 5, 12, 1.6);
     ctx.restore();
-    if (f.label) text(f.label, x, y - 18, 10.5, '#17314d', 600, 'center');
+    if (f.label) text(f.label, Math.max(46, Math.min(W - 46, x)), y - 18, 10.5, '#17314d', 600, 'center');
     if (p >= 1) { pulses[canon(f.to)] = t; flights.splice(i, 1); }
+  }
+}
+
+function quadPoint(p0, cp, p1, u) {
+  const m = 1 - u;
+  return {
+    x: m * m * p0.x + 2 * m * u * cp.x + u * u * p1.x,
+    y: m * m * p0.y + 2 * m * u * cp.y + u * u * p1.y,
+  };
+}
+
+function drawPushAnims(t) {
+  for (let i = pushAnims.length - 1; i >= 0; i--) {
+    const p = pushAnims[i];
+    if (t > p.until) { pushAnims.splice(i, 1); continue; }
+    if (t < p.t0) continue;
+    const a = POS(p.from), b = PROPS[p.kind.prop] || POS(p.to);
+    if (!a || !b) { pushAnims.splice(i, 1); continue; }
+    const arriveFrac = REDUCED ? 0.05 : 0.56;
+    const flyEnd = p.t0 + p.dur * arriveFrac;
+
+    if (t < flyEnd && !REDUCED) {
+      const u = Math.max(0, Math.min(1, (t - p.t0) / (flyEnd - p.t0)));
+      const e = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+      const p0 = { x: a.x, y: a.y - 22 };
+      const p1 = { x: b.x, y: b.y - 6 };
+      const cp = { x: (p0.x + p1.x) / 2, y: Math.min(p0.y, p1.y) - 62 };
+
+      for (let k = 1; k <= 3; k++) {
+        const tu = e - k * 0.08;
+        if (tu <= 0) continue;
+        const tp = quadPoint(p0, cp, p1, tu);
+        ctx.save();
+        ctx.globalAlpha = 0.45 - k * 0.11;
+        ctx.fillStyle = p.kind.color;
+        ctx.beginPath(); ctx.arc(tp.x, tp.y, 4 - k * 0.7, 0, 7); ctx.fill();
+        ctx.restore();
+      }
+
+      const pt = quadPoint(p0, cp, p1, e);
+      ctx.save(); ctx.translate(pt.x, pt.y);
+      ctx.fillStyle = 'rgba(23,49,77,.16)'; ctx.fillRect(-10, 11, 20, 3);
+      if (p.kind.prop === 'jira') {
+        rrect(-11, -9, 22, 18, 3, '#fff', p.kind.color, 1.5);
+        ctx.fillStyle = p.kind.color; ctx.fillRect(-11, -9, 22, 5);
+        ctx.fillStyle = '#9fb2c4'; ctx.fillRect(-7, -1, 14, 2); ctx.fillRect(-7, 3, 10, 2);
+      } else if (p.kind.prop === 'docmost') {
+        rrect(-10, -11, 20, 22, 3, '#fff', p.kind.color, 1.5);
+        ctx.fillStyle = p.kind.color; ctx.fillRect(-6, -7, 12, 3);
+        ctx.fillStyle = '#9fb2c4'; ctx.fillRect(-6, -1, 12, 1.8); ctx.fillRect(-6, 3, 12, 1.8); ctx.fillRect(-6, 7, 8, 1.8);
+      } else if (p.label === 'Create PR') {
+        rrect(-12, -9, 24, 18, 4, '#eef2ff', p.kind.color, 1.5);
+        text('PR', 0, 4, 9.5, p.kind.fg, 750, 'center');
+      } else {
+        rrect(-12, -9, 24, 18, 4, '#e8f0fe', p.kind.color, 1.5);
+        text('\u2191', 0, 4, 11, p.kind.fg, 750, 'center');
+      }
+      ctx.restore();
+
+      ctx.font = `650 10.5px ${FONT}`;
+      const lw = Math.ceil(ctx.measureText(p.label).width) + 14;
+      const lx = Math.max(lw / 2 + 8, Math.min(W - lw / 2 - 8, pt.x));
+      const ly = Math.max(18, pt.y - 22);
+      rrect(lx - lw / 2, ly - 9, lw, 17, 8, '#fff', p.kind.color, 1.2);
+      text(p.label, lx, ly + 3, 10.5, '#17314d', 650, 'center');
+    } else {
+      if (!p.pulsed) { p.pulsed = true; pulses[p.kind.prop] = t; }
+      const endT = p.t0 + p.dur;
+      if (!REDUCED && t <= endT) {
+        const lp = Math.max(0, Math.min(1, (t - flyEnd) / Math.max(1, endT - flyEnd)));
+        ctx.save();
+        ctx.globalAlpha = (1 - lp) * 0.65;
+        ctx.strokeStyle = p.kind.color;
+        ctx.lineWidth = 2.4;
+        ctx.beginPath(); ctx.arc(b.x, b.y, 16 + lp * 36, 0, 7); ctx.stroke();
+        ctx.restore();
+      }
+    }
   }
 }
 
@@ -592,15 +795,16 @@ function frame(t) {
   ctx.setTransform(cv.width / W, 0, 0, cv.height / H, 0, 0);
   drawRoom(t);
   drawProps(t);
-  ['you', 'argon', 'flash', 'opus', 'sonnet'].forEach(id => drawStaff(id, t));
+  ['you', ...TEAM_ORDER].forEach(id => drawStaff(id, t));
   drawBell(t);
   drawTalks(t);
   drawFlights(t);
+  drawPushAnims(t);
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
 
-/* ---------- panel ---------- */
+// Panel rendering
 const $ = id => document.getElementById(id);
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 function fmtDateTime(iso) {
@@ -665,7 +869,7 @@ const g = $('gate');
   });
 }
 
-/* ---------- rich text for Conversation panel ---------- */
+// Rich-text chat rendering
 const escHtml = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 const SAFE_TAGS = 'b|i|em|strong|u|s|del|ins|mark|kbd|sub|sup|small';
 function renderRich(src) {
@@ -791,11 +995,26 @@ function apply(next, now) {
   const maxN = (S.handoffs || []).reduce((m, h) => Math.max(m, h.n), 0);
   if (maxN < seenHandoff) seenHandoff = 0;
 
-  let lastFlightEnd = flights.reduce((m, f) => Math.max(m, f.t0 + f.dur), now);
+  let lastFlightEnd = Math.max(
+    flights.reduce((m, f) => Math.max(m, f.t0 + f.dur), now),
+    pushAnims.reduce((m, p) => Math.max(m, p.t0 + (REDUCED ? 400 : 1400)), now)
+  );
   const dur = REDUCED ? 1 : 1200;
+  const pushDur = REDUCED ? 900 : 2200;
 
   hs.filter(h => h.n > seenHandoff).forEach(h => {
     if (!POS(h.from) || !POS(h.to)) return;
+    const pk = PUSH_KIND[h.label];
+    if (pk) {
+      const isPushDup = pushAnims.some(p => p.from === h.from && p.to === h.to && p.label === h.label && Math.abs(p.t0 - now) < 1500);
+      if (isPushDup) return;
+      const t0 = Math.max(now, lastFlightEnd + 80);
+      pushAnims.push({ from: h.from, to: h.to, label: h.label, kind: pk, t0, dur: pushDur, until: t0 + pushDur + 1400 });
+      propState[pk.prop] = { kind: pk, label: h.label, t0, dur: pushDur, until: t0 + pushDur + 1400 };
+      lastFlightEnd = t0 + (REDUCED ? 400 : 1400);
+      return;
+    }
+
     const isDup = flights.some(f => f.from === h.from && f.to === h.to && f.label === h.label && Math.abs(f.t0 - now) < 1500);
     if (isDup) return;
 
@@ -816,7 +1035,6 @@ function apply(next, now) {
   renderPanel();
 }
 
-/* ---------- live polling ---------- */
 const conn = $('conn');
 function setConn(kind, msg) { conn.className = kind; conn.querySelector('span').textContent = msg; }
 let demoOn = false, firstPoll = true, primed = false;
@@ -829,115 +1047,94 @@ async function poll() {
     const j = await r.json();
     setConn('live', j.empty ? 'Connected, waiting for task' : 'Live: .office/state.json');
     if (!primed) { seenHandoff = (j.handoffs || []).reduce((m, x) => Math.max(m, x.n), 0); primed = true; }
-apply(j.empty ? emptyState() : j, performance.now());
+    apply(j.empty ? emptyState() : j, performance.now());
     try { const c = await fetch('/chat.json', { cache: 'no-store' }); renderChat(c.ok ? (await c.json()).messages : []); } catch {}
   } catch (e) {
     if (firstPoll) { $('demoToggle').checked = true; startDemo(); }
-    else setConn('', 'Disconnected, retrying...');
+    else setConn('err', 'Disconnected, retrying...');
   }
   firstPoll = false;
 }
 setInterval(poll, 1000); poll();
 
-/* ---------- demo simulation (Centralized 4-Model SDLC Flow) ---------- */
 const DEMO = [
-  // 0: Intake by Gemini 4 Argon
   s => {
     s.task = { id: 'demo', title: 'Order Service - Add order cancellation endpoint', project: 'order-service', branch: 'feature/ORD-142-cancel-order' };
     s.phase = 'intake';
-    s.activeAgent = 'argon';
-    s.agents.argon = { status: 'working', message: `Received task from ${USER_NAME}` };
-    h(s, 'you', 'argon', 'task');
+    s.activeAgent = 'orchestrator';
+    s.agents.orchestrator = { status: 'working', message: `Routing task from ${USER_NAME}` };
+    h(s, 'you', 'orchestrator', 'task');
   },
-  // 1: Project profile scan
   s => {
     s.phase = 'profile';
-    s.agents.argon = { status: 'working', message: 'Scanning order-service' };
+    s.agents.orchestrator = { status: 'idle', message: '' };
+    s.activeAgent = 'hydrogen';
+    h(s, 'orchestrator', 'hydrogen', 'delegate');
+    s.agents.hydrogen = { status: 'working', message: 'Scanning order-service' };
   },
-  // 2: Plan drafting
   s => {
     s.phase = 'plan';
+    s.agents.hydrogen = { status: 'idle', message: '' };
+    s.activeAgent = 'argon';
+    h(s, 'hydrogen', 'argon', 'plan');
     s.agents.argon = { status: 'working', message: 'Drafting implementation_plan.md' };
   },
-  // 3: Unit test scenario mapping
   s => {
     s.agents.argon = { status: 'working', message: 'Mapping unit test scenarios' };
   },
-  // 4: Gate 1 submission
   s => {
     s.agents.argon = { status: 'waiting', message: 'Plan ready' };
     h(s, 'argon', 'you', 'plan.md');
     s.phase = 'gate1';
     s.gate = { n: 1, question: 'Approve Option A (recommended) or request revision?' };
   },
-  // 5: Gate 1 plan revision requested by User
   s => {
     s.gate = null;
     s.phase = 'plan';
     s.agents.argon = { status: 'working', message: `Discussing revision with ${USER_NAME}` };
     h(s, 'you', 'argon', 'Revise plan');
   },
-  // 6: Analyzing controller impact
-  s => {
-    s.agents.argon = { status: 'working', message: 'Analyzing OrdersController impact' };
-  },
-  // 7: REQUIREMENT 2 FIX: Avatar displays "Editing implementation_plan.md"
   s => {
     s.agents.argon = { status: 'working', message: 'Editing implementation_plan.md' };
   },
-  // 8: Plan v2 ready at Gate 1
   s => {
     s.agents.argon = { status: 'waiting', message: 'Plan v2 ready' };
     h(s, 'argon', 'you', 'plan v2');
     s.phase = 'gate1';
     s.gate = { n: 1, question: 'Plan revised with OrdersController impact. Approve?' };
   },
-  // 9: Gate 1 approved -> Model delegation to Claude Sonnet 5.5
   s => {
     s.gate = null;
     s.agents.argon = { status: 'idle', message: '' };
     s.phase = 'branch';
     s.activeAgent = 'sonnet';
-    h(s, 'argon', 'sonnet', 'delegate');
+    h(s, 'argon', 'orchestrator', 'approve');
+    h(s, 'orchestrator', 'sonnet', 'delegate');
     s.agents.sonnet = { status: 'working', message: 'Create branch: feature/ORD-142-cancel-order' };
     h(s, 'sonnet', 'github', 'Branch');
   },
-  // 10: Coding OrdersService.Cancel
   s => {
     s.phase = 'code';
     s.agents.sonnet = { status: 'working', message: 'Implement OrdersService.Cancel' };
     h(s, 'sonnet', 'github', 'Commit');
   },
-  // 11: Drafting unit tests
-  s => {
-    s.agents.sonnet = { status: 'working', message: 'Drafting CancelOrder unit tests' };
-  },
-  // 12: Running unit tests -> Error triggers blocked red bubble on avatar
   s => {
     s.phase = 'test';
     s.agents.sonnet = { status: 'blocked', message: 'CancelOrder_WhenPaid_ReturnsConflict; CancelOrder_UpdatesStatusColumn' };
     h(s, 'sonnet', 'sonnet', 'test error');
   },
-  // 13: Fixing code bug
   s => {
     s.phase = 'code';
     s.agents.sonnet = { status: 'working', message: 'Fixing conflict status in OrdersService' };
   },
-  // 14: Rerunning tests
   s => {
     s.phase = 'test';
     s.agents.sonnet = { status: 'working', message: 'Running tests: dotnet test --filter OrderService' };
   },
-  // 15: Tests pass green
-  s => {
-    s.agents.sonnet = { status: 'working', message: 'All 6 tests passed green' };
-  },
-  // 16: REQUIREMENT 2 FIX: Updating implementation_plan.md after coding
   s => {
     s.phase = 'code';
     s.agents.sonnet = { status: 'working', message: 'Editing implementation_plan.md' };
   },
-  // 17: Documentation delegated to Claude Opus 5.5
   s => {
     s.agents.sonnet = { status: 'idle', message: '' };
     s.activeAgent = 'opus';
@@ -945,42 +1142,36 @@ const DEMO = [
     s.phase = 'docs';
     s.agents.opus = { status: 'working', message: 'Drafting Tech Doc' };
   },
-  // 18: Gate 2 review
   s => {
     s.agents.opus = { status: 'waiting', message: 'Docs draft ready' };
     s.phase = 'gate2';
     h(s, 'opus', 'you', 'review');
     s.gate = { n: 2, question: 'Review diff, test report, and draft docs. Approve?' };
   },
-  // 19: Publishing to Docmost MCP
   s => {
     s.gate = null;
     s.agents.opus = { status: 'working', message: 'Publishing doc to Strand Docmost MCP' };
     h(s, 'opus', 'docmost', 'Push Doc');
   },
-  // 20: Release preparation on Claude Sonnet 5.5
   s => {
     s.agents.opus = { status: 'idle', message: '' };
     s.activeAgent = 'sonnet';
     h(s, 'opus', 'sonnet', 'release');
     s.phase = 'release';
-    s.agents.sonnet = { status: 'working', message: 'Drafting Jira task and PR description' };
-    h(s, 'sonnet', 'jira', 'Write Jira');
+    s.agents.sonnet = { status: 'working', message: 'Pushing issue to Jira MCP' };
+    h(s, 'sonnet', 'jira', 'Push Jira');
   },
-  // 21: Gate 3 review
   s => {
     h(s, 'sonnet', 'you', 'pr.md');
     s.agents.sonnet = { status: 'waiting', message: 'Approve push & PR?' };
     s.gate = { n: 3, question: 'Push branch and create GitHub Pull Request?' };
   },
-  // 22: Push branch & create PR
   s => {
     s.gate = null;
     s.agents.sonnet = { status: 'working', message: 'Pushing branch and creating PR' };
     h(s, 'sonnet', 'github', 'Push Branch');
     h(s, 'sonnet', 'github', 'Create PR');
   },
-  // 23: Complete
   s => {
     s.phase = 'done';
     Object.keys(s.agents).forEach(k => { s.agents[k] = { status: 'done', message: 'Done' }; });
@@ -992,16 +1183,15 @@ const DEMO_CHAT = {
   0: [['user', null, 'Add order cancellation endpoint to order-service, branch feature/ORD-142-cancel-order']],
   4: [['assistant', 'argon', 'Plan ready. Option A (recommended): add OrdersService.Cancel + DELETE endpoint. Approve Option A?']],
   5: [['user', null, 'Revise plan: OrdersController cancellation impact not covered yet']],
-  8: [['assistant', 'argon', 'Plan v2 ready, OrdersController impact included. Approve?']],
-  9: [['user', null, 'Approve plan v2']],
-  12: [['assistant', 'sonnet', 'Test case error: CancelOrder_WhenPaid_ReturnsConflict; CancelOrder_UpdatesStatusColumn. Fixing logic.']],
-  14: [['assistant', 'sonnet', 'OrdersService conflict status fixed. Rerunning unit tests.']],
-  15: [['assistant', 'sonnet', 'Rerun complete: 6 tests green.']],
-  18: [['assistant', 'opus', 'Tech Doc draft ready. Review diff, test report, and draft docs. Approve?']],
-  19: [['user', null, 'Approve docs']],
-  21: [['assistant', 'sonnet', 'Draft PR ready. Push branch and create GitHub Pull Request?']],
-  22: [['user', null, 'Approve push and create PR']],
-  23: [['assistant', 'sonnet', 'Completed: branch pushed and GitHub Pull Request created successfully.']],
+  7: [['assistant', 'argon', 'Plan v2 ready, OrdersController impact included. Approve?']],
+  8: [['user', null, 'Approve plan v2']],
+  10: [['assistant', 'sonnet', 'Test case error: CancelOrder_WhenPaid_ReturnsConflict; CancelOrder_UpdatesStatusColumn. Fixing logic.']],
+  12: [['assistant', 'sonnet', 'OrdersService conflict status fixed. Rerunning unit tests.']],
+  15: [['assistant', 'opus', 'Tech Doc draft ready. Review diff, test report, and draft docs. Approve?']],
+  16: [['user', null, 'Approve docs']],
+  18: [['assistant', 'sonnet', 'Jira issue synced and draft PR ready. Push branch and create GitHub Pull Request?']],
+  19: [['user', null, 'Approve push and create PR']],
+  20: [['assistant', 'sonnet', 'Completed: branch pushed and GitHub Pull Request created.']],
 };
 
 function h(s, from, to, label) {
@@ -1010,38 +1200,43 @@ function h(s, from, to, label) {
 }
 
 let demoTimer = null, demoStep = 0, demoState = null, prevMsg = {}, demoChat = [];
+function clearAnimQueues() {
+  flights.length = 0;
+  pushAnims.length = 0;
+  talks.length = 0;
+  Object.keys(propState).forEach(k => delete propState[k]);
+}
+function stepDemo() {
+  if (demoStep >= DEMO.length) {
+    demoStep = 0; prevMsg = {}; demoState = Object.assign(emptyState(), { handoffSeq: 0 }); seenHandoff = 0;
+    clearAnimQueues();
+  }
+  if (demoStep === 0) { demoChat = []; chatKey = ''; }
+  (DEMO_CHAT[demoStep] || []).forEach(([role, agent, text]) => demoChat.push({ n: demoChat.length + 1, at: new Date().toISOString(), role, agent, text }));
+  renderChat(demoChat);
+  DEMO[demoStep](demoState);
+  demoState.models = {
+    models: DEFAULT_MODELS.map(m => ({ ...m, active: demoState.activeAgent === m.id }))
+  };
+  Object.entries(demoState.agents).forEach(([k, v]) => {
+    const label = STAFF[canon(k)]?.name || k;
+    if (v.message && prevMsg[k] !== v.message) demoState.log.push({ at: new Date().toISOString(), text: `${label}: ${v.message}` });
+    prevMsg[k] = v.message;
+  });
+  demoState.log = demoState.log.slice(-100);
+  demoStep++;
+  apply(JSON.parse(JSON.stringify(demoState)), performance.now());
+}
 function startDemo() {
   demoOn = true; demoStep = 0; prevMsg = {}; demoState = Object.assign(emptyState(), { handoffSeq: 0 }); seenHandoff = 0;
+  clearAnimQueues();
   setConn('demo', 'Demo mode (sample data)');
   clearInterval(demoTimer);
-  demoTimer = setInterval(() => {
-    if (demoStep >= DEMO.length) {
-      demoStep = 0; prevMsg = {}; demoState = Object.assign(emptyState(), { handoffSeq: 0 }); seenHandoff = 0; flights.length = 0; talks.length = 0;
-    }
-    if (demoStep === 0) { demoChat = []; chatKey = ''; }
-    (DEMO_CHAT[demoStep] || []).forEach(([role, agent, text]) => demoChat.push({ n: demoChat.length + 1, at: new Date().toISOString(), role, agent, text }));
-    renderChat(demoChat);
-    DEMO[demoStep](demoState);
-    demoState.models = {
-      models: [
-        { id: 'argon',  name: 'Gemini 4 Argon',    active: demoState.activeAgent === 'argon' },
-        { id: 'flash',  name: 'Gemini 3.8 Flash',  active: demoState.activeAgent === 'flash' },
-        { id: 'opus',   name: 'Claude Opus 5.5',   active: demoState.activeAgent === 'opus' },
-        { id: 'sonnet', name: 'Claude Sonnet 5.5', active: demoState.activeAgent === 'sonnet' },
-      ]
-    };
-    Object.entries(demoState.agents).forEach(([k, v]) => {
-      const label = STAFF[canon(k)]?.name || k;
-      if (v.message && prevMsg[k] !== v.message) demoState.log.push({ at: new Date().toISOString(), text: `${label}: ${v.message}` });
-      prevMsg[k] = v.message;
-    });
-    demoState.log = demoState.log.slice(-100);
-    demoStep++;
-    apply(JSON.parse(JSON.stringify(demoState)), performance.now());
-  }, 2200);
+  stepDemo();
+  demoTimer = setInterval(stepDemo, 2400);
 }
 function stopDemo() {
-  demoOn = false; chatKey = ''; renderChat([]); clearInterval(demoTimer); flights.length = 0; seenHandoff = 0; S = emptyState(); primed = false; renderPanel(); setConn('', 'Connecting...'); poll();
+  demoOn = false; chatKey = ''; renderChat([]); clearInterval(demoTimer); clearAnimQueues(); seenHandoff = 0; S = emptyState(); primed = false; renderPanel(); setConn('', 'Connecting...'); poll();
 }
 $('demoToggle').addEventListener('change', e => e.target.checked ? startDemo() : stopDemo());
 
@@ -1051,8 +1246,7 @@ $('resetBtn').addEventListener('click', async () => {
     await fetch('/reset', { method: 'POST' });
     S = emptyState();
     seenHandoff = 0;
-    flights.length = 0;
-    talks.length = 0;
+    clearAnimQueues();
     renderPanel();
     renderChat([]);
     setConn('live', 'Visualizer reset');

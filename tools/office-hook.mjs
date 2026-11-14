@@ -12,6 +12,7 @@ import {
   extractProjectFromPath,
   getUserName,
   getConversationTitle,
+  DEFAULT_AGENT,
   MODEL_AGENTS,
   MODEL_META,
   canonAgent,
@@ -28,7 +29,7 @@ const stateFile = path.join(dir, 'state.json');
 const chatFile = path.join(dir, 'chat.json');
 const freshState = () => ({
   task: null, phase: 'intake', gate: null,
-  activeAgent: 'flash',
+  activeAgent: DEFAULT_AGENT,
   agents: Object.fromEntries(MODEL_AGENTS.map(a => [a, { status: 'idle', message: '' }])),
   handoffs: [], handoffSeq: 0, log: [],
 });
@@ -86,8 +87,8 @@ const setAgentAct = (s, agentId, status, message, alsoLog = true) => {
 const handoff = (s, from, to, label) => {
   if (!from || !to || from === to) return;
   const cleanLabel = String(label || '').slice(0, 24);
-  const canFrom = ['you', 'docmost', 'github', 'jira'].includes(from) ? from : canonAgent(from, s.activeAgent || 'flash');
-  const canTo = ['you', 'docmost', 'github', 'jira'].includes(to) ? to : canonAgent(to, s.activeAgent || 'flash');
+  const canFrom = ['you', 'docmost', 'github', 'jira'].includes(from) ? from : canonAgent(from, s.activeAgent || DEFAULT_AGENT);
+  const canTo = ['you', 'docmost', 'github', 'jira'].includes(to) ? to : canonAgent(to, s.activeAgent || DEFAULT_AGENT);
   const prev = s.handoffs && s.handoffs[s.handoffs.length - 1];
   if (prev && prev.from === canFrom && prev.to === canTo && prev.label === cleanLabel) return;
   s.handoffSeq = (s.handoffSeq || 0) + 1;
@@ -193,7 +194,7 @@ try {
     if (!/office-state\.mjs|office-hook\.mjs/.test(cmd)) {
       const tc = input.toolCall || { name: input.tool_name, args: input.tool_input || {} };
       mutateState(s => {
-        const active = canonAgent(modelHint || s.activeAgent || 'flash');
+        const active = canonAgent(modelHint || s.activeAgent || DEFAULT_AGENT);
         s.activeAgent = active;
         const act = inferToolAction(tc, String(input.error || ''), active, s.phase);
         if (!act) return;
@@ -206,14 +207,14 @@ try {
     }
   } else if (ev === 'SubagentStart') {
     mutateState(s => {
-      const subTarget = canonAgent(input.agent_type || input.model || s.activeAgent || 'flash');
+      const subTarget = canonAgent(input.agent_type || input.model || s.activeAgent || DEFAULT_AGENT);
       s.gate = null;
       handoff(s, 'you', subTarget, 'task');
       setAgentAct(s, subTarget, 'working', 'Started delegated task', true);
     });
   } else if (ev === 'SubagentStop') {
     mutateState(s => {
-      const subTarget = canonAgent(input.agent_type || input.model || s.activeAgent || 'flash');
+      const subTarget = canonAgent(input.agent_type || input.model || s.activeAgent || DEFAULT_AGENT);
       const rawAsst = String(input.last_assistant_message || (input.agent_transcript_path && lastAssistantText(input.agent_transcript_path)) || '').trim();
       if (rawAsst) pushChat({ role: 'assistant', agent: subTarget, text: rawAsst });
       s.agents[subTarget] = { status: 'done', message: 'Done' };
@@ -222,7 +223,7 @@ try {
     });
   } else if (ev === 'Notification') {
     mutateState(s => {
-      const active = canonAgent(s.activeAgent || 'flash');
+      const active = canonAgent(s.activeAgent || DEFAULT_AGENT);
       const msg = clip(input.message || `Requires attention from ${userName}`, 60);
       setAgentAct(s, active, 'waiting', msg, true);
     });
@@ -232,7 +233,7 @@ try {
     const isNew = Boolean(rawAsst && (!lastAsst || lastAsst.text !== rawAsst));
     if (isNew) pushChat({ role: 'assistant', text: rawAsst });
     mutateState(s => {
-      const active = canonAgent(s.activeAgent || 'flash');
+      const active = canonAgent(s.activeAgent || DEFAULT_AGENT);
       const activeGate = Boolean(s.gate && s.phase !== 'done');
       if (activeGate) {
         s.agents[active] = { status: 'waiting', message: `Awaiting ${userName}'s decision` };
